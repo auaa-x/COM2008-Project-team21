@@ -1,3 +1,4 @@
+// this is a class which you can use to test if you have successfully installed the connector drivers
 import java.sql.*;
 import java.util.*;
 public class FindDrivers {
