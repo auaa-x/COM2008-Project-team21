@@ -38,44 +38,49 @@ public class Login extends JFrame{
         /*contentPane.setLayout(new FlowLayout());
         contentPane.add(new JButton("Login"));*/
 
+        //Welcome banner
         JLabel lblNewLabel = new JLabel("Welcome");
-        lblNewLabel.setForeground(Color.BLACK);
         lblNewLabel.setFont(new Font("Times New Roman", Font.PLAIN, 46));
-        lblNewLabel.setBounds(423, 13, 273, 93);
+        lblNewLabel.setBounds(425, 15, 270, 90);
         contentPane.add(lblNewLabel);
 
+
+        //user types combobox
+        String[] userTypes = {"User Type", "Editor", "Author", "Reviewer"};
+        JComboBox<String> comboUserTypes = new JComboBox<>(userTypes);
+        comboUserTypes.setFont(new Font("Tahoma", Font.PLAIN, 20));
+        comboUserTypes.setBounds(550, 140, 190, 50);
+        contentPane.add(comboUserTypes);
+
+
+        //username
+        JLabel lblUsername = new JLabel("Username");
+        lblUsername.setFont(new Font("Tahoma", Font.PLAIN, 28));
+        lblUsername.setBounds(290, 205, 170, 50);
+        contentPane.add(lblUsername);
+
         textField = new JTextField();
-        textField.setFont(new Font("Tahoma", Font.PLAIN, 32));
-        textField.setBounds(481, 170, 281, 68);
+        textField.setFont(new Font("Tahoma", Font.PLAIN, 28));
+        textField.setBounds(480, 210, 260, 50);
         contentPane.add(textField);
         textField.setColumns(10);
 
-        passwordField = new JPasswordField();
-        passwordField.setFont(new Font("Tahoma", Font.PLAIN, 32));
-        passwordField.setBounds(481, 286, 281, 68);
-        contentPane.add(passwordField);
 
-        JLabel lblUsername = new JLabel("Username");
-        lblUsername.setBackground(Color.BLACK);
-        lblUsername.setForeground(Color.BLACK);
-        lblUsername.setFont(new Font("Tahoma", Font.PLAIN, 31));
-        lblUsername.setBounds(250, 166, 193, 52);
-        contentPane.add(lblUsername);
-
+        //password
         JLabel lblPassword = new JLabel("Password");
-        lblPassword.setForeground(Color.BLACK);
-        lblPassword.setBackground(Color.CYAN);
-        lblPassword.setFont(new Font("Tahoma", Font.PLAIN, 31));
-        lblPassword.setBounds(250, 286, 193, 52);
+        lblPassword.setFont(new Font("Tahoma", Font.PLAIN, 28));
+        lblPassword.setBounds(290, 285, 170, 50);
         contentPane.add(lblPassword);
 
-        JButton lb1Login = new JButton("Log in");
-        lb1Login.setForeground(Color.BLACK);
-        lb1Login.setBackground(Color.CYAN);
-        lb1Login.setFont(new Font("Tahoma", Font.PLAIN, 31));
-        lb1Login.setBounds(350, 386, 250, 52);
-        contentPane.add(lb1Login);
+        passwordField = new JPasswordField();
+        passwordField.setFont(new Font("Tahoma", Font.PLAIN, 28));
+        passwordField.setBounds(480, 290, 260, 50);
+        contentPane.add(passwordField);
 
+        JButton lb1Login = new JButton("Log in");
+        lb1Login.setFont(new Font("Tahoma", Font.PLAIN, 25));
+        lb1Login.setBounds(410, 390, 200, 45);
+        contentPane.add(lb1Login);
 
 
         setDefaultCloseOperation(EXIT_ON_CLOSE); //ensure that Java terminates on close
