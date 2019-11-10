@@ -6,6 +6,7 @@
 import java.awt.*;
 import javax.swing.*;
 
+
 public class Login extends JFrame{
     // Needed for serialisation
     private static final long serialVersionUID = 1L;
@@ -37,7 +38,7 @@ public class Login extends JFrame{
         /*contentPane.setLayout(new FlowLayout());
         contentPane.add(new JButton("Login"));*/
 
-        JLabel lblNewLabel = new JLabel("Login");
+        JLabel lblNewLabel = new JLabel("Welcome");
         lblNewLabel.setForeground(Color.BLACK);
         lblNewLabel.setFont(new Font("Times New Roman", Font.PLAIN, 46));
         lblNewLabel.setBounds(423, 13, 273, 93);
@@ -67,6 +68,15 @@ public class Login extends JFrame{
         lblPassword.setFont(new Font("Tahoma", Font.PLAIN, 31));
         lblPassword.setBounds(250, 286, 193, 52);
         contentPane.add(lblPassword);
+
+        JButton lb1Login = new JButton("Log in");
+        lb1Login.setForeground(Color.BLACK);
+        lb1Login.setBackground(Color.CYAN);
+        lb1Login.setFont(new Font("Tahoma", Font.PLAIN, 31));
+        lb1Login.setBounds(350, 386, 250, 52);
+        contentPane.add(lb1Login);
+
+
 
         setDefaultCloseOperation(EXIT_ON_CLOSE); //ensure that Java terminates on close
         setVisible(true);
