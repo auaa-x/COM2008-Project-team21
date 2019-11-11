@@ -40,7 +40,7 @@ public class Login extends JFrame{
 
         //Welcome banner
         JLabel lblNewLabel = new JLabel("Welcome");
-        lblNewLabel.setFont(new Font("Times New Roman", Font.PLAIN, 46));
+        lblNewLabel.setFont(new Font("Tahoma", Font.PLAIN, 46));
         lblNewLabel.setBounds(425, 15, 270, 90);
         contentPane.add(lblNewLabel);
 
