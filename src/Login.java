@@ -5,9 +5,10 @@
  */
 import java.awt.*;
 import javax.swing.*;
+import java.awt.event.*;
 
 
-public class Login extends JFrame{
+public class Login extends JFrame implements ActionListener{
     // Needed for serialisation
     private static final long serialVersionUID = 1L;
     private JTextField textField;
@@ -77,15 +78,37 @@ public class Login extends JFrame{
         passwordField.setBounds(480, 290, 260, 50);
         contentPane.add(passwordField);
 
-        JButton lb1Login = new JButton("Log in");
-        lb1Login.setFont(new Font("Tahoma", Font.PLAIN, 25));
-        lb1Login.setBounds(410, 390, 200, 45);
-        contentPane.add(lb1Login);
 
+        //login button
+        //JButton btnLogin;
+        JButton btnLogin = new JButton("Log in");
+        btnLogin.addActionListener(this);
+
+        btnLogin.setFont(new Font("Tahoma", Font.PLAIN, 25));
+        btnLogin.setBounds(410, 390, 200, 45);
+        contentPane.add(btnLogin);
+        setVisible(true);
+        /*
+        public LoginEventHandler(){
+            JButton btnLogin = new JButton("Log in");
+            btnLogin.addActionListener(this);
+
+            btnLogin.setFont(new Font("Tahoma", Font.PLAIN, 25));
+            btnLogin.setBounds(410, 390, 200, 45);
+            contentPane.add(btnLogin);
+            setVisible(true);
+        }
+         */
+
+        public void actionPerformed(ActionEvent e){
+                String userName = textField.getText();
+                String password = passwordField.getText();
+                System.out.println("Username is: " + userName);
+                System.out.println("Password is: " + password);
+            }
 
         setDefaultCloseOperation(EXIT_ON_CLOSE); //ensure that Java terminates on close
         setVisible(true);
-
     }
 
     public static void main (String[] args) {
