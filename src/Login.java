@@ -8,16 +8,27 @@ import javax.swing.*;
 import java.awt.event.*;
 
 
-public class Login extends JFrame implements ActionListener{
+public class Login extends JFrame implements ActionListener,ItemListener{
+
+    public static void main (String[] args) {
+        //launching code goes in here
+        new Login();
+    }
+
+
     // Needed for serialisation
     private static final long serialVersionUID = 1L;
     private JTextField textField;
     private JPasswordField passwordField;
+    private JComboBox<String> comboUserTypes;
+    private int userType;
+
+
 
     // Constructor with frame title
-    public Login(String title) throws HeadlessException {
+    public Login() {
         //construction code goes in here
-        super(title);  //pass the title name
+        super("Login");  //pass the title name
 
         //access useful window system constants
         Toolkit toolkit = Toolkit.getDefaultToolkit();
@@ -49,6 +60,8 @@ public class Login extends JFrame implements ActionListener{
         //user types combobox
         String[] userTypes = {"User Type", "Editor", "Author", "Reviewer"};
         JComboBox<String> comboUserTypes = new JComboBox<>(userTypes);
+        comboUserTypes.addItemListener(this);
+
         comboUserTypes.setFont(new Font("Tahoma", Font.PLAIN, 20));
         comboUserTypes.setBounds(550, 140, 190, 50);
         contentPane.add(comboUserTypes);
@@ -88,31 +101,41 @@ public class Login extends JFrame implements ActionListener{
         btnLogin.setBounds(410, 390, 200, 45);
         contentPane.add(btnLogin);
         setVisible(true);
-        /*
-        public LoginEventHandler(){
-            JButton btnLogin = new JButton("Log in");
-            btnLogin.addActionListener(this);
 
-            btnLogin.setFont(new Font("Tahoma", Font.PLAIN, 25));
-            btnLogin.setBounds(410, 390, 200, 45);
-            contentPane.add(btnLogin);
-            setVisible(true);
-        }
-         */
 
-        public void actionPerformed(ActionEvent e){
-                String userName = textField.getText();
-                String password = passwordField.getText();
-                System.out.println("Username is: " + userName);
-                System.out.println("Password is: " + password);
-            }
 
         setDefaultCloseOperation(EXIT_ON_CLOSE); //ensure that Java terminates on close
         setVisible(true);
     }
 
-    public static void main (String[] args) {
-        //launching code goes in here
-        new Login("Login");
+    public void itemStateChanged(ItemEvent e) {
+
+        System.out.println(e.getItem());
+        String item = (String)e.getItem();
+        if(item == "Editor"){
+            userType = 1;
+        } else if (item == "Author"){
+            userType = 2;
+        } else if (item == "Reviewer"){
+            userType = 3;
+        };
     }
+
+    public void actionPerformed(ActionEvent e) {
+            String userName = textField.getText();
+            String password = passwordField.getText();
+
+            if(DataController.login(userName, password, userType)){
+                JOptionPane.showMessageDialog(null, "Logged in");
+            } else {
+                JOptionPane.showMessageDialog(null, "Wrong Username & Password");
+            };
+
+
+            System.out.println("Username is: " + userName);
+            System.out.println("Password is: " + password);
+            System.out.println("Usertype is: " + userType);
+    }
+
+
 }
