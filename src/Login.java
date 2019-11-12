@@ -6,9 +6,10 @@
 import java.awt.*;
 import javax.swing.*;
 import java.awt.event.*;
+import java.sql.SQLException;
 
 
-public class Login extends JFrame implements ActionListener,ItemListener{
+public class Login extends JFrame implements ActionListener,ItemListener {
 
     public static void main (String[] args) {
         //launching code goes in here
@@ -68,10 +69,10 @@ public class Login extends JFrame implements ActionListener,ItemListener{
 
 
         //username
-        JLabel lblUsername = new JLabel("Username");
-        lblUsername.setFont(new Font("Tahoma", Font.PLAIN, 28));
-        lblUsername.setBounds(290, 205, 170, 50);
-        contentPane.add(lblUsername);
+        JLabel lblEmail = new JLabel("Email address");
+        lblEmail.setFont(new Font("Tahoma", Font.PLAIN, 28));
+        lblEmail.setBounds(290, 205, 170, 50);
+        contentPane.add(lblEmail);
 
         textField = new JTextField();
         textField.setFont(new Font("Tahoma", Font.PLAIN, 28));
@@ -123,12 +124,17 @@ public class Login extends JFrame implements ActionListener,ItemListener{
 
     public void actionPerformed(ActionEvent e) {
             String userName = textField.getText();
+            @SuppressWarnings("deprecation")
             String password = passwordField.getText();
 
-            if(DataController.login(userName, password, userType)){
-                JOptionPane.showMessageDialog(null, "Logged in");
-            } else {
-                JOptionPane.showMessageDialog(null, "Wrong Username & Password");
+            try {
+                if(DataController.login(userName, password, userType)){
+                    JOptionPane.showMessageDialog(null, "Logged in");
+                } else {
+                    JOptionPane.showMessageDialog(null, "Wrong Username & Password");
+                }
+            } catch (SQLException ex) {
+                ex.printStackTrace();
             };
 
 
