@@ -9,11 +9,11 @@ import java.awt.event.*;
 import java.sql.SQLException;
 
 
-public class Login extends JFrame implements ActionListener, ItemListener {
+public class LoginInterface extends JFrame implements ActionListener, ItemListener {
 
     public static void main (String[] args) {
         //launching code goes in here
-        new Login();
+        new LoginInterface();
     }
 
 
@@ -27,7 +27,7 @@ public class Login extends JFrame implements ActionListener, ItemListener {
 
 
     // Constructor with frame title
-    public Login() {
+    public LoginInterface() {
         //construction code goes in here
         super("Login");  //pass the title name
 
