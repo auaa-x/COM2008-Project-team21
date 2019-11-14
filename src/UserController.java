@@ -201,38 +201,7 @@ public class UserController extends SqlController{
         return result;
     }
 
-    /**
-     * Create a new journal with all parameters
-     * @param email
-     * @param journal
-     * @param ISSN
-     * @return result true if journal is created successfully
-     * @throws SQLException
-     */
-    public static boolean createJournal(String email, String journal, int ISSN) throws SQLException {
-        openConnection();
-        boolean result = false;
-        PreparedStatement pstmt = null;
-        try {
-            pstmt = con.prepareStatement(" INSERT INTO `team021`.`journal` (`ISSN`, `title`, `chiefEditorEmail`)"
-            		+ " VALUES (?, ?, ?)");
-            pstmt.setInt(1, ISSN);
-            pstmt.setString(2, journal);
-            pstmt.setString(3, email);
-
-            int count = pstmt.executeUpdate();
-            if (count != 0) result = true;
-            System.out.println("Rows updated" + count);
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        } finally {
-            if (pstmt != null) pstmt.close();
-            closeConnection();
-        }
-        return result;
-    }
-
-
+    
     /**
      * Hash a password using SHA2, can only be used when connection is open
      * @param password
