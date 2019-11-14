@@ -30,6 +30,7 @@ public class UserController extends SqlController {
         }
      return result;
     }
+    
 
     /**
      * Check if password is correct
@@ -64,6 +65,30 @@ public class UserController extends SqlController {
         }
         return result;
     }
+    
+    
+    /**
+     * Hash a password using SHA2, can only be used when connection is open
+     * @param password
+     * @return hashed password
+     */
+    private static String hashPassword(String password) {
+        PreparedStatement hash = null;
+        String hashedPassword = "";
+        try {
+            hash = con.prepareStatement("SELECT SHA2(?, 256)");
+            hash.setString(1, password);
+            ResultSet hashRes = hash.executeQuery();
+            if (hashRes.next()) {
+                hashedPassword = hashRes.getString(1);
+                //System.out.println(hashedPassword);
+            }
+        } catch (SQLException ex) {
+                ex.printStackTrace();
+        }
+        return hashedPassword;
+    }
+    
 
     /**
      * Check if user is permitted to login as a chosen user type
@@ -102,6 +127,7 @@ public class UserController extends SqlController {
         }
         return result;
     }
+    
 
     /**
      * Check if login details are correct
@@ -124,37 +150,17 @@ public class UserController extends SqlController {
             return false;
         }
     }
-
-    /**
-     * Register as a new Chief Editor and add a journal
-     * @param email
-     * @param password
-     * @param title
-     * @param forename
-     * @param surname
-     * @param university
-     * @param journal
-     * @param ISSN
-     * @return result true if registration is successful
-     * @throws SQLException
-     */
-    public static boolean chiefEditorRegistration(String email, String title, String forename,
-            String surname, String university, String password, String journal, int ISSN) throws SQLException {
-        boolean result = false;
-        if (!checkEmail(email)) {
-            if (createUser(email, title, forename, surname, university, password, 1) && createJournal(email, journal, ISSN)) result = true;
-        }
-        return result;
-    }
+    
 
     /**
      * Create a new user with all parameters
      * @param email
-     * @param password
      * @param title
      * @param forename
      * @param surname
      * @param university
+     * @param password
+     * @param usertype
      * @return result true if registration is successful
      * @throws SQLException
      */
@@ -190,7 +196,7 @@ public class UserController extends SqlController {
 
             int count = pstmt.executeUpdate();
             if (count != 0) result = true;
-            System.out.println("Rows updated: " + count);
+            System.out.println("Rows in user updated: " + count);
         } catch (SQLException ex) {
             ex.printStackTrace();
         } finally {
@@ -200,6 +206,67 @@ public class UserController extends SqlController {
         }
         return result;
     }
+    
+    /**
+     * Add a role for a user
+     * @param email
+     * @param usertype
+     * @return result true if role addition is successful
+     * @throws SQLException
+     */
+    public static boolean addRole(String email, int usertype) throws SQLException{
+        openConnection();
+        boolean result = false;
+        PreparedStatement pstmt = null;
+        try {
+            
+            switch(usertype) {
+            case 1:
+                pstmt = con.prepareStatement("UPDATE `team021`.`user` SET `isEditor` = '1' WHERE (`email` = ?)");
+                break;
+            case 2:
+                pstmt = con.prepareStatement("UPDATE `team021`.`user` SET `isAuthor` = '1' WHERE (`email` = ?)");
+                break;
+            case 3:
+                pstmt = con.prepareStatement("UPDATE `team021`.`user` SET `isReviewer` = '1' WHERE (`email` = ?)");
+                break;
+            }
+            pstmt.setString(1, email);
+            int count = pstmt.executeUpdate();
+            if (count != 0) result = true;
+            System.out.println("User role " + usertype +  " for user " + email + " added");
+            System.out.println("Rows in user updated: " + count);
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        return result;
+    }
+
+    /**
+     * Register as a new chief editor and add a journal
+     * @param email
+     * @param title
+     * @param forename
+     * @param surname
+     * @param university
+     * @param password
+     * @param journal
+     * @param ISSN
+     * @return result true if registration is successful
+     * @throws SQLException
+     */
+    public static boolean chiefEditorRegistration(String email, String title, String forename,
+            String surname, String university, String password, String journal, int ISSN) throws SQLException {
+        boolean result = false;
+        if (!checkEmail(email)) {
+            if (createUser(email, title, forename, surname, university, password, 1) && createJournal(email, journal, ISSN)) result = true;
+        }
+        return result;
+    }
+
 
     /**
      * Create a new journal with all parameters
@@ -222,7 +289,7 @@ public class UserController extends SqlController {
 
             int count = pstmt.executeUpdate();
             if (count != 0) result = true;
-            System.out.println("Rows updated" + count);
+            System.out.println("Rows in journal updated: " + count);
         } catch (SQLException ex) {
             ex.printStackTrace();
         } finally {
@@ -231,29 +298,30 @@ public class UserController extends SqlController {
         }
         return result;
     }
-
-
+    
+    
     /**
-     * Hash a password using SHA2, can only be used when connection is open
+     * Register as a new author and add an article
+     * @param email
+     * @param title
+     * @param forename
+     * @param surname
+     * @param university
      * @param password
-     * @return hashed password
+     * @return result true if registration is successful
+     * @throws SQLException
      */
-    private static String hashPassword(String password) {
-        PreparedStatement hash = null;
-        String hashedPassword = "";
-        try {
-            hash = con.prepareStatement("SELECT SHA2(?, 256)");
-            hash.setString(1, password);
-            ResultSet hashRes = hash.executeQuery();
-            if (hashRes.next()) {
-                hashedPassword = hashRes.getString(1);
-                //System.out.println(hashedPassword);
-            }
-        } catch (SQLException ex) {
-                ex.printStackTrace();
+    public static boolean mainAuthorRegistration(String email, String title, String forename,
+            String surname, String university, String password) throws SQLException {
+        boolean result = false;
+        if (!checkEmail(email)) {
+            if (createUser(email, title, forename, surname, university, password, 2) && createArticle() && addRole(3)) result = true;
         }
-        return hashedPassword;
+        return result;
     }
+
+
+
 
     public static void main (String[] args) {
 
@@ -262,11 +330,21 @@ public class UserController extends SqlController {
             //chief editor registration test case 1 true - all details correct
             System.out.println(chiefEditorRegistration("james.potter@warwick.ac.uk", "Dr", "James", "Potter",
                     "University of Warwick", "test_password", "Journal of Pottery", 65432345));
+            
             //test create journal
             //System.out.println(createJournal("kate.bush@edinburgh.ac.uk", "Foundations of COmpSci", 2344));
 
             // chief editor login test case true - all details correct
             System.out.println(login("james.potter@warwick.ac.uk", "test_password", 1));
+            
+            System.out.println(chiefEditorRegistration("harry.potter@hogwarts.ac.uk", "Professor", "Harry", "Potter",
+                    "University of Hogwarts", "gryffindor", "Journal of Wizardry", 56214784));
+            
+            // chief editor login test case true - all details correct
+            System.out.println(login("harry.potter@hogwarts.ac.uk", "gryffindor", 1));
+            
+            // add reviewer role for user test case true
+            System.out.println(addRole("harry.potter@hogwarts.ac.uk", 3));
 
         } catch (SQLException ex) {
             ex.printStackTrace();
