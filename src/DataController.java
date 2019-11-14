@@ -43,7 +43,7 @@ public class DataController {
         boolean result = false;
         PreparedStatement pstmt = null;
         try {
-            pstmt = con.prepareStatement("SELECT * FROM user WHERE email=?;");
+            pstmt = con.prepareStatement("SELECT * FROM user WHERE email=?");
             pstmt.setString(1, email);
             ResultSet res = pstmt.executeQuery();
             
@@ -51,7 +51,7 @@ public class DataController {
         } catch (SQLException ex) {
             ex.printStackTrace();
         } finally {
-            pstmt.close();
+            if (pstmt != null) pstmt.close();
             closeConnection();         
         }
      return result;
@@ -68,7 +68,7 @@ public class DataController {
         boolean result = false;
         PreparedStatement pstmt = null;
         try {
-            pstmt = con.prepareStatement("SELECT * FROM user WHERE email=?;");
+            pstmt = con.prepareStatement("SELECT * FROM user WHERE email=?");
             pstmt.setString(1, email);
             ResultSet res = pstmt.executeQuery();
             
@@ -83,7 +83,7 @@ public class DataController {
         } catch (SQLException ex) {
             ex.printStackTrace();
         } finally {
-            pstmt.close();
+            if (pstmt != null) pstmt.close();
             closeConnection();         
         }
         return result;
@@ -100,7 +100,7 @@ public class DataController {
         boolean result = false;
         PreparedStatement pstmt = null;
         try {
-            pstmt = con.prepareStatement("SELECT * FROM user WHERE email=?;");
+            pstmt = con.prepareStatement("SELECT * FROM user WHERE email=?");
             pstmt.setString(1, email);
             ResultSet res = pstmt.executeQuery();
                  
@@ -121,7 +121,7 @@ public class DataController {
         } catch (SQLException ex) {
             ex.printStackTrace();
         } finally {
-            pstmt.close();
+            if (pstmt != null) pstmt.close();
             closeConnection();         
         }
         return result;
@@ -149,20 +149,110 @@ public class DataController {
         }
     }
     
+    /**
+     * Register as a new Chief Editor and add a journal
+     * @param email
+     * @param password
+     * @param title
+     * @param forename
+     * @param surname
+     * @param university
+     * @param journal
+     * @param ISSN
+     * @return result true if registration is successful
+     * @throws SQLException 
+     */
+    public static boolean chiefEditoRegistration(String email, String title, String forename,
+            String surname, String university, String password, String journal, int ISSN) throws SQLException {
+        boolean result = false;
+        if (!checkEmail(email)) {
+            if (createUser(email, title, forename, surname, university, password)) result = true;
+        }
+        return result;
+    }
+ 
+    /**
+     * Create a new user with all parameters
+     * @param email
+     * @param password
+     * @param title
+     * @param forename
+     * @param surname
+     * @param university
+     * @return result true if registration is successful
+     * @throws SQLException 
+     */
+    public static boolean createUser(String email, String title, String forename,
+            String surname, String university, String password) throws SQLException {
+        openConnection();
+        boolean result = false;
+        PreparedStatement pstmt = null;
+        PreparedStatement hash = null;
+        try {
+            String hashed_password = hashPassword(password);
+            pstmt = con.prepareStatement("INSERT INTO `team021`.`user` (`email`, `title`, `forename`,"
+                    + " `surname`, `uniAffiliation`, `password`, `isTemporary`, `isEditor`, `isAuthor`, `isReviewer`)"
+                    + " VALUES (?, ?, ?, ?, ?, ?, '0', '1', '0', '0')");
+            pstmt.setString(1, email);
+            pstmt.setString(2, title);
+            pstmt.setString(3, forename);
+            pstmt.setString(4, surname);
+            pstmt.setString(5, university);
+            pstmt.setString(6, hashed_password);
+
+            int count = pstmt.executeUpdate();
+            if (count != 0) result = true;
+            System.out.println("Rows updated" + count);
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            if (hash != null) pstmt.close();
+            closeConnection();
+        }
+        return result;       
+    }
+    
+    /**
+     * Hash a password using SHA2, can only be used when connection is open
+     * @param password
+     * @return hashed password
+     */
+    private static String hashPassword(String password) {
+        PreparedStatement hash = null;
+        String hashedPassword = "";
+        try {
+            hash = con.prepareStatement("SELECT SHA2(?, 256)");
+            hash.setString(1, password);
+            ResultSet hashRes = hash.executeQuery();
+            if (hashRes.next()) {
+                hashedPassword = hashRes.getString(1);
+                System.out.println(hashedPassword);
+            }
+        } catch (SQLException ex) {
+                ex.printStackTrace();
+        }
+        return hashedPassword;
+    }
+    
     public static void main (String[] args) {
         
         try {
-            // test case 1 true - correct email, correct password, authorised user type
+            // login test case 1 true - correct email, correct password, authorised user type
             System.out.println(login("john.smith@manchester.ac.uk", "12345", 1));
             
-            // test case 2 false - correct email, correct password, unauthorised user type
+            // login test case 2 false - correct email, correct password, unauthorised user type
             System.out.println(login("john.smith@manchester.ac.uk", "12345", 3));
             
-            // test case 3 false - incorrect email and password
+            // login test case 3 false - incorrect email and password
             System.out.println(login("john.smithdsfdg@manchester.ac.uk", "12345", 1));
             
-            // test case 4 false - correct email and password
+            // login test case 4 false - correct email and password
             System.out.println(login("kate.bush@edinburgh.ac.uk", "1234567", 1));
+            
+            // chief editor registration test case 1 true - all details correct
+            System.out.println(chiefEditoRegistration("james.potter@warwick.ac.uk", "Dr", "James", "Potter",
+                    "University of Warwick", "test_password", "Journal of Pottery", 65432345));
             
         } catch (SQLException ex) {
             ex.printStackTrace();

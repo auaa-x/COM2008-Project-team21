@@ -9,7 +9,7 @@ import java.awt.event.*;
 import java.sql.SQLException;
 
 
-public class Login extends JFrame implements ActionListener,ItemListener {
+public class Login extends JFrame implements ActionListener, ItemListener {
 
     public static void main (String[] args) {
         //launching code goes in here
@@ -111,7 +111,7 @@ public class Login extends JFrame implements ActionListener,ItemListener {
 
     public void itemStateChanged(ItemEvent e) {
 
-        System.out.println(e.getItem());
+        //System.out.println(e.getItem());
         String item = (String)e.getItem();
         if(item == "Editor"){
             userType = 1;
@@ -138,9 +138,9 @@ public class Login extends JFrame implements ActionListener,ItemListener {
             };
 
 
-            System.out.println("Username is: " + userName);
-            System.out.println("Password is: " + password);
-            System.out.println("Usertype is: " + userType);
+            //System.out.println("Username is: " + userName);
+            //System.out.println("Password is: " + password);
+            //System.out.println("Usertype is: " + userType);
     }
 
 
