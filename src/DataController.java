@@ -5,33 +5,7 @@
  */
 import java.sql.*;
 
-public class DataController {
-    
-    private static Connection con = null;
-    
-    /**
-     * Create a connection with MySQL database
-     * @return created connection
-     */
-    public static void openConnection() throws SQLException {
-        try {
-            con = DriverManager.getConnection("jdbc:mysql://stusql.dcs.shef.ac.uk/team021", "team021", "ea561329");
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        }
-    }
-    
-    /**
-     * Close a connection with MySQL database
-     * @param con connection to close
-     */
-    public static void closeConnection() throws SQLException {
-        try {
-            if (con != null) con.close();
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        }    
-    } 
+public class DataController extends SqlController{
     
     /**
      * Check if email exist in the database
@@ -244,6 +218,7 @@ public class DataController {
         return result;       
     }
     
+    
     /**
      * Hash a password using SHA2, can only be used when connection is open
      * @param password
@@ -269,23 +244,12 @@ public class DataController {
     public static void main (String[] args) {
         
         try {
-            // login test case 1 true - correct email, correct password, authorised user type
-            System.out.println(login("john.smith@manchester.ac.uk", "12345", 1));
-            
-            // login test case 2 false - correct email, correct password, unauthorised user type
-            System.out.println(login("john.smith@manchester.ac.uk", "12345", 3));
-            
-            // login test case 3 false - incorrect email and password
-            System.out.println(login("john.smithdsfdg@manchester.ac.uk", "12345", 1));
-            
-            // login test case 4 false - correct email and password
-            System.out.println(login("kate.bush@edinburgh.ac.uk", "1234567", 1));
-            
-            // chief editor registration test case 1 true - all details correct
-            //System.out.println(chiefEditorRegistration("james.potter@warwick.ac.uk", "Dr", "James", "Potter",
-             //       "University of Warwick", "test_password", "Journal of Pottery", 65432345));
-         // test create journal
-            System.out.println(createJournal("kate.bush@edinburgh.ac.uk", "Foundations of COmpSci", 2344));
+          
+            //chief editor registration test case 1 true - all details correct
+            System.out.println(chiefEditorRegistration("james.potter@warwick.ac.uk", "Dr", "James", "Potter",
+                    "University of Warwick", "test_password", "Journal of Pottery", 65432345));
+            //test create journal
+            //System.out.println(createJournal("kate.bush@edinburgh.ac.uk", "Foundations of COmpSci", 2344));
             
         } catch (SQLException ex) {
             ex.printStackTrace();
