@@ -128,7 +128,7 @@ public class Login extends JFrame implements ActionListener, ItemListener {
             String password = passwordField.getText();
 
             try {
-                if(DataController.login(userName, password, userType)){
+                if(UserController.login(userName, password, userType)){
                     JOptionPane.showMessageDialog(null, "Logged in");
                 } else {
                     JOptionPane.showMessageDialog(null, "Wrong Username & Password");

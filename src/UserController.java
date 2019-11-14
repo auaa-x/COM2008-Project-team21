@@ -5,7 +5,7 @@
  */
 import java.sql.*;
 
-public class DataController extends SqlController{
+public class UserController extends SqlController{
 
     /**
      * Check if email exist in the database
