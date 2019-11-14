@@ -164,11 +164,11 @@ public class DataController {
      * @return result true if registration is successful
      * @throws SQLException 
      */
-    public static boolean chiefEditoRegistration(String email, String title, String forename,
+    public static boolean chiefEditorRegistration(String email, String title, String forename,
             String surname, String university, String password, String journal, int ISSN) throws SQLException {
         boolean result = false;
         if (!checkEmail(email)) {
-            if (createUser(email, title, forename, surname, university, password, 1)) result = true;
+            if (createUser(email, title, forename, surname, university, password, 1) && createJournal(email, journal, ISSN)) result = true;
         }
         return result;
     }
@@ -228,6 +228,37 @@ public class DataController {
     }
     
     /**
+     * Create a new journal with all parameters
+     * @param email
+     * @param journal
+     * @param ISSN
+     * @return result true if journal is created successfully
+     * @throws SQLException 
+     */
+    public static boolean createJournal(String email, String journal, int ISSN) throws SQLException {
+        openConnection();
+        boolean result = false;
+        PreparedStatement pstmt = null;
+        try {
+            pstmt = con.prepareStatement(" INSERT INTO `team021`.`journal` (`ISSN`, `title`, `chiefEditorEmail`)"
+            		+ " VALUES (?, ?, ?)");
+            pstmt.setInt(1, ISSN);
+            pstmt.setString(2, journal);
+            pstmt.setString(3, email);
+            
+            int count = pstmt.executeUpdate();
+            if (count != 0) result = true;
+            System.out.println("Rows updated" + count);
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        return result;       
+    }
+    
+    /**
      * Hash a password using SHA2, can only be used when connection is open
      * @param password
      * @return hashed password
@@ -253,8 +284,25 @@ public class DataController {
         
         try {
             // chief editor registration test case 1 true only once - all details correct
-            System.out.println(chiefEditoRegistration("james.potter@warwick.ac.uk", "Dr", "James", "Potter",
+            System.out.println(chiefEditorRegistration("james.potter@warwick.ac.uk", "Dr", "James", "Potter",
                     "University of Warwick", "test_password", "Journal of Pottery", 65432345));
+            // login test case 1 true - correct email, correct password, authorised user type
+            System.out.println(login("john.smith@manchester.ac.uk", "12345", 1));
+            
+            // login test case 2 false - correct email, correct password, unauthorised user type
+            System.out.println(login("john.smith@manchester.ac.uk", "12345", 3));
+            
+            // login test case 3 false - incorrect email and password
+            System.out.println(login("john.smithdsfdg@manchester.ac.uk", "12345", 1));
+            
+            // login test case 4 false - correct email and password
+            System.out.println(login("kate.bush@edinburgh.ac.uk", "1234567", 1));
+            
+            // chief editor registration test case 1 true - all details correct
+            //System.out.println(chiefEditorRegistration("james.potter@warwick.ac.uk", "Dr", "James", "Potter",
+             //       "University of Warwick", "test_password", "Journal of Pottery", 65432345));
+            // test create journal
+            System.out.println(createJournal("kate.bush@edinburgh.ac.uk", "Foundations of COmpSci", 2344));
             
             // chief editor login test case true - all details correct
             System.out.println(login("james.potter@warwick.ac.uk", "test_password", 1));
