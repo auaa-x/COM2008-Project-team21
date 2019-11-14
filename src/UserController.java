@@ -1,11 +1,11 @@
 /**
- * Class for data manipulation in MySQL database
+ * Class for user data manipulation in MySQL database
  * @author Urszula Talalaj
  * @author Julia Derebecka
  */
 import java.sql.*;
 
-public class UserController extends SqlController{
+public class UserController extends SqlController {
 
     /**
      * Check if email exist in the database

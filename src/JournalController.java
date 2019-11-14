@@ -1,5 +1,5 @@
 /**
- * Class for article manipulation in MySQL database
+ * Class for journal data manipulation in MySQL database
  * @author Urszula Talalaj
  * @author Julia Derebecka
  */
