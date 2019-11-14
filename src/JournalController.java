@@ -5,7 +5,7 @@
  */
 import java.sql.*;
 
-public class ArticleController extends SqlController{
+public class JournalController extends SqlController{
 	
 	/**
      * Create a new article with all parameters
