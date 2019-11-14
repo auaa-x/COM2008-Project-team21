@@ -52,23 +52,24 @@ public class JournalController extends SqlController{
      * @throws SQLException 
 	 * @throws FileNotFoundException 
      */
-    public static boolean createArticle(String title, String description, File pdfFile, String email/*, int reviewCount, String status */ ) throws SQLException, FileNotFoundException {
+    public static boolean createArticle(String title, String description, File pdfFile, int ISSN, String email/* int reviewCount, String status*/ ) throws SQLException, FileNotFoundException {
         openConnection();
         boolean result = false;
         PreparedStatement pstmt = null;
         FileInputStream inputStream= new FileInputStream(pdfFile);
         try {
-            pstmt = con.prepareStatement(" INSERT INTO `team021`.`article` (`title`, `abstract`, `linkedFinalPDF`, `isPublished`, `mAuthorEmail`)"
-            		+ " VALUES (?, ?, ?, 0, ?)");
+            pstmt = con.prepareStatement(" INSERT INTO `team021`.`article` (`title`, `abstract`, `linkedFinalPDF`, `isPublished`, `ISSN`, `mAuthorEmail`)"
+            		+ " VALUES (?, ?, ?, 0, ?, ?)");
             pstmt.setString(1, title);
             pstmt.setString(2, description);
             pstmt.setBlob(3,inputStream);
-            pstmt.setString(4, email);
-            
+            pstmt.setInt(4, ISSN);
+            pstmt.setString(5, email);
             /*
             pstmt = con.prepareStatement(" INSERT INTO `team021`.`submission` (`submissionID`, `linkedDraftPDF`, `reviewCount`, `status`)"
             		+ " VALUES (?, ?, ?, ?,)");
             */
+            
             int count = pstmt.executeUpdate();
             if (count != 0) result = true;
             System.out.println("Rows updated" + count);
@@ -86,7 +87,7 @@ public class JournalController extends SqlController{
         try {
 
             //create article test
-            System.out.println(createArticle("Long and Dark", "long and dark nights",pdfFile,"john.barker@dheffff.ac.uk" ));
+            System.out.println(createArticle("Long and Dark2", "long and dark nights2", pdfFile, 48375683, "john.barker@dheffff2.ac.uk" ));
 
         } catch (SQLException ex) {
             ex.printStackTrace();
