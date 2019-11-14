@@ -68,17 +68,19 @@ public class DataController {
         boolean result = false;
         PreparedStatement pstmt = null;
         try {
+            String hashedPassword = hashPassword(password);
+            
             pstmt = con.prepareStatement("SELECT * FROM user WHERE email=?");
             pstmt.setString(1, email);
             ResultSet res = pstmt.executeQuery();
             
-            String truePassword = "";
+            String trueHashedPassword = "";
             if(res.next()) {
-                truePassword = res.getString("password");
+                trueHashedPassword = res.getString("password");
                 //System.out.println(truePassword);
             }
             
-            if (truePassword.equals(password)) result = true;
+            if (trueHashedPassword.equals(hashedPassword)) result = true;
             
         } catch (SQLException ex) {
             ex.printStackTrace();
@@ -166,7 +168,7 @@ public class DataController {
             String surname, String university, String password, String journal, int ISSN) throws SQLException {
         boolean result = false;
         if (!checkEmail(email)) {
-            if (createUser(email, title, forename, surname, university, password)) result = true;
+            if (createUser(email, title, forename, surname, university, password, 1)) result = true;
         }
         return result;
     }
@@ -183,7 +185,7 @@ public class DataController {
      * @throws SQLException 
      */
     public static boolean createUser(String email, String title, String forename,
-            String surname, String university, String password) throws SQLException {
+            String surname, String university, String password, int usertype) throws SQLException {
         openConnection();
         boolean result = false;
         PreparedStatement pstmt = null;
@@ -192,17 +194,29 @@ public class DataController {
             String hashed_password = hashPassword(password);
             pstmt = con.prepareStatement("INSERT INTO `team021`.`user` (`email`, `title`, `forename`,"
                     + " `surname`, `uniAffiliation`, `password`, `isTemporary`, `isEditor`, `isAuthor`, `isReviewer`)"
-                    + " VALUES (?, ?, ?, ?, ?, ?, '0', '1', '0', '0')");
+                    + " VALUES (?, ?, ?, ?, ?, ?, '0', ?, ?, 0)");
             pstmt.setString(1, email);
             pstmt.setString(2, title);
             pstmt.setString(3, forename);
             pstmt.setString(4, surname);
             pstmt.setString(5, university);
             pstmt.setString(6, hashed_password);
+            
+            // only editor or author can be created      
+            switch(usertype) {
+            case 1: 
+                pstmt.setInt(7, 1);
+                pstmt.setInt(8, 0);
+                break;
+            case 2:
+                pstmt.setInt(7, 0);
+                pstmt.setInt(8, 1);
+                break;
+            }
 
             int count = pstmt.executeUpdate();
             if (count != 0) result = true;
-            System.out.println("Rows updated" + count);
+            System.out.println("Rows updated: " + count);
         } catch (SQLException ex) {
             ex.printStackTrace();
         } finally {
@@ -227,7 +241,7 @@ public class DataController {
             ResultSet hashRes = hash.executeQuery();
             if (hashRes.next()) {
                 hashedPassword = hashRes.getString(1);
-                System.out.println(hashedPassword);
+                //System.out.println(hashedPassword);
             }
         } catch (SQLException ex) {
                 ex.printStackTrace();
@@ -238,21 +252,12 @@ public class DataController {
     public static void main (String[] args) {
         
         try {
-            // login test case 1 true - correct email, correct password, authorised user type
-            System.out.println(login("john.smith@manchester.ac.uk", "12345", 1));
-            
-            // login test case 2 false - correct email, correct password, unauthorised user type
-            System.out.println(login("john.smith@manchester.ac.uk", "12345", 3));
-            
-            // login test case 3 false - incorrect email and password
-            System.out.println(login("john.smithdsfdg@manchester.ac.uk", "12345", 1));
-            
-            // login test case 4 false - correct email and password
-            System.out.println(login("kate.bush@edinburgh.ac.uk", "1234567", 1));
-            
-            // chief editor registration test case 1 true - all details correct
+            // chief editor registration test case 1 true only once - all details correct
             System.out.println(chiefEditoRegistration("james.potter@warwick.ac.uk", "Dr", "James", "Potter",
                     "University of Warwick", "test_password", "Journal of Pottery", 65432345));
+            
+            // chief editor login test case true - all details correct
+            System.out.println(login("james.potter@warwick.ac.uk", "test_password", 1));
             
         } catch (SQLException ex) {
             ex.printStackTrace();
