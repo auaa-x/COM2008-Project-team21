@@ -3,6 +3,7 @@
  * @author Urszula Talalaj
  * @author Julia Derebecka
  */
+import java.io.*;
 import java.sql.*;
 import java.util.LinkedList;
 import java.util.ListIterator;
@@ -136,7 +137,7 @@ public class UserController extends SqlController {
 
 
     /**
-     * Check if login details are correct
+     * Check if login details are correct and login the user
      * @param email
      * @param password
      * @param usertype (1 - editor, 2 - author, 3 - reviewer)
@@ -162,7 +163,7 @@ public class UserController extends SqlController {
     
     /**
      * Get logged user type
-     * @return usertype (1 - editor, 2 - author, 3 - reviewer)
+     * @return user type (1 - editor, 2 - author, 3 - reviewer)
      */
     public static int getLoggedUserType( ) {
         return loggedUserType;
@@ -237,7 +238,7 @@ public class UserController extends SqlController {
     
 
     /**
-     * Create a temporary user
+     * Create a user with temporary password
      * @param email
      * @param password
      * @param usertype
@@ -354,10 +355,14 @@ public class UserController extends SqlController {
      * @throws SQLException
      */
     public static boolean mainAuthorRegistration(String email, String title, String forename,
-            String surname, String university, String password, String sharedPassword) throws SQLException {
+            String surname, String university, String password, String sharedPassword, String articleTitle, String description,
+            File pdfFile, int ISSN) throws SQLException, FileNotFoundException {
         boolean result = false;
-        if (createUser(email, title, forename, surname, university, password, 2) && 
-                JournalController.createArticle() && addRole(email, 3) && addCoAuthors(sharedPassword, submissionID)) result = true;
+        if (createUser(email, title, forename, surname, university, password, 2) && addRole(email, 3)) {
+            result = true;
+            int submissionID = JournalController.createArticle(articleTitle, description, pdfFile, ISSN, email);
+            addCoAuthors(sharedPassword, submissionID);
+        }
         return result;
     }
     
@@ -371,7 +376,7 @@ public class UserController extends SqlController {
     public static boolean addCoAuthors(String sharedPassword, int submissionID) throws SQLException {
         boolean result = false;
         ListIterator<String> iterator = coAuthorsList.listIterator();
-        // create account for each co-author on the list
+        // create user account for each co-author on the list
         while(iterator.hasNext()) {
             String email = iterator.next().toString();
             if(!createTempUser(email, sharedPassword, 2) || !addRole(email, 3)) {

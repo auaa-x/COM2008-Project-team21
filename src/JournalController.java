@@ -50,32 +50,36 @@ public class JournalController extends SqlController{
      * @throws SQLException 
 	 * @throws FileNotFoundException 
      */
-    public static int createArticle(String title, String description, File pdfFile, int ISSN, String email ) throws SQLException, FileNotFoundException {
+    public static int createArticle(String title, String description, File pdfFile, int ISSN, String email) throws SQLException, FileNotFoundException {
         openConnection();
         PreparedStatement pstmt = null;
-        FileInputStream inputStream= new FileInputStream(pdfFile);
         int submissionID = 0;
         try {
-            pstmt = con.prepareStatement(" INSERT INTO `team021`.`article` (`title`, `abstract`, `linkedFinalPDF`, `isPublished`, `ISSN`, `mAuthorEmail`)"
-            		+ " VALUES (?, ?, ?, 0, ?, ?)");
-            pstmt.setString(1, title);
-            pstmt.setString(2, description);
-            pstmt.setBlob(3,inputStream);
-            pstmt.setInt(4, ISSN);
-            pstmt.setString(5, email);
-            
-            ResultSet res = pstmt.executeQuery("SELECT * FROM `article` ORDER BY `submissionID` DESC LIMIT 1");
-            res.next();
-            submissionID = res.getInt(1) + 1;
-            
-            int count = pstmt.executeUpdate();
-            System.out.println("Rows updated " + count);
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        } finally {
-            if (pstmt != null) pstmt.close();
-            closeConnection();
-        }
+            FileInputStream inputStream = new FileInputStream(pdfFile);
+            try {
+                pstmt = con.prepareStatement(" INSERT INTO `team021`.`article` (`title`, `abstract`, `linkedFinalPDF`, `isPublished`, `ISSN`, `mAuthorEmail`)"
+                        + " VALUES (?, ?, ?, 0, ?, ?)");
+                pstmt.setString(1, title);
+                pstmt.setString(2, description);
+                pstmt.setBlob(3,inputStream);
+                pstmt.setInt(4, ISSN);
+                pstmt.setString(5, email);
+                
+                ResultSet res = pstmt.executeQuery("SELECT * FROM `article` ORDER BY `submissionID` DESC LIMIT 1");
+                res.next();
+                submissionID = res.getInt(1) + 1;
+                
+                int count = pstmt.executeUpdate();
+                System.out.println("Rows updated " + count);
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            } finally {
+                if (pstmt != null) pstmt.close();
+                closeConnection();
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } 
         return submissionID;       
     }
 
