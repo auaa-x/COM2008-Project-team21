@@ -46,8 +46,6 @@ public class JournalController extends SqlController{
      * @param description
      * @param pdfFile
      * @param email
-     * @param reviewCount
-     * @param status
      * @return result true if article is created successfully
      * @throws SQLException 
 	 * @throws FileNotFoundException 
@@ -65,13 +63,13 @@ public class JournalController extends SqlController{
             pstmt.setBlob(3,inputStream);
             pstmt.setInt(4, ISSN);
             pstmt.setString(5, email);
-         
+            
             ResultSet res = pstmt.executeQuery("SELECT * FROM `article` ORDER BY `submissionID` DESC LIMIT 1");
             res.next();
-            submissionID = res.getInt(1);
-
+            submissionID = res.getInt(1) + 1;
+            
             int count = pstmt.executeUpdate();
-            System.out.println("Rows updated" + count);
+            System.out.println("Rows updated " + count);
         } catch (SQLException ex) {
             ex.printStackTrace();
         } finally {
@@ -81,12 +79,51 @@ public class JournalController extends SqlController{
         return submissionID;       
     }
 
+    /**
+     * Create a new submission linked to article by submissionID
+     * @param pdfFile
+     * @return result true if article is created successfully
+     * @throws SQLException 
+	 * @throws FileNotFoundException 
+     */
+    public static int createSubmission(File pdfFile) throws SQLException, FileNotFoundException {
+        openConnection();
+        PreparedStatement pstmt = null;
+        Statement stmt = null;
+        FileInputStream inputStream= new FileInputStream(pdfFile);
+        int submissionID = 0;
+        try {
+        	 stmt = con.createStatement();
+        	 ResultSet res = stmt.executeQuery("SELECT * FROM `article` ORDER BY `submissionID` DESC LIMIT 1");
+             res.next();
+             submissionID = res.getInt(1);
+             
+             pstmt = con.prepareStatement(" INSERT INTO `team021`.`submission` (`submissionID`, `linkedDraftPDF`, `reviewCount`, `status`) "
+             		+ " VALUES (?, ?, 0, ?)");
+             pstmt.setInt(1, submissionID);
+             pstmt.setBlob(2, inputStream);
+             pstmt.setString(3,"submitted");
+             
+             int count = pstmt.executeUpdate();
+             System.out.println("Rows updated " + count);
+         } catch (SQLException ex) {
+             ex.printStackTrace();
+         } finally {
+             if (pstmt != null) pstmt.close();
+             if (stmt != null) stmt.close();
+             closeConnection();
+         }
+         return submissionID;       
+     }
+       
+    
     public static void main (String[] args) throws FileNotFoundException {
     	File pdfFile = new File("./Systems Design Project.pdf");
         try {
 
             //create article test
-            System.out.println(createArticle("Long and Dark3", "long and dark nights3", pdfFile, 48475683, "john.barker@dheffff3.ac.uk" ));
+            System.out.println(createArticle("Long and Dark11", "long and dark nights11", pdfFile, 2934554, "john.barker@dheffff11.ac.uk" ));
+            System.out.println(createSubmission(pdfFile));
 
         } catch (SQLException ex) {
             ex.printStackTrace();
