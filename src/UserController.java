@@ -246,7 +246,7 @@ public class UserController extends SqlController {
 
                 int count = pstmt.executeUpdate();
                 if (count != 0) result = true;
-                System.out.println("Rows in user updated: " + count);
+                System.out.println("Temporary user created: " + email);
             } catch (SQLException ex) {
                 ex.printStackTrace();
             } finally {
@@ -268,7 +268,7 @@ public class UserController extends SqlController {
      */
     public static boolean addRole(String email, int usertype) throws SQLException{
         boolean result = false;
-        if (!checkEmail(email)) {
+        if (checkEmail(email)) {
             openConnection();
             PreparedStatement pstmt = null;
             try {
@@ -353,6 +353,8 @@ public class UserController extends SqlController {
             String email = iterator.next().toString();
             if(!createTempUser(email, sharedPassword, 2) || !addRole(email, 3)) {
                 return false;
+            } else {
+                System.out.println("Added user: " + email);
             }
             result = true;
         }
@@ -360,7 +362,7 @@ public class UserController extends SqlController {
     }
  
     /**
-     * Add co-author email to co-authors list
+     * Add co-author email to the co-authors' list
      * @param email
      */
     public static void addCoAuthor(String email) {
@@ -390,6 +392,17 @@ public class UserController extends SqlController {
 
             // add reviewer role for user test case true
             System.out.println(addRole("harry.potter@hogwarts.ac.uk", 3));
+            
+            // add some co-authors to the list
+            addCoAuthor("luna.glovegood@hogwarts.ac.uk");
+            addCoAuthor("cedric.diggory@hogwarts.ac.uk");
+            
+            for( String x : coAuthorsList) {
+                System.out.println(x);
+            }
+            
+            // add them as users
+            System.out.println(addCoAuthors("hufflepuff", 123));
 
         } catch (SQLException ex) {
             ex.printStackTrace();
