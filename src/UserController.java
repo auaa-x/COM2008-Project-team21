@@ -358,6 +358,7 @@ public class UserController extends SqlController {
             String surname, String university, String password, String sharedPassword, String articleTitle, String description,
             File pdfFile, int ISSN) throws SQLException, FileNotFoundException {
         boolean result = false;
+        // STILL NEED TO CREATE TABLE ENTRIES FOR AUTHOR AND REVIEWER !!!!!!!!!!!!
         if (createUser(email, title, forename, surname, university, password, 2) && addRole(email, 3)) {
             result = true;
             int submissionID = JournalController.createArticle(articleTitle, description, pdfFile, ISSN, email);
