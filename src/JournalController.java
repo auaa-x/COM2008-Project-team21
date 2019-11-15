@@ -52,11 +52,11 @@ public class JournalController extends SqlController{
      * @throws SQLException 
 	 * @throws FileNotFoundException 
      */
-    public static boolean createArticle(String title, String description, File pdfFile, int ISSN, String email/* int reviewCount, String status*/ ) throws SQLException, FileNotFoundException {
+    public static int createArticle(String title, String description, File pdfFile, int ISSN, String email ) throws SQLException, FileNotFoundException {
         openConnection();
-        boolean result = false;
         PreparedStatement pstmt = null;
         FileInputStream inputStream= new FileInputStream(pdfFile);
+        int submissionID = 0;
         try {
             pstmt = con.prepareStatement(" INSERT INTO `team021`.`article` (`title`, `abstract`, `linkedFinalPDF`, `isPublished`, `ISSN`, `mAuthorEmail`)"
             		+ " VALUES (?, ?, ?, 0, ?, ?)");
@@ -65,13 +65,12 @@ public class JournalController extends SqlController{
             pstmt.setBlob(3,inputStream);
             pstmt.setInt(4, ISSN);
             pstmt.setString(5, email);
-            /*
-            pstmt = con.prepareStatement(" INSERT INTO `team021`.`submission` (`submissionID`, `linkedDraftPDF`, `reviewCount`, `status`)"
-            		+ " VALUES (?, ?, ?, ?,)");
-            */
-            
+         
+            ResultSet res = pstmt.executeQuery("SELECT * FROM `article` ORDER BY `submissionID` DESC LIMIT 1");
+            res.next();
+            submissionID = res.getInt(1);
+
             int count = pstmt.executeUpdate();
-            if (count != 0) result = true;
             System.out.println("Rows updated" + count);
         } catch (SQLException ex) {
             ex.printStackTrace();
@@ -79,7 +78,7 @@ public class JournalController extends SqlController{
             if (pstmt != null) pstmt.close();
             closeConnection();
         }
-        return result;       
+        return submissionID;       
     }
 
     public static void main (String[] args) throws FileNotFoundException {
@@ -87,7 +86,7 @@ public class JournalController extends SqlController{
         try {
 
             //create article test
-            System.out.println(createArticle("Long and Dark2", "long and dark nights2", pdfFile, 48375683, "john.barker@dheffff2.ac.uk" ));
+            System.out.println(createArticle("Long and Dark3", "long and dark nights3", pdfFile, 48475683, "john.barker@dheffff3.ac.uk" ));
 
         } catch (SQLException ex) {
             ex.printStackTrace();
