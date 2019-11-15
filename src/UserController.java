@@ -4,8 +4,12 @@
  * @author Julia Derebecka
  */
 import java.sql.*;
+import java.util.LinkedList;
+import java.util.ListIterator;
 
 public class UserController extends SqlController {
+    
+    private static LinkedList<String> coAuthorsList = new LinkedList<String>();
 
     /**
      * Check if email exist in the database
@@ -166,47 +170,95 @@ public class UserController extends SqlController {
      */
     public static boolean createUser(String email, String title, String forename,
             String surname, String university, String password, int usertype) throws SQLException {
-        openConnection();
         boolean result = false;
-        PreparedStatement pstmt = null;
-        PreparedStatement hash = null;
-        try {
-            String hashed_password = hashPassword(password);
-            pstmt = con.prepareStatement("INSERT INTO `team021`.`user` (`email`, `title`, `forename`,"
-                    + " `surname`, `uniAffiliation`, `password`, `isTemporary`, `isEditor`, `isAuthor`, `isReviewer`)"
-                    + " VALUES (?, ?, ?, ?, ?, ?, '0', ?, ?, 0)");
-            pstmt.setString(1, email);
-            pstmt.setString(2, title);
-            pstmt.setString(3, forename);
-            pstmt.setString(4, surname);
-            pstmt.setString(5, university);
-            pstmt.setString(6, hashed_password);
+        if (!checkEmail(email)) {
+            openConnection();
+            PreparedStatement pstmt = null;
+            PreparedStatement hash = null;
+            try {
+                String hashed_password = hashPassword(password);
+                pstmt = con.prepareStatement("INSERT INTO `team021`.`user` (`email`, `title`, `forename`,"
+                        + " `surname`, `uniAffiliation`, `password`, `isTemporary`, `isEditor`, `isAuthor`, `isReviewer`)"
+                        + " VALUES (?, ?, ?, ?, ?, ?, '0', ?, ?, 0)");
+                pstmt.setString(1, email);
+                pstmt.setString(2, title);
+                pstmt.setString(3, forename);
+                pstmt.setString(4, surname);
+                pstmt.setString(5, university);
+                pstmt.setString(6, hashed_password);
 
-            // only editor or author can be created
-            switch(usertype) {
-            case 1:
-                pstmt.setInt(7, 1);
-                pstmt.setInt(8, 0);
-                break;
-            case 2:
-                pstmt.setInt(7, 0);
-                pstmt.setInt(8, 1);
-                break;
+                // only editor or author can be created
+                switch(usertype) {
+                case 1:
+                    pstmt.setInt(7, 1);
+                    pstmt.setInt(8, 0);
+                    break;
+                case 2:
+                    pstmt.setInt(7, 0);
+                    pstmt.setInt(8, 1);
+                    break;
+                }
+
+                int count = pstmt.executeUpdate();
+                if (count != 0) result = true;
+                System.out.println("Rows in user updated: " + count);
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            } finally {
+                if (pstmt != null) pstmt.close();
+                if (hash != null) pstmt.close();
+                closeConnection();
             }
+        }      
+        return result;
+    }
+    
 
-            int count = pstmt.executeUpdate();
-            if (count != 0) result = true;
-            System.out.println("Rows in user updated: " + count);
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        } finally {
-            if (pstmt != null) pstmt.close();
-            if (hash != null) pstmt.close();
-            closeConnection();
+    /**
+     * Create a temporary user
+     * @param email
+     * @param password
+     * @param usertype
+     * @return result true if registration is successful
+     * @throws SQLException
+     */
+    public static boolean createTempUser(String email, String password, int usertype) throws SQLException {
+        boolean result = false;
+        if (!checkEmail(email)) {
+            openConnection();
+            PreparedStatement pstmt = null;
+            PreparedStatement hash = null;
+            try {
+                switch(usertype) {
+                case 1:
+                    pstmt = con.prepareStatement("INSERT INTO `team021`.`user` (`email`, `password`, `isTemporary`, `isEditor`)"
+                            + " VALUES (?, ?, 1, 1)");
+                    break;
+                case 2:
+                    pstmt = con.prepareStatement("INSERT INTO `team021`.`user` (`email`, `password`, `isTemporary`, `isAuthor`)"
+                            + " VALUES (?, ?, 1, 1)");
+                    break;
+                }
+                
+                String hashed_password = hashPassword(password);
+                pstmt.setString(1, email);
+                pstmt.setString(2, hashed_password);
+
+                int count = pstmt.executeUpdate();
+                if (count != 0) result = true;
+                System.out.println("Rows in user updated: " + count);
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            } finally {
+                if (pstmt != null) pstmt.close();
+                if (hash != null) pstmt.close();
+                closeConnection();
+            }
         }
         return result;
     }
-
+    
+    
     /**
      * Add a role for a user
      * @param email
@@ -215,33 +267,35 @@ public class UserController extends SqlController {
      * @throws SQLException
      */
     public static boolean addRole(String email, int usertype) throws SQLException{
-        openConnection();
         boolean result = false;
-        PreparedStatement pstmt = null;
-        try {
+        if (!checkEmail(email)) {
+            openConnection();
+            PreparedStatement pstmt = null;
+            try {
 
-            switch(usertype) {
-            case 1:
-                pstmt = con.prepareStatement("UPDATE `team021`.`user` SET `isEditor` = '1' WHERE (`email` = ?)");
-                break;
-            case 2:
-                pstmt = con.prepareStatement("UPDATE `team021`.`user` SET `isAuthor` = '1' WHERE (`email` = ?)");
-                break;
-            case 3:
-                pstmt = con.prepareStatement("UPDATE `team021`.`user` SET `isReviewer` = '1' WHERE (`email` = ?)");
-                break;
+                switch(usertype) {
+                case 1:
+                    pstmt = con.prepareStatement("UPDATE `team021`.`user` SET `isEditor` = '1' WHERE (`email` = ?)");
+                    break;
+                case 2:
+                    pstmt = con.prepareStatement("UPDATE `team021`.`user` SET `isAuthor` = '1' WHERE (`email` = ?)");
+                    break;
+                case 3:
+                    pstmt = con.prepareStatement("UPDATE `team021`.`user` SET `isReviewer` = '1' WHERE (`email` = ?)");
+                    break;
+                }
+                pstmt.setString(1, email);
+                int count = pstmt.executeUpdate();
+                if (count != 0) result = true;
+                System.out.println("User role " + usertype +  " for user " + email + " added");
+                System.out.println("Rows in user updated: " + count);
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            } finally {
+                if (pstmt != null) pstmt.close();
+                closeConnection();
             }
-            pstmt.setString(1, email);
-            int count = pstmt.executeUpdate();
-            if (count != 0) result = true;
-            System.out.println("User role " + usertype +  " for user " + email + " added");
-            System.out.println("Rows in user updated: " + count);
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        } finally {
-            if (pstmt != null) pstmt.close();
-            closeConnection();
-        }
+        }   
         return result;
     }
 
@@ -261,12 +315,9 @@ public class UserController extends SqlController {
     public static boolean chiefEditorRegistration(String email, String title, String forename,
             String surname, String university, String password, String journal, int ISSN) throws SQLException {
         boolean result = false;
-        if (!checkEmail(email)) {
-            if (createUser(email, title, forename, surname, university, password, 1) && createJournal(email, journal, ISSN)) result = true;
-        }
+        if (createUser(email, title, forename, surname, university, password, 1) && JournalController.createJournal(email, journal, ISSN)) result = true;
         return result;
     }
-
 
 
     /**
@@ -281,15 +332,40 @@ public class UserController extends SqlController {
      * @throws SQLException
      */
     public static boolean mainAuthorRegistration(String email, String title, String forename,
-            String surname, String university, String password) throws SQLException {
+            String surname, String university, String password, String sharedPassword) throws SQLException {
         boolean result = false;
-        if (!checkEmail(email)) {
-            if (createUser(email, title, forename, surname, university, password, 2) && createArticle() && addRole(3)) result = true;
+        if (createUser(email, title, forename, surname, university, password, 2) && 
+                JournalController.createArticle() && addRole(email, 3) && addCoAuthors(sharedPassword, submissionID)) result = true;
+        return result;
+    }
+    
+    /**
+     * Register co-authors of the article with temporary password
+     * @param sharedPassword
+     * @param submissionID
+     * @return result true if registration of all authors is successful, false otherwise
+     * @throws SQLException
+     */
+    public static boolean addCoAuthors(String sharedPassword, int submissionID) throws SQLException {
+        boolean result = false;
+        ListIterator<String> iterator = coAuthorsList.listIterator();
+        while(iterator.hasNext()) {
+            String email = iterator.next().toString();
+            if(!createTempUser(email, sharedPassword, 2) || !addRole(email, 3)) {
+                return false;
+            }
+            result = true;
         }
         return result;
     }
-
-
+ 
+    /**
+     * Add co-author email to co-authors list
+     * @param email
+     */
+    public static void addCoAuthor(String email) {
+        coAuthorsList.add(email);
+    }
 
 
     public static void main (String[] args) {
