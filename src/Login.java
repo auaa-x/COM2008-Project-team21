@@ -48,8 +48,6 @@ public class Login extends JFrame implements ActionListener,ItemListener {
         contentPane.setBounds(5, 5, 5, 5);
         setContentPane(contentPane);
         contentPane.setLayout(null);
-        /*contentPane.setLayout(new FlowLayout());
-        contentPane.add(new JButton("Login"));*/
 
         //Welcome banner
         JLabel lblNewLabel = new JLabel("Welcome");
@@ -71,7 +69,7 @@ public class Login extends JFrame implements ActionListener,ItemListener {
         //username
         JLabel lblEmail = new JLabel("Email address");
         lblEmail.setFont(new Font("Tahoma", Font.PLAIN, 28));
-        lblEmail.setBounds(290, 205, 170, 50);
+        lblEmail.setBounds(255, 205, 280, 50);
         contentPane.add(lblEmail);
 
         textField = new JTextField();
@@ -111,7 +109,7 @@ public class Login extends JFrame implements ActionListener,ItemListener {
 
     public void itemStateChanged(ItemEvent e) {
 
-        System.out.println(e.getItem());
+        //System.out.println(e.getItem());
         String item = (String)e.getItem();
         if(item == "Editor"){
             userType = 1;
@@ -124,8 +122,7 @@ public class Login extends JFrame implements ActionListener,ItemListener {
 
     public void actionPerformed(ActionEvent e) {
             String userName = textField.getText();
-            @SuppressWarnings("deprecation")
-            String password = passwordField.getText();
+            String password = String.valueOf(passwordField.getPassword());
 
             try {
                 if(DataController.login(userName, password, userType)){
@@ -137,11 +134,8 @@ public class Login extends JFrame implements ActionListener,ItemListener {
                 ex.printStackTrace();
             };
 
-
-            System.out.println("Username is: " + userName);
-            System.out.println("Password is: " + password);
-            System.out.println("Usertype is: " + userType);
+            //System.out.println("Username is: " + userName);
+            //System.out.println("Password is: " + password);
+            //System.out.println("Usertype is: " + userType);
     }
-
-
 }
