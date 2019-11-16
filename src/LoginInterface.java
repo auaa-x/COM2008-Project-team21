@@ -9,11 +9,11 @@ import java.awt.event.*;
 import java.sql.SQLException;
 
 
-public class Login extends JFrame implements ActionListener,ItemListener {
+public class LoginInterface extends JFrame implements ActionListener, ItemListener {
 
     public static void main (String[] args) {
         //launching code goes in here
-        new Login();
+        new LoginInterface();
     }
 
 
@@ -21,13 +21,11 @@ public class Login extends JFrame implements ActionListener,ItemListener {
     private static final long serialVersionUID = 1L;
     private JTextField textField;
     private JPasswordField passwordField;
-    private JComboBox<String> comboUserTypes;
     private int userType;
 
 
-
     // Constructor with frame title
-    public Login() {
+    public LoginInterface() {
         //construction code goes in here
         super("Login");  //pass the title name
 
@@ -99,9 +97,6 @@ public class Login extends JFrame implements ActionListener,ItemListener {
         btnLogin.setFont(new Font("Tahoma", Font.PLAIN, 25));
         btnLogin.setBounds(410, 390, 200, 45);
         contentPane.add(btnLogin);
-        setVisible(true);
-
-
 
         setDefaultCloseOperation(EXIT_ON_CLOSE); //ensure that Java terminates on close
         setVisible(true);
@@ -125,7 +120,7 @@ public class Login extends JFrame implements ActionListener,ItemListener {
             String password = String.valueOf(passwordField.getPassword());
 
             try {
-                if(DataController.login(userName, password, userType)){
+                if(UserController.login(userName, password, userType)){
                     JOptionPane.showMessageDialog(null, "Logged in");
                 } else {
                     JOptionPane.showMessageDialog(null, "Wrong Username & Password");
@@ -134,8 +129,5 @@ public class Login extends JFrame implements ActionListener,ItemListener {
                 ex.printStackTrace();
             };
 
-            //System.out.println("Username is: " + userName);
-            //System.out.println("Password is: " + password);
-            //System.out.println("Usertype is: " + userType);
     }
 }
