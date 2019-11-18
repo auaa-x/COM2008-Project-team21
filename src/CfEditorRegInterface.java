@@ -218,7 +218,7 @@ public class CfEditorRegInterface extends JFrame implements ActionListener, Item
                     surname,university,password,journalTitle, issn)){
                 JOptionPane.showMessageDialog(null, "Logged in");
             } else {
-                JOptionPane.showMessageDialog(null, "Please check information again!");
+                JOptionPane.showMessageDialog(null, "Please check that you have completed the form correctly!");
             }
         } catch (SQLException ex) {
             ex.printStackTrace();
