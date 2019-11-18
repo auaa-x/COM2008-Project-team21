@@ -1,5 +1,5 @@
 /**
- * Class for Change password window
+ * Class for Change Password Interface
  * @author Ting Guo
  * @author Huiqiang Liu
  */
@@ -22,8 +22,6 @@ public class ChangePw extends JFrame implements ActionListener {
     private JPasswordField oldPwField;
     private JPasswordField newPwField;
     private JPasswordField cfPwField;
-    //private int userType;
-
 
 
     // Constructor with frame title
@@ -125,9 +123,9 @@ public class ChangePw extends JFrame implements ActionListener {
         //        };
         //         */
 
-        System.out.println("Old Password is: " + oldPassword);
-        System.out.println("New Password is: " + newPassword);
-        System.out.println("Confirm Password is: " + cfPassword);
+        //System.out.println("Old Password is: " + oldPassword);
+        //System.out.println("New Password is: " + newPassword);
+        //System.out.println("Confirm Password is: " + cfPassword);
     }
 
 
