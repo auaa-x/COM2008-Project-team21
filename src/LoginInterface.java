@@ -21,9 +21,7 @@ public class LoginInterface extends JFrame implements ActionListener, ItemListen
     private static final long serialVersionUID = 1L;
     private JTextField textField;
     private JPasswordField passwordField;
-    private JComboBox<String> comboUserTypes;
     private int userType;
-
 
 
     // Constructor with frame title
@@ -31,30 +29,29 @@ public class LoginInterface extends JFrame implements ActionListener, ItemListen
         //construction code goes in here
         super("Login");  //pass the title name
 
-        //access useful window system constants
+        /* centre window
         Toolkit toolkit = Toolkit.getDefaultToolkit();
         Dimension screenSize = toolkit.getScreenSize();
-
-        //centre window
         setSize(screenSize.width/2, screenSize.height/2);
         setLocation(screenSize.width/4, screenSize.height/4);
+        */
+
 
         //container pane
         Container contentPane = getContentPane();
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setBounds(450, 190, 1014, 597);
+        setSize(1000, 600);
+        setLocationRelativeTo(null);
         setResizable(false);
         contentPane = new JPanel();
         contentPane.setBounds(5, 5, 5, 5);
         setContentPane(contentPane);
         contentPane.setLayout(null);
-        /*contentPane.setLayout(new FlowLayout());
-        contentPane.add(new JButton("Login"));*/
 
         //Welcome banner
         JLabel lblNewLabel = new JLabel("Welcome");
         lblNewLabel.setFont(new Font("Tahoma", Font.PLAIN, 46));
-        lblNewLabel.setBounds(425, 15, 270, 90);
+        lblNewLabel.setBounds(425, 40, 270, 90);
         contentPane.add(lblNewLabel);
 
 
@@ -64,46 +61,42 @@ public class LoginInterface extends JFrame implements ActionListener, ItemListen
         comboUserTypes.addItemListener(this);
 
         comboUserTypes.setFont(new Font("Tahoma", Font.PLAIN, 20));
-        comboUserTypes.setBounds(550, 140, 190, 50);
+        comboUserTypes.setBounds(550, 165, 190, 50);
         contentPane.add(comboUserTypes);
 
 
         //username
         JLabel lblEmail = new JLabel("Email address");
         lblEmail.setFont(new Font("Tahoma", Font.PLAIN, 28));
-        lblEmail.setBounds(290, 205, 170, 50);
+        lblEmail.setBounds(255, 230, 280, 50);
         contentPane.add(lblEmail);
 
         textField = new JTextField();
         textField.setFont(new Font("Tahoma", Font.PLAIN, 28));
-        textField.setBounds(480, 210, 260, 50);
-        contentPane.add(textField);
+        textField.setBounds(480, 235, 260, 50);
         textField.setColumns(10);
+        contentPane.add(textField);
 
 
         //password
         JLabel lblPassword = new JLabel("Password");
         lblPassword.setFont(new Font("Tahoma", Font.PLAIN, 28));
-        lblPassword.setBounds(290, 285, 170, 50);
+        lblPassword.setBounds(290, 310, 170, 50);
         contentPane.add(lblPassword);
 
         passwordField = new JPasswordField();
         passwordField.setFont(new Font("Tahoma", Font.PLAIN, 28));
-        passwordField.setBounds(480, 290, 260, 50);
+        passwordField.setBounds(480, 315, 260, 50);
         contentPane.add(passwordField);
 
 
         //login button
-        //JButton btnLogin;
         JButton btnLogin = new JButton("Log in");
         btnLogin.addActionListener(this);
 
         btnLogin.setFont(new Font("Tahoma", Font.PLAIN, 25));
-        btnLogin.setBounds(410, 390, 200, 45);
+        btnLogin.setBounds(410, 415, 200, 45);
         contentPane.add(btnLogin);
-        setVisible(true);
-
-
 
         setDefaultCloseOperation(EXIT_ON_CLOSE); //ensure that Java terminates on close
         setVisible(true);
@@ -124,8 +117,7 @@ public class LoginInterface extends JFrame implements ActionListener, ItemListen
 
     public void actionPerformed(ActionEvent e) {
             String userName = textField.getText();
-            @SuppressWarnings("deprecation")
-            String password = passwordField.getText();
+            String password = String.valueOf(passwordField.getPassword());
 
             try {
                 if(UserController.login(userName, password, userType)){
@@ -137,11 +129,5 @@ public class LoginInterface extends JFrame implements ActionListener, ItemListen
                 ex.printStackTrace();
             };
 
-
-            //System.out.println("Username is: " + userName);
-            //System.out.println("Password is: " + password);
-            //System.out.println("Usertype is: " + userType);
     }
-
-
 }

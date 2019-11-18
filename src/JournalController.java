@@ -7,7 +7,7 @@ import java.sql.*;
 import java.io.*;
 
 public class JournalController extends SqlController{
-	
+
 	/**
      * Create a new journal with all parameters
      * @param email
@@ -47,45 +47,48 @@ public class JournalController extends SqlController{
      * @param pdfFile
      * @param email
      * @return result true if article is created successfully
-     * @throws SQLException 
-	 * @throws FileNotFoundException 
+     * @throws SQLException
+	 * @throws FileNotFoundException
      */
-    public static int createArticle(String title, String description, File pdfFile, int ISSN, String email ) throws SQLException, FileNotFoundException {
+    public static int createArticle(String title, String description, File pdfFile, int ISSN, String email) throws SQLException, FileNotFoundException {
         openConnection();
         PreparedStatement pstmt = null;
-        FileInputStream inputStream= new FileInputStream(pdfFile);
         int submissionID = 0;
         try {
-            pstmt = con.prepareStatement(" INSERT INTO `team021`.`article` (`title`, `abstract`, `linkedFinalPDF`, `isPublished`, `ISSN`, `mAuthorEmail`)"
-            		+ " VALUES (?, ?, ?, 0, ?, ?)");
-            pstmt.setString(1, title);
-            pstmt.setString(2, description);
-            pstmt.setBlob(3,inputStream);
-            pstmt.setInt(4, ISSN);
-            pstmt.setString(5, email);
-            
-            ResultSet res = pstmt.executeQuery("SELECT * FROM `article` ORDER BY `submissionID` DESC LIMIT 1");
-            res.next();
-            submissionID = res.getInt(1) + 1;
-            
-            int count = pstmt.executeUpdate();
-            System.out.println("Rows updated " + count);
-            //add catch filenotfound exception
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        } finally {
-            if (pstmt != null) pstmt.close();
-            closeConnection();
+            FileInputStream inputStream = new FileInputStream(pdfFile);
+            try {
+                pstmt = con.prepareStatement(" INSERT INTO `team021`.`article` (`title`, `abstract`, `linkedFinalPDF`, `isPublished`, `ISSN`, `mAuthorEmail`)"
+                        + " VALUES (?, ?, ?, 0, ?, ?)");
+                pstmt.setString(1, title);
+                pstmt.setString(2, description);
+                pstmt.setBlob(3,inputStream);
+                pstmt.setInt(4, ISSN);
+                pstmt.setString(5, email);
+
+                ResultSet res = pstmt.executeQuery("SELECT * FROM `article` ORDER BY `submissionID` DESC LIMIT 1");
+                res.next();
+                submissionID = res.getInt(1) + 1;
+
+                int count = pstmt.executeUpdate();
+                System.out.println("Rows updated " + count);
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            } finally {
+                if (pstmt != null) pstmt.close();
+                closeConnection();
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
         }
-        return submissionID;       
+        return submissionID;
     }
 
     /**
      * Create a new submission linked to article by submissionID
      * @param pdfFile
      * @return result true if article is created successfully
-     * @throws SQLException 
-	 * @throws FileNotFoundException 
+     * @throws SQLException
+	 * @throws FileNotFoundException
      */
     public static int createSubmission(File pdfFile) throws SQLException, FileNotFoundException {
         openConnection();
@@ -98,13 +101,13 @@ public class JournalController extends SqlController{
         	 ResultSet res = stmt.executeQuery("SELECT * FROM `article` ORDER BY `submissionID` DESC LIMIT 1");
              res.next();
              submissionID = res.getInt(1);
-             
+
              pstmt = con.prepareStatement(" INSERT INTO `team021`.`submission` (`submissionID`, `linkedDraftPDF`, `reviewCount`, `status`) "
              		+ " VALUES (?, ?, 0, ?)");
              pstmt.setInt(1, submissionID);
              pstmt.setBlob(2, inputStream);
              pstmt.setString(3,"submitted");
-             
+
              int count = pstmt.executeUpdate();
              System.out.println("Rows updated " + count);
          } catch (SQLException ex) {
@@ -114,26 +117,26 @@ public class JournalController extends SqlController{
              if (stmt != null) stmt.close();
              closeConnection();
          }
-         return submissionID;       
+         return submissionID;
      }
-       
+
     /**
      * Get an article with all parameters by submissionID
      * @param submissionID
      * @return selected article
-     * @throws SQLException 
-	 * @throws FileNotFoundException 
+     * @throws SQLException
+	 * @throws FileNotFoundException
      */
     public static int getArticle(int submissionId) throws SQLException, FileNotFoundException {
         openConnection();
         PreparedStatement pstmt = null;
         try {
-            
+
             ResultSet res = pstmt.executeQuery("SELECT * FROM article WHERE submissionID=?");
             pstmt.setInt(1, submissionId);
             res.next();
             articlePdf = res.getBlob(4);
-            
+
             int count = pstmt.executeUpdate();
             System.out.println("Rows updated " + count);
         } catch (SQLException ex) {
@@ -142,10 +145,10 @@ public class JournalController extends SqlController{
             if (pstmt != null) pstmt.close();
             closeConnection();
         }
-        return submissionID;       
+        return submissionID;
     }
-    
-    
+
+
     public static void main (String[] args) throws FileNotFoundException {
     	File pdfFile = new File("./Systems Design Project.pdf");
         try {
