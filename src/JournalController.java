@@ -70,6 +70,7 @@ public class JournalController extends SqlController{
             
             int count = pstmt.executeUpdate();
             System.out.println("Rows updated " + count);
+            //add catch filenotfound exception
         } catch (SQLException ex) {
             ex.printStackTrace();
         } finally {
@@ -116,6 +117,34 @@ public class JournalController extends SqlController{
          return submissionID;       
      }
        
+    /**
+     * Get an article with all parameters by submissionID
+     * @param submissionID
+     * @return selected article
+     * @throws SQLException 
+	 * @throws FileNotFoundException 
+     */
+    public static int getArticle(int submissionId) throws SQLException, FileNotFoundException {
+        openConnection();
+        PreparedStatement pstmt = null;
+        try {
+            
+            ResultSet res = pstmt.executeQuery("SELECT * FROM article WHERE submissionID=?");
+            pstmt.setInt(1, submissionId);
+            res.next();
+            articlePdf = res.getBlob(4);
+            
+            int count = pstmt.executeUpdate();
+            System.out.println("Rows updated " + count);
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        return submissionID;       
+    }
+    
     
     public static void main (String[] args) throws FileNotFoundException {
     	File pdfFile = new File("./Systems Design Project.pdf");
