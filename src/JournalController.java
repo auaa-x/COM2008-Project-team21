@@ -20,6 +20,7 @@ public class JournalController extends SqlController{
         openConnection();
         boolean result = false;
         PreparedStatement pstmt = null;
+        // NEED TO CHECK IF JOURNAL WITH GIVEN ISSN ALREADY EXISTS
         try {
             pstmt = con.prepareStatement(" INSERT INTO `team021`.`journal` (`ISSN`, `title`, `chiefEditorEmail`)"
             		+ " VALUES (?, ?, ?)");
