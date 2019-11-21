@@ -157,7 +157,7 @@ public class JournalController extends SqlController {
      * @throws SQLException
      * @throws IOException 
      */
-    public static boolean getArticle(int submissionId) throws SQLException, IOException {
+    public static boolean getArticlePDF(int submissionId) throws SQLException, IOException {
         openConnection();
         PreparedStatement pstmt = null;
         boolean result = false;
