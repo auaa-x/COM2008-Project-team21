@@ -9,13 +9,61 @@ import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import java.awt.*;
+import javax.swing.*;
+import java.awt.event.*;
+import java.sql.SQLException;
+
 
 public class readerInterfaceTree extends JFrame {
     private JTree tree;
     private JLabel selectedLabel;
 
     public readerInterfaceTree()
-    {
+    {   
+
+        //create the menu
+        JMenuBar menuBar = new JMenuBar();
+        this.setJMenuBar(menuBar);
+        JMenu menu1 = new JMenu("File");
+        JMenu menu2 = new JMenu("Login");
+        menuBar.add(menu1);
+        menuBar.add(menu2);
+
+        //create "open" button
+        JPanel artInfo = new JPanel();
+        artInfo.setPreferredSize(new Dimension(200, 0));
+        this.add(artInfo, BorderLayout.EAST);
+
+        //create article information
+        artInfo.setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.BOTH;
+
+        JButton btnOpen = new JButton("Open");
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        gbc.gridwidth = 2;
+        gbc.gridheight = 1;
+        gbc.weightx = 0.5;
+        gbc.weighty = 0.2;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.anchor = GridBagConstraints.SOUTH;
+        artInfo.add(btnOpen, gbc);
+
+        JLabel jInfo = new JLabel("Information:");
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.gridwidth = 2;
+        gbc.gridheight = 2;
+        gbc.weightx = 0.2;
+        gbc.weighty = 0.8;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.anchor = GridBagConstraints.NORTHWEST;
+        artInfo.add(jInfo, gbc);
+        
         //create the root node
         DefaultMutableTreeNode root = new DefaultMutableTreeNode("Journal Publish System");
         //create the child nodes as root name
@@ -52,9 +100,6 @@ public class readerInterfaceTree extends JFrame {
         editionNode1.add(new DefaultMutableTreeNode("Grapes"));
         editionNode1.add(new DefaultMutableTreeNode("Orange"));
 
-
-
-
         //add the child nodes to the root node
         root.add(csJournal);
         root.add(seJournal);
@@ -79,7 +124,7 @@ public class readerInterfaceTree extends JFrame {
 
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setTitle("JTree Example");
-        this.setSize(200, 200);
+        this.setSize(1000, 600);
         this.setVisible(true);
     }
 /*
