@@ -6,8 +6,9 @@
 import java.sql.*;
 import java.io.*;
 
-public class JournalController extends SqlController{
+public class JournalController extends SqlController {
 
+    
 	/**
      * Create a new journal with all parameters
      * @param email
@@ -125,6 +126,7 @@ public class JournalController extends SqlController{
         int submissionID = 0;
         try {
         	 stmt = con.createStatement();
+        	 // get the id of article (last entry in the table)
         	 ResultSet res = stmt.executeQuery("SELECT * FROM `article` ORDER BY `submissionID` DESC LIMIT 1");
              res.next();
              submissionID = res.getInt(1);
@@ -162,22 +164,19 @@ public class JournalController extends SqlController{
         FileOutputStream output = null;
         try {
 
-        	pstmt = con.prepareStatement("SELECT * FROM article WHERE submissionID=?");
+        	pstmt = con.prepareStatement("SELECT * FROM article WHERE submissionID = ?");
             pstmt.setInt(1, submissionId);
             ResultSet res = pstmt.executeQuery();
             File articlePDF = new File("article.pdf");
             output = new FileOutputStream(articlePDF);
-            if(res.next()) {
+            if (res.next()) {
+                result = true;
             	input = res.getBinaryStream("linkedFinalPDF");
             	byte[] buffer = new byte [1024];
             	while (input.read(buffer) > 0) {
             		output.write(buffer);
             	}
             }
-          
-            //int count = pstmt.executeUpdate();
-            //if (count != 0) result = true;
-            //System.out.println("Rows updated " + count);
         } catch (SQLException ex) {
             ex.printStackTrace();
         } finally {
