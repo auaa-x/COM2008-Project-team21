@@ -16,28 +16,54 @@ public class JournalController extends SqlController{
      * @return result true if journal is created successfully
      * @throws SQLException
      */
-    public static boolean createJournal(String email, String journal, int ISSN) throws SQLException {
+    public static boolean createJournal(String email, String journal, int issn) throws SQLException {
+        boolean result = false;
+        if (!checkIssn(issn)) {
+            openConnection();
+            PreparedStatement pstmt = null;
+            try {
+                pstmt = con.prepareStatement(" INSERT INTO `team021`.`journal` (`ISSN`, `title`, `chiefEditorEmail`)"
+                		+ " VALUES (?, ?, ?)");
+                pstmt.setInt(1, issn);
+                pstmt.setString(2, journal);
+                pstmt.setString(3, email);
+    
+                int count = pstmt.executeUpdate();
+                if (count != 0) result = true;
+                System.out.println("Journal " + journal + " " + issn + " added");
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            } finally {
+                if (pstmt != null) pstmt.close();
+                closeConnection();
+            }
+        }
+        return result;
+    }
+    
+    
+    /**
+     * Check if ISSN exist in the database
+     * @param issn
+     * @return result true if email exists, otherwise false
+     */
+    public static boolean checkIssn(int issn) throws SQLException {
         openConnection();
         boolean result = false;
         PreparedStatement pstmt = null;
-        // NEED TO CHECK IF JOURNAL WITH GIVEN ISSN ALREADY EXISTS
         try {
-            pstmt = con.prepareStatement(" INSERT INTO `team021`.`journal` (`ISSN`, `title`, `chiefEditorEmail`)"
-            		+ " VALUES (?, ?, ?)");
-            pstmt.setInt(1, ISSN);
-            pstmt.setString(2, journal);
-            pstmt.setString(3, email);
+            pstmt = con.prepareStatement("SELECT * FROM journal WHERE ISSN=?");
+            pstmt.setInt(1, issn);
+            ResultSet res = pstmt.executeQuery();
 
-            int count = pstmt.executeUpdate();
-            if (count != 0) result = true;
-            System.out.println("Rows updated" + count);
+            result = res.next();
         } catch (SQLException ex) {
             ex.printStackTrace();
         } finally {
             if (pstmt != null) pstmt.close();
             closeConnection();
         }
-        return result;
+     return result;
     }
 
 

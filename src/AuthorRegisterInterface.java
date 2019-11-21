@@ -7,9 +7,9 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.sql.SQLException;
 
 
+@SuppressWarnings("serial")
 public class AuthorRegisterInterface extends JFrame implements ActionListener, ItemListener {
     private JTextField emailField;
     private JPasswordField passwordField;
@@ -40,7 +40,7 @@ public class AuthorRegisterInterface extends JFrame implements ActionListener, I
 
 
         //notice banner
-        JLabel banner = new JLabel("<html>Only complete this form if you are au author of the journal</html>",
+        JLabel banner = new JLabel("<html>Only complete this form if you are the author of the journal</html>",
                 SwingConstants.CENTER);
         banner.setFont(new Font("Arial", Font.PLAIN, 30));
         banner.setHorizontalAlignment(JLabel.CENTER);
