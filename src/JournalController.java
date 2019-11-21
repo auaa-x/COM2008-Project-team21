@@ -4,6 +4,7 @@
  * @author Julia Derebecka
  */
 import java.sql.*;
+import java.util.LinkedList;
 import java.io.*;
 
 public class JournalController extends SqlController{
@@ -188,8 +189,42 @@ public class JournalController extends SqlController{
         }   
         return result;
     }
-
-
+    
+    /**
+     * Get all journals from database
+     * @return list of journals
+     * @throws SQLException
+     * @throws IOException 
+     */
+    public static LinkedList<String> getJournals() throws SQLException, IOException {
+    	LinkedList<String> journals = new LinkedList<String>();
+        openConnection();
+        Statement stmt = null;
+        boolean result = false;
+        try {
+            
+            ResultSet res = stmt.executeQuery("SELECT * FROM journals");
+           
+            while(res.next()) {
+            	int issn = res.getInt(1);
+            	String title = res.getString(2);
+            	String email = res.getString(3);
+            	
+            }
+          
+            //int count = pstmt.executeUpdate();
+            //if (count != 0) result = true;
+            //System.out.println("Rows updated " + count);
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }   
+        return result;
+    }
+    
+    
     public static void main (String[] args) throws IOException {
     	File pdfFile = new File("./Systems Design Project.pdf");
         try {
