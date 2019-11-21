@@ -4,6 +4,7 @@
  * @author Julia Derebecka
  */
 import java.sql.*;
+import java.util.LinkedList;
 import java.io.*;
 
 public class JournalController extends SqlController {
@@ -187,19 +188,49 @@ public class JournalController extends SqlController {
         }   
         return result;
     }
+    
+    
+    /**
+     * Get a list of all journals
+     * @return a list of journals
+     * @throws SQLException
+     * @throws IOException 
+     */
+    public static LinkedList<Integer> getVolumes(int issn) throws SQLException {
+        LinkedList<Integer> volumes = new LinkedList<Integer>();
+        openConnection();
+        PreparedStatement pstmt = null;
+        try {
+            pstmt = con.prepareStatement("SELECT * FROM `volume` WHERE ISSN = ?");
+            pstmt.setInt(1, issn);
+            ResultSet res = pstmt.executeQuery();
+            
+            while (res.next()) {
+                int volNum = res.getInt("volNum");
+                volumes.add(volNum);
+            }
 
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        return volumes;
+    }
 
     public static void main (String[] args) throws IOException {
     	File pdfFile = new File("./Systems Design Project.pdf");
         try {
 
             //create article test
-            System.out.println(createArticle("Long and Dark11", "long and dark nights11", pdfFile, 2934554, "john.barker@dheffff11.ac.uk" ));
-            System.out.println(createSubmission(pdfFile));
-            getArticle(1);
-
+            //System.out.println(createArticle("Long and Dark11", "long and dark nights11", pdfFile, 2934554, "john.barker@dheffff11.ac.uk" ));
+            //System.out.println(createSubmission(pdfFile));
+            
+            System.out.println(getVolumes(65432345));
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
+           
     }
 }
