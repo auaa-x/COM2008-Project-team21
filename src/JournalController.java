@@ -126,37 +126,52 @@ public class JournalController extends SqlController{
      * @param submissionID
      * @return selected article
      * @throws SQLException
-	 * @throws FileNotFoundException
+     * @throws IOException 
      */
-    public static int getArticle(int submissionId) throws SQLException, FileNotFoundException {
+    public static boolean getArticle(int submissionId) throws SQLException, IOException {
         openConnection();
         PreparedStatement pstmt = null;
+        boolean result = false;
+        InputStream input = null;
+        FileOutputStream output = null;
         try {
 
-            ResultSet res = pstmt.executeQuery("SELECT * FROM article WHERE submissionID=?");
+        	pstmt = con.prepareStatement("SELECT * FROM article WHERE submissionID=?");
             pstmt.setInt(1, submissionId);
-            res.next();
-            articlePdf = res.getBlob(4);
-
-            int count = pstmt.executeUpdate();
-            System.out.println("Rows updated " + count);
+            ResultSet res = pstmt.executeQuery();
+            File articlePDF = new File("article.pdf");
+            output = new FileOutputStream(articlePDF);
+            if(res.next()) {
+            	input = res.getBinaryStream("linkedFinalPDF");
+            	byte[] buffer = new byte [1024];
+            	while (input.read(buffer) > 0) {
+            		output.write(buffer);
+            	}
+            }
+          
+            //int count = pstmt.executeUpdate();
+            //if (count != 0) result = true;
+            //System.out.println("Rows updated " + count);
         } catch (SQLException ex) {
             ex.printStackTrace();
         } finally {
             if (pstmt != null) pstmt.close();
+            if (input != null) input.close();
+            if (output != null) output.close();
             closeConnection();
-        }
-        return submissionID;
+        }   
+        return result;
     }
 
 
-    public static void main (String[] args) throws FileNotFoundException {
+    public static void main (String[] args) throws IOException {
     	File pdfFile = new File("./Systems Design Project.pdf");
         try {
 
             //create article test
             System.out.println(createArticle("Long and Dark11", "long and dark nights11", pdfFile, 2934554, "john.barker@dheffff11.ac.uk" ));
             System.out.println(createSubmission(pdfFile));
+            getArticle(1);
 
         } catch (SQLException ex) {
             ex.printStackTrace();
