@@ -9,7 +9,7 @@ import java.io.*;
 
 public class JournalController extends SqlController {
 
-    
+
 	/**
      * Create a new journal with all parameters
      * @param email
@@ -29,7 +29,7 @@ public class JournalController extends SqlController {
                 pstmt.setInt(1, issn);
                 pstmt.setString(2, journal);
                 pstmt.setString(3, email);
-    
+
                 int count = pstmt.executeUpdate();
                 if (count != 0) result = true;
                 System.out.println("Journal " + journal + " " + issn + " added");
@@ -42,8 +42,8 @@ public class JournalController extends SqlController {
         }
         return result;
     }
-    
-    
+
+
     /**
      * Check if ISSN exist in the database
      * @param issn
@@ -155,7 +155,7 @@ public class JournalController extends SqlController {
      * @param submissionID
      * @return selected article
      * @throws SQLException
-     * @throws IOException 
+     * @throws IOException
      */
     public static boolean getArticlePDF(int submissionId) throws SQLException, IOException {
         openConnection();
@@ -185,16 +185,37 @@ public class JournalController extends SqlController {
             if (input != null) input.close();
             if (output != null) output.close();
             closeConnection();
-        }   
+        }
         return result;
     }
-    
-    
+
+    /**
+         * Get all journals from database
+         * @return list of journals
+         * @throws SQLException
+         * @throws IOException
+         */
+        public static LinkedList<String> getJournals() throws SQLException, IOException {
+        	LinkedList<String> journals = new LinkedList<String>();
+            openConnection();
+            Statement stmt = null;
+            boolean result = false;
+            try {
+
+                ResultSet res = stmt.executeQuery("SELECT * FROM journals");
+
+                while(res.next()) {
+                	int issn = res.getInt(1);
+                	String title = res.getString(2);
+                	String email = res.getString(3);
+
+                }
+
     /**
      * Get a list of all journals
      * @return a list of journals
      * @throws SQLException
-     * @throws IOException 
+     * @throws IOException
      */
     public static LinkedList<Integer> getVolumes(int issn) throws SQLException {
         LinkedList<Integer> volumes = new LinkedList<Integer>();
@@ -204,7 +225,7 @@ public class JournalController extends SqlController {
             pstmt = con.prepareStatement("SELECT * FROM `volume` WHERE ISSN = ?");
             pstmt.setInt(1, issn);
             ResultSet res = pstmt.executeQuery();
-            
+
             while (res.next()) {
                 int volNum = res.getInt("volNum");
                 volumes.add(volNum);
@@ -226,11 +247,11 @@ public class JournalController extends SqlController {
             //create article test
             //System.out.println(createArticle("Long and Dark11", "long and dark nights11", pdfFile, 2934554, "john.barker@dheffff11.ac.uk" ));
             //System.out.println(createSubmission(pdfFile));
-            
+
             System.out.println(getVolumes(65432345));
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
-           
+
     }
 }
