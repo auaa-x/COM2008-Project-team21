@@ -388,7 +388,7 @@ public class UserController extends SqlController {
      * @param surname
      * @param university
      * @param password
-     * @return result true if registration is successful
+     * @return true if registration is successful, false otherwise
      * @throws SQLException
      */
     public static boolean mainAuthorRegistration(String email, String title, String forename,
@@ -409,7 +409,7 @@ public class UserController extends SqlController {
      * Create an author
      * @param email
      * @param submissionID
-     * @return result true if registration is successful
+     * @return true if registration is successful
      * @throws SQLException
      */
     public static boolean createAuthor(String email, int submissionID) throws SQLException {
@@ -423,7 +423,36 @@ public class UserController extends SqlController {
 
             int count = pstmt.executeUpdate();
             if (count != 0) result = true;
-            System.out.println("Editor created: " + email);
+            System.out.println("Author created: " + email);
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        return result;
+    }
+    
+    
+    /**
+     * Create a reviewer
+     * @param anonID
+     * @param email
+     * @return true if registration is successful
+     * @throws SQLException
+     */
+    public static boolean createReviewer(String anonID, String email) throws SQLException {
+        boolean result = false;
+        openConnection();
+        PreparedStatement pstmt = null;
+        try {
+            pstmt = con.prepareStatement("INSERT INTO `team021`.`reviewer` (`anonID`, `email`) VALUES (?, ?)");
+            pstmt.setString(1, anonID);
+            pstmt.setString(2, email);
+
+            int count = pstmt.executeUpdate();
+            if (count != 0) result = true;
+            System.out.println("Reviewer created: " + email);
         } catch (SQLException ex) {
             ex.printStackTrace();
         } finally {
@@ -438,7 +467,7 @@ public class UserController extends SqlController {
      * Register co-authors of the article with temporary password
      * @param sharedPassword
      * @param submissionID
-     * @return result true if registration of all authors is successful, false otherwise
+     * @return true if registration of all authors is successful, false otherwise
      * @throws SQLException
      */
     public static boolean addCoAuthors(String sharedPassword, int submissionID) throws SQLException {
@@ -463,6 +492,15 @@ public class UserController extends SqlController {
         coAuthorsList.add(email);
     }
     
+    /**
+     * Change password for one user
+     * @param email
+     * @param oldPassword
+     * @param newPassword
+     * @param newPasswordConf
+     * @return true if password was changed successfully, false otherwise
+     * @throws SQLException
+     */
     public static boolean changePassword(String email, String oldPassword, String newPassword, String newPasswordConf) throws SQLException {
         boolean result = false;
         if (login(email, oldPassword, getLoggedUserType()) && newPassword.equals(newPasswordConf)) {

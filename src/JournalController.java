@@ -7,7 +7,8 @@ import java.sql.*;
 import java.util.LinkedList;
 import java.io.*;
 
-public class JournalController extends SqlController{
+public class JournalController extends SqlController {
+
 
 	/**
      * Create a new journal with all parameters
@@ -28,7 +29,7 @@ public class JournalController extends SqlController{
                 pstmt.setInt(1, issn);
                 pstmt.setString(2, journal);
                 pstmt.setString(3, email);
-    
+
                 int count = pstmt.executeUpdate();
                 if (count != 0) result = true;
                 System.out.println("Journal " + journal + " " + issn + " added");
@@ -41,8 +42,8 @@ public class JournalController extends SqlController{
         }
         return result;
     }
-    
-    
+
+
     /**
      * Check if ISSN exist in the database
      * @param issn
@@ -126,6 +127,7 @@ public class JournalController extends SqlController{
         int submissionID = 0;
         try {
         	 stmt = con.createStatement();
+        	 // get the id of article (last entry in the table)
         	 ResultSet res = stmt.executeQuery("SELECT * FROM `article` ORDER BY `submissionID` DESC LIMIT 1");
              res.next();
              submissionID = res.getInt(1);
@@ -153,7 +155,7 @@ public class JournalController extends SqlController{
      * @param submissionID
      * @return selected article
      * @throws SQLException
-     * @throws IOException 
+     * @throws IOException
      */
     public static boolean getArticle(int submissionId) throws SQLException, IOException {
         openConnection();
@@ -163,22 +165,19 @@ public class JournalController extends SqlController{
         FileOutputStream output = null;
         try {
 
-        	pstmt = con.prepareStatement("SELECT * FROM article WHERE submissionID=?");
+        	pstmt = con.prepareStatement("SELECT * FROM article WHERE submissionID = ?");
             pstmt.setInt(1, submissionId);
             ResultSet res = pstmt.executeQuery();
             File articlePDF = new File("article.pdf");
             output = new FileOutputStream(articlePDF);
-            if(res.next()) {
+            if (res.next()) {
+                result = true;
             	input = res.getBinaryStream("linkedFinalPDF");
             	byte[] buffer = new byte [1024];
             	while (input.read(buffer) > 0) {
             		output.write(buffer);
             	}
             }
-          
-            //int count = pstmt.executeUpdate();
-            //if (count != 0) result = true;
-            //System.out.println("Rows updated " + count);
         } catch (SQLException ex) {
             ex.printStackTrace();
         } finally {
@@ -186,56 +185,73 @@ public class JournalController extends SqlController{
             if (input != null) input.close();
             if (output != null) output.close();
             closeConnection();
-        }   
+        }
         return result;
     }
-    
+
     /**
-     * Get all journals from database
-     * @return list of journals
+         * Get all journals from database
+         * @return list of journals
+         * @throws SQLException
+         * @throws IOException
+         */
+        public static LinkedList<String> getJournals() throws SQLException, IOException {
+        	LinkedList<String> journals = new LinkedList<String>();
+            openConnection();
+            Statement stmt = null;
+            boolean result = false;
+            try {
+
+                ResultSet res = stmt.executeQuery("SELECT * FROM journals");
+
+                while(res.next()) {
+                	int issn = res.getInt(1);
+                	String title = res.getString(2);
+                	String email = res.getString(3);
+
+                }
+
+    /**
+     * Get a list of all journals
+     * @return a list of journals
      * @throws SQLException
-     * @throws IOException 
+     * @throws IOException
      */
-    public static LinkedList<String> getJournals() throws SQLException, IOException {
-    	LinkedList<String> journals = new LinkedList<String>();
+    public static LinkedList<Integer> getVolumes(int issn) throws SQLException {
+        LinkedList<Integer> volumes = new LinkedList<Integer>();
         openConnection();
-        Statement stmt = null;
-        boolean result = false;
+        PreparedStatement pstmt = null;
         try {
-            
-            ResultSet res = stmt.executeQuery("SELECT * FROM journals");
-           
-            while(res.next()) {
-            	int issn = res.getInt(1);
-            	String title = res.getString(2);
-            	String email = res.getString(3);
-            	
+            pstmt = con.prepareStatement("SELECT * FROM `volume` WHERE ISSN = ?");
+            pstmt.setInt(1, issn);
+            ResultSet res = pstmt.executeQuery();
+
+            while (res.next()) {
+                int volNum = res.getInt("volNum");
+                volumes.add(volNum);
             }
-          
-            //int count = pstmt.executeUpdate();
-            //if (count != 0) result = true;
-            //System.out.println("Rows updated " + count);
+
         } catch (SQLException ex) {
             ex.printStackTrace();
         } finally {
             if (pstmt != null) pstmt.close();
             closeConnection();
-        }   
-        return result;
+        }
+        return volumes;
     }
-    
-    
+
     public static void main (String[] args) throws IOException {
     	File pdfFile = new File("./Systems Design Project.pdf");
         try {
 
             //create article test
-            System.out.println(createArticle("Long and Dark11", "long and dark nights11", pdfFile, 2934554, "john.barker@dheffff11.ac.uk" ));
-            System.out.println(createSubmission(pdfFile));
-            getArticle(1);
+            //System.out.println(createArticle("Long and Dark11", "long and dark nights11", pdfFile, 2934554, "john.barker@dheffff11.ac.uk" ));
+            //System.out.println(createSubmission(pdfFile));
 
+            System.out.println(getVolumes(65432345));
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
+
     }
 }
