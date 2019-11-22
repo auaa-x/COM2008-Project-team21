@@ -195,21 +195,7 @@ public class JournalController extends SqlController {
          * @throws SQLException
          * @throws IOException
          */
-        public static LinkedList<String> getJournals() throws SQLException, IOException {
-        	LinkedList<String> journals = new LinkedList<String>();
-            openConnection();
-            Statement stmt = null;
-            boolean result = false;
-            try {
-
-                ResultSet res = stmt.executeQuery("SELECT * FROM journals");
-
-                while(res.next()) {
-                	int issn = res.getInt(1);
-                	String title = res.getString(2);
-                	String email = res.getString(3);
-
-                }
+        //public static LinkedList<String> getJournals() throws SQLException, IOException
 
     /**
      * Get a list of all journals
