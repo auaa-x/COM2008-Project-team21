@@ -21,12 +21,15 @@ public class CfEditorRegInterface extends JFrame implements ActionListener, Item
     private JTextField issnField;
     private String userTitle;
     private JFrame frame;
+    private JButton register;
+    private JButton back;
 
     public CfEditorRegInterface() {
 
-        frame = new JFrame("Chief Editor Registration");
-        frame.setSize(1000, 600);
-        frame.setLocationRelativeTo(null);
+        this.setTitle("Chief Editor Registration");
+        this.setSize(1000, 600);
+        this.setLocationRelativeTo(null);
+        this.setResizable(false);
 
         JPanel noticePanel = new JPanel();
         JPanel userPanel = new JPanel();
@@ -113,14 +116,14 @@ public class CfEditorRegInterface extends JFrame implements ActionListener, Item
 
 
         //register button
-        JButton register = new JButton("Register");
+        register = new JButton("Register");
         register.addActionListener(this);
         register.setFont(new Font("Tahoma", Font.PLAIN, 20));
 
 
         //back button
-        JButton back = new JButton("Back");
-        //back.addActionListener(this);
+        back = new JButton("Back");
+        back.addActionListener(this);
         back.setFont(new Font("Tahoma", Font.PLAIN, 20));
 
 
@@ -179,15 +182,15 @@ public class CfEditorRegInterface extends JFrame implements ActionListener, Item
         buttonPane.add(register, buttonSpace);
         buttonPane.add(back, buttonSpace);
         //frame
-        frame.add(noticePanel);
-        frame.add(userPanel);
-        frame.add(journalPanel);
-        frame.add(buttonPane);
-        frame.setLayout(new FlowLayout());
+        this.add(noticePanel);
+        this.add(userPanel);
+        this.add(journalPanel);
+        this.add(buttonPane);
+        this.setLayout(new FlowLayout());
 
         //extra settings
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setVisible(true);
+        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        this.setVisible(true);
     }
 
 
@@ -205,24 +208,39 @@ public class CfEditorRegInterface extends JFrame implements ActionListener, Item
     }
 
     public void actionPerformed(ActionEvent e) {
-        String email = emailField.getText();
+        /*String email = emailField.getText();
         String password = String.valueOf(passwordField.getPassword());
         String forename = fnField.getText();
         String surname = snField.getText();
         String university = uniField.getText();
         String journalTitle = jnTitleField.getText();
-        int issn = Integer.valueOf(issnField.getText());
+        int issn = Integer.valueOf(issnField.getText());*/
 
-        try {
-            if(UserController.chiefEditorRegistration(email, userTitle, forename,
-                    surname,university,password,journalTitle, issn)){
-                JOptionPane.showMessageDialog(null, "Logged in");
-            } else {
-                JOptionPane.showMessageDialog(null, "Please check that you have completed the form correctly!");
+
+        if(e.getSource()== back){
+            this.setVisible(false);
+            new LoginInterface();
+        }
+        /*else {
+            if( !email.trim().isEmpty() && !password.trim().isEmpty() && !forename.trim().isEmpty() &&
+                    !surname.trim().isEmpty() && !university.trim().isEmpty()
+                    && !journalTitle.trim().isEmpty() && !String.valueOf(issn).trim().isEmpty()){
+                try {
+                    if(UserController.chiefEditorRegistration(email, userTitle, forename,
+                            surname,university,password,journalTitle, issn)){
+                        JOptionPane.showMessageDialog(null, "Logged in");
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Please check that you have completed the form correctly!");
+                    }
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                };
             }
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        };
+            else {
+                JOptionPane.showMessageDialog(null, "Please fill in!");
+            }
+
+        }*/
     }
 
 

@@ -26,10 +26,15 @@ public class AuthorRegisterInterface extends JFrame implements ActionListener, I
     private JTextArea addedCoAuthorArea;
     private String category;
 
+    private JButton addCoAuthor;
+    private JButton back;
+    private JButton register;
+
     public AuthorRegisterInterface() {
-        JFrame frame = new JFrame("Author Registration");
-        frame.setSize(1200, 700);
-        frame.setLocationRelativeTo(null);
+        this.setTitle("Author Registration");
+        this.setSize(1200, 700);
+        this.setLocationRelativeTo(null);
+        this.setResizable(false);
 
         JPanel noticePanel = new JPanel();
         JPanel userPanel = new JPanel();
@@ -40,7 +45,7 @@ public class AuthorRegisterInterface extends JFrame implements ActionListener, I
 
 
         //notice banner
-        JLabel banner = new JLabel("<html>Only complete this form if you are au author of the journal</html>",
+        JLabel banner = new JLabel("<html>Only complete this form if you are an author of the journal</html>",
                 SwingConstants.CENTER);
         banner.setFont(new Font("Arial", Font.PLAIN, 30));
         banner.setHorizontalAlignment(JLabel.CENTER);
@@ -75,7 +80,7 @@ public class AuthorRegisterInterface extends JFrame implements ActionListener, I
         JLabel title = new JLabel("Title");
         title.setFont(new Font("Arial", Font.PLAIN, 20));
         //title combobox
-        String[] titleTypes = {"Prof", "Mr", "Ms"};
+        String[] titleTypes = {"Prof", "Mr","Mrs", "Ms", "Miss"};
         comboTitleTypes = new JComboBox<>(titleTypes);
         comboTitleTypes.addItemListener(this);
         comboTitleTypes.setFont(new Font("Arial", Font.PLAIN, 16));
@@ -157,7 +162,7 @@ public class AuthorRegisterInterface extends JFrame implements ActionListener, I
         coEmailField.setFont(new Font("Arial", Font.PLAIN, 15));
 
         //add co-author button
-        JButton addCoAuthor = new JButton("Add a co-author");
+        addCoAuthor = new JButton("Add a co-author");
         //addCoAuthor.addActionListener(this);
         addCoAuthor.setFont(new Font("Tahoma", Font.PLAIN, 15));
 
@@ -183,13 +188,13 @@ public class AuthorRegisterInterface extends JFrame implements ActionListener, I
 
 
         //register button
-        JButton register = new JButton("Register and submit the article");
+        register = new JButton("Register and submit the article");
         //back.addActionListener(this);
         register.setFont(new Font("Tahoma", Font.PLAIN, 20));
 
         //back button
-        JButton back = new JButton("Back");
-        //back.addActionListener(this);
+        back = new JButton("Back");
+        back.addActionListener(this);
         back.setFont(new Font("Tahoma", Font.PLAIN, 20));
 
 
@@ -276,17 +281,17 @@ public class AuthorRegisterInterface extends JFrame implements ActionListener, I
         buttonPane.add(register);
 
         //frame
-        frame.add(noticePanel);
-        frame.add(userPanel);
-        frame.add(articlePanel);
-        frame.add(coAuthorsPanel);
-        frame.add(addedCoAuthorsPanel);
-        frame.add(buttonPane);
-        frame.setLayout(new FlowLayout());
+        this.add(noticePanel);
+        this.add(userPanel);
+        this.add(articlePanel);
+        this.add(coAuthorsPanel);
+        this.add(addedCoAuthorsPanel);
+        this.add(buttonPane);
+        this.setLayout(new FlowLayout());
 
         //extra settings
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setVisible(true);
+        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        this.setVisible(true);
     }
 
 
@@ -294,25 +299,30 @@ public class AuthorRegisterInterface extends JFrame implements ActionListener, I
 
         //System.out.println(e.getItem());
         String item = (String)e.getItem();
-        if(item == "Computer Science"){
-            category = "Journal of Computer Science";
-        } else if (item == "Software Engineering"){
-            category = "Journal of Software Engineering";
-        } else if (item == "Artificial Intelligence"){
-            category = "Journal of Artificial Intelligence";
-        };
+        switch (item) {
+            case "Computer Science":
+                category = "Journal of Computer Science";
+                break;
+            case "Software Engineering":
+                category = "Journal of Software Engineering";
+                break;
+            case "Artificial Intelligence":
+                category = "Journal of Artificial Intelligence";
+                break;
+        }
+
 
     }
 
     public void actionPerformed(ActionEvent e) {
-        /*
-
-
-         */
+        if(e.getSource()== back){
+            this.setVisible(false);
+            new LoginInterface();
+        }
     }
 
 
-    public static void main(String args[]) {
+    public static void main(String[] args) {
         new AuthorRegisterInterface();
     }
 }

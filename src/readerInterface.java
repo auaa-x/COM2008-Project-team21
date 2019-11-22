@@ -1,36 +1,42 @@
-import java.awt.BorderLayout;
-import javax.swing.ImageIcon;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JScrollPane;
-import javax.swing.JTree;
-import javax.swing.SwingUtilities;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeCellRenderer;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
+/**
+ * Class for Reader General interface
+ * @author Ting Guo
+ * @author Huiqiang Liu
+ */
+
+
 import java.awt.*;
 import javax.swing.*;
-import java.awt.event.*;
+import javax.swing.event.*;
+import javax.swing.tree.DefaultMutableTreeNode;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.sql.SQLException;
 
 
-public class readerInterfaceTree extends JFrame {
+public class readerInterface extends JFrame implements ActionListener {
     private JTree tree;
     private JLabel selectedLabel;
+    private JScrollPane treeScrolPane;
+    private JMenuBar menuBar;
+    private JMenu view;
+    private JMenuItem login;
 
-    public readerInterfaceTree()
-    {   
+    readerInterface() {
+        this.setTitle("Reader Interface");
+        this.setSize(1000, 600);
+        this.setLocationRelativeTo(null);
+        this.setResizable(false);
 
         //create the menu
-        JMenuBar menuBar = new JMenuBar();
+        menuBar = new JMenuBar();
+        view = new JMenu("View");
+        login = new JMenuItem("Login");
+        //file.addActionListener(this);
+        login.addActionListener(this);
+        view.add(login);
+        menuBar.add(view);
         this.setJMenuBar(menuBar);
-        JMenu menu1 = new JMenu("File");
-        JMenu menu2 = new JMenu("Login");
-        menuBar.add(menu1);
-        menuBar.add(menu2);
 
         //create "open" button
         JPanel artInfo = new JPanel();
@@ -63,14 +69,16 @@ public class readerInterfaceTree extends JFrame {
         gbc.fill = GridBagConstraints.NONE;
         gbc.anchor = GridBagConstraints.NORTHWEST;
         artInfo.add(jInfo, gbc);
-        
+
+
+        //create the tree panel
+        JPanel treePanel = new JPanel();
         //create the root node
         DefaultMutableTreeNode root = new DefaultMutableTreeNode("Journal Publish System");
         //create the child nodes as root name
         DefaultMutableTreeNode csJournal = new DefaultMutableTreeNode("Journal of Computer Science");
         DefaultMutableTreeNode seJournal = new DefaultMutableTreeNode("Journal of Software Engineering");
         DefaultMutableTreeNode aiJournal = new DefaultMutableTreeNode("Journal of Artificial Intelligence");
-
 
         //create other tree items as Journals
         DefaultMutableTreeNode volumeNode = new DefaultMutableTreeNode("Volume");
@@ -110,44 +118,51 @@ public class readerInterfaceTree extends JFrame {
 
         tree.setShowsRootHandles(true);
         tree.setRootVisible(false);
-        add(new JScrollPane(tree));
+        treeScrolPane = new JScrollPane(tree);
+        treeScrolPane.setPreferredSize(new Dimension(250, 512));
+        treePanel.add(treeScrolPane);
+
+
+        this.add(treePanel, BorderLayout.WEST);
 
         selectedLabel = new JLabel();
         add(selectedLabel, BorderLayout.SOUTH);
-        tree.getSelectionModel().addTreeSelectionListener(new TreeSelectionListener() {
-            @Override
-            public void valueChanged(TreeSelectionEvent e) {
-                DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
-                selectedLabel.setText(selectedNode.getUserObject().toString());
-            }
+        tree.getSelectionModel().addTreeSelectionListener(e -> {
+            DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
+            selectedLabel.setText(selectedNode.getUserObject().toString());
         });
 
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        this.setTitle("JTree Example");
-        this.setSize(1000, 600);
         this.setVisible(true);
     }
-/*
-@Override
-        public void valueChanged(TreeSelectionEvent e) {
-        DefaultMutableTreeNode node = (DefaultMutableTreeNode)tree.getLastSelectedPathComponent();
 
-        if (node == null)
-            return;
+    /*
+    @Override
+            public void valueChanged(TreeSelectionEvent e) {
+            DefaultMutableTreeNode node = (DefaultMutableTreeNode)tree.getLastSelectedPathComponent();
 
-        Object object = node.getUserObject();
-        if (node.isLeaf()) {
-            Article title = (Article) object;
-            System.out.println("you choosed:"+ title.toString());
-        }
- */
-    public static void main(String[] args)
-    {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                new readerInterfaceTree();
+            if (node == null)
+                return;
+
+            Object object = node.getUserObject();
+            if (node.isLeaf()) {
+                Article title = (Article) object;
+                System.out.println("you choosed:"+ title.toString());
             }
-        });
+     */
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        if (e.getSource() == login) {
+            this.setVisible(false);
+            System.out.println(1);
+            new LoginInterface();
+        }
     }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> new readerInterface());
+    }
+
+
 }
