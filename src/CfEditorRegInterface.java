@@ -10,6 +10,7 @@ import java.awt.event.*;
 import java.sql.SQLException;
 
 
+@SuppressWarnings("serial")
 public class CfEditorRegInterface extends JFrame implements ActionListener, ItemListener {
     private JTextField emailField;
     private JPasswordField passwordField;

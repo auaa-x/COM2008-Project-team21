@@ -25,7 +25,7 @@ public class LoginInterface extends JFrame implements ActionListener, ItemListen
         this.setTitle("Journal Publishing System");
         this.setSize(1000, 600);
         this.setLocationRelativeTo(null);
-        this.setResizable(false);
+
 
 
         //button panel
