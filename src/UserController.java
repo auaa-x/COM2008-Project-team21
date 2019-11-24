@@ -9,10 +9,10 @@ import java.util.LinkedList;
 import java.util.ListIterator;
 
 public class UserController extends SqlController {
-    
-    private static int loggedUserType;
-    private static String loggedUserEmail;
-    private static LinkedList<String> coAuthorsList = new LinkedList<String>();
+
+    protected static int loggedUserType;
+    protected static String loggedUserEmail;
+    protected static LinkedList<String> coAuthorsList = new LinkedList<String>();
 
     /**
      * Check if email exist in the database
@@ -378,6 +378,7 @@ public class UserController extends SqlController {
         }
         return result;
     }
+
 
 
     /**

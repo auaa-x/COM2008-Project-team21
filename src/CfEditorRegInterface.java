@@ -10,7 +10,6 @@ import java.awt.event.*;
 import java.sql.SQLException;
 
 
-@SuppressWarnings("serial")
 public class CfEditorRegInterface extends JFrame implements ActionListener, ItemListener {
     private JTextField emailField;
     private JPasswordField passwordField;
@@ -21,12 +20,10 @@ public class CfEditorRegInterface extends JFrame implements ActionListener, Item
     private JTextField jnTitleField;
     private JTextField issnField;
     private String userTitle;
-    private JFrame frame;
     private JButton register;
     private JButton back;
 
-    public CfEditorRegInterface() {
-
+    CfEditorRegInterface() {
         this.setTitle("Chief Editor Registration");
         this.setSize(1000, 600);
         this.setLocationRelativeTo(null);
@@ -70,7 +67,7 @@ public class CfEditorRegInterface extends JFrame implements ActionListener, Item
         JLabel title = new JLabel("Title");
         title.setFont(new Font("Arial", Font.PLAIN, 20));
         //title combobox
-        String[] titleTypes = {"Prof", "Mr", "Ms"};
+        String[] titleTypes = {"Prof", "Dr", "Mr","Mrs", "Ms", "Miss"};
         comboTitleTypes = new JComboBox<>(titleTypes);
         comboTitleTypes.addItemListener(this);
         comboTitleTypes.setFont(new Font("Arial", Font.PLAIN, 16));
@@ -104,7 +101,6 @@ public class CfEditorRegInterface extends JFrame implements ActionListener, Item
         //journal title
         JLabel journalTitle = new JLabel("Title");
         journalTitle.setFont(new Font("Arial", Font.PLAIN, 20));
-
         jnTitleField = new JTextField(15);
         jnTitleField.setFont(new Font("Arial", Font.PLAIN, 15));
 
@@ -199,53 +195,59 @@ public class CfEditorRegInterface extends JFrame implements ActionListener, Item
 
         //System.out.println(e.getItem());
         String item = (String)e.getItem();
-        if(item == "Prof"){
-            userTitle = "Prof";
-        } else if (item == "Mr"){
-            userTitle = "Mr";
-        } else if (item == "Ms"){
-            userTitle = "Ms";
-        };
+        switch (item) {
+            case "Prof":
+                userTitle = "Prof";
+                break;
+            case "Mr":
+                userTitle = "Mr";
+                break;
+            case "Ms":
+                userTitle = "Ms";
+                break;
+        }
     }
 
     public void actionPerformed(ActionEvent e) {
-        /*String email = emailField.getText();
+        String email = emailField.getText();
         String password = String.valueOf(passwordField.getPassword());
         String forename = fnField.getText();
         String surname = snField.getText();
         String university = uniField.getText();
         String journalTitle = jnTitleField.getText();
-        int issn = Integer.valueOf(issnField.getText());*/
+        String issn = String.valueOf(issnField.getText());
 
 
         if(e.getSource()== back){
             this.setVisible(false);
             new LoginInterface();
         }
-        /*else {
+        else {
             if( !email.trim().isEmpty() && !password.trim().isEmpty() && !forename.trim().isEmpty() &&
                     !surname.trim().isEmpty() && !university.trim().isEmpty()
-                    && !journalTitle.trim().isEmpty() && !String.valueOf(issn).trim().isEmpty()){
+                    && !journalTitle.trim().isEmpty() && !(issn).trim().isEmpty()){
                 try {
                     if(UserController.chiefEditorRegistration(email, userTitle, forename,
-                            surname,university,password,journalTitle, issn)){
-                        JOptionPane.showMessageDialog(null, "Logged in");
+                            surname,university,password,journalTitle, Integer.parseInt(issn))){
+                        this.dispose();
+                        JOptionPane.showMessageDialog(null, "You have registered successfully!");
+                        new ChiefEditorInterface();
                     } else {
                         JOptionPane.showMessageDialog(null, "Please check that you have completed the form correctly!");
                     }
                 } catch (SQLException ex) {
                     ex.printStackTrace();
-                };
+                }
             }
             else {
                 JOptionPane.showMessageDialog(null, "Please fill in!");
             }
 
-        }*/
+        }
     }
 
 
-    public static void main(String args[]) {
+    public static void main(String[] args) {
         new CfEditorRegInterface();
     }
 }

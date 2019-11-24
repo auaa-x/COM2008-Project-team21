@@ -13,12 +13,14 @@ public class LoginInterface extends JFrame implements ActionListener, ItemListen
 
     // Needed for serialisation
     private static final long serialVersionUID = 1L;
-    private JTextField textField;
+    private JTextField emailField;
     private JPasswordField passwordField;
     private int userType;
     private JButton btnLogin;
     private JButton btnNoLogin;
     private JButton btnRegister;
+
+
 
     // Constructor with frame title
     LoginInterface() {
@@ -54,9 +56,9 @@ public class LoginInterface extends JFrame implements ActionListener, ItemListen
         //username
         JLabel lblEmail = new JLabel("Email address");
         lblEmail.setFont(new Font("Tahoma", Font.PLAIN, 26));
-        textField = new JTextField();
-        textField.setFont(new Font("Tahoma", Font.PLAIN, 26));
-        textField.setColumns(10);
+        emailField = new JTextField();
+        emailField.setFont(new Font("Tahoma", Font.PLAIN, 26));
+        emailField.setColumns(10);
 
 
         //password
@@ -119,7 +121,7 @@ public class LoginInterface extends JFrame implements ActionListener, ItemListen
         fieldsPanel.add(role, left);
         fieldsPanel.add(comboUserTypes, right);
         fieldsPanel.add(lblEmail, left);
-        fieldsPanel.add(textField, right);
+        fieldsPanel.add(emailField, right);
         fieldsPanel.add(lblPassword, left);
         fieldsPanel.add(passwordField, right);
 
@@ -150,18 +152,32 @@ public class LoginInterface extends JFrame implements ActionListener, ItemListen
             case "Reviewer":
                 userType = 3;
                 break;
+            default:
+                throw new IllegalStateException("Unexpected value: " + item);
         }
     }
 
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == btnLogin) {
-            String userName = textField.getText();
+            String userName = emailField.getText();
             String password = String.valueOf(passwordField.getPassword());
 
             try {
                 if (!userName.trim().isEmpty() && !password.trim().isEmpty()) {
                     if(UserController.login(userName, password, userType)){
+                        this.dispose();
                         JOptionPane.showMessageDialog(null, "Logged in");
+                        switch (userType) {
+                            case 1 : //Editor
+                                new ChiefEditorInterface();
+                                break;
+                            case 2 : //Author
+                                new AuthorInterface();
+                                break;
+                            case 3 : //Reviewer
+                                //new ReviewerInterface();
+                                break;
+                        }
                     } else {
                         JOptionPane.showMessageDialog(null, "Wrong Username & Password");
                     }

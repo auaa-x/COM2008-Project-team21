@@ -5,8 +5,14 @@
  */
 
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.sql.SQLException;
 
 
 @SuppressWarnings("serial")
@@ -17,18 +23,27 @@ public class AuthorRegisterInterface extends JFrame implements ActionListener, I
     private JTextField fnField;
     private JTextField snField;
     private JTextField uniField;
-    private JComboBox<String> comboCtTypes;
-    private JTextField jnTitleField;
+    private JComboBox<String> comboJnTypes;
+    private JTextField articleTitleField;
     private JTextField atAbstractField;
     private JPasswordField sharedPasswordField;
-    private JTextField addedPDF;
+    private JTextArea addedPDF;
     private JTextField coEmailField;
     private JTextArea addedCoAuthorArea;
-    private String category;
+    private String journal;
+    private String userTitle;
+    private Path path = null;
+    private File pdf;
+    private JProgressBar progressBar;
+    private int issn = 00000000;
 
+    private JButton resetCoAuthor;
+    private JButton btnAddPdf;
     private JButton addCoAuthor;
     private JButton back;
     private JButton register;
+
+
 
     public AuthorRegisterInterface() {
         this.setTitle("Author Registration");
@@ -80,7 +95,7 @@ public class AuthorRegisterInterface extends JFrame implements ActionListener, I
         JLabel title = new JLabel("Title");
         title.setFont(new Font("Arial", Font.PLAIN, 20));
         //title combobox
-        String[] titleTypes = {"Prof", "Mr","Mrs", "Ms", "Miss"};
+        String[] titleTypes = {"Prof", "Dr", "Mr","Mrs", "Ms", "Miss"};
         comboTitleTypes = new JComboBox<>(titleTypes);
         comboTitleTypes.addItemListener(this);
         comboTitleTypes.setFont(new Font("Arial", Font.PLAIN, 16));
@@ -117,18 +132,18 @@ public class AuthorRegisterInterface extends JFrame implements ActionListener, I
         atFormTitle.setFont(new Font("Arial", Font.PLAIN, 25));
 
         //journal categories combobox
-        JLabel lblcategory = new JLabel("Category");
-        lblcategory.setFont(new Font("Arial", Font.PLAIN, 20));
-        String[] categoryTypes = {"Computer Science", "Software Engineering", "Artificial Intelligence"};
-        comboCtTypes = new JComboBox<>(categoryTypes);
-        comboCtTypes.addItemListener(this);
-        comboCtTypes.setFont(new Font("Arial", Font.PLAIN, 16));
+        JLabel lblJournal = new JLabel("Journal");
+        lblJournal.setFont(new Font("Arial", Font.PLAIN, 20));
+        String[] JournalTypes = {"Computer Science", "Software Engineering", "Artificial Intelligence"};
+        comboJnTypes = new JComboBox<>(JournalTypes);
+        comboJnTypes.addItemListener(this);
+        comboJnTypes.setFont(new Font("Arial", Font.PLAIN, 16));
 
-        //journal title
-        JLabel journalTitle = new JLabel("Title");
-        journalTitle.setFont(new Font("Arial", Font.PLAIN, 20));
-        jnTitleField = new JTextField(15);
-        jnTitleField.setFont(new Font("Arial", Font.PLAIN, 15));
+        //article title
+        JLabel articleTitle = new JLabel("Title");
+        articleTitle.setFont(new Font("Arial", Font.PLAIN, 20));
+        articleTitleField = new JTextField(15);
+        articleTitleField.setFont(new Font("Arial", Font.PLAIN, 15));
 
         //article abstract
         JLabel atAbstract = new JLabel("Abstract");
@@ -137,10 +152,16 @@ public class AuthorRegisterInterface extends JFrame implements ActionListener, I
         atAbstractField.setFont(new Font("Arial", Font.PLAIN, 15));
 
         //add PDF button and display
-        addedPDF = new JTextField("Added PDF",15);
+        addedPDF = new JTextArea(1,15);
+        addedPDF.setText("Added PDF");
         addedPDF.setFont(new Font("Arial", Font.PLAIN, 15));
+        addedPDF.setEditable (false); //set textArea non-editable
+        JScrollPane pdfPane = new JScrollPane(addedPDF);
+        pdfPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+        pdfPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+
         //add pdf button
-        JButton btnAddPdf = new JButton("Add PDF");
+        btnAddPdf = new JButton("Add PDF");
         btnAddPdf.addActionListener(this);
         btnAddPdf.setFont(new Font("Arial", Font.PLAIN, 15));
 
@@ -162,8 +183,13 @@ public class AuthorRegisterInterface extends JFrame implements ActionListener, I
         coEmailField.setFont(new Font("Arial", Font.PLAIN, 15));
 
         //add co-author button
+        resetCoAuthor = new JButton("Reset");
+        resetCoAuthor.addActionListener(this);
+        resetCoAuthor.setFont(new Font("Tahoma", Font.PLAIN, 15));
+
+        //add co-author button
         addCoAuthor = new JButton("Add a co-author");
-        //addCoAuthor.addActionListener(this);
+        addCoAuthor.addActionListener(this);
         addCoAuthor.setFont(new Font("Tahoma", Font.PLAIN, 15));
 
         //added-co-author title
@@ -172,9 +198,12 @@ public class AuthorRegisterInterface extends JFrame implements ActionListener, I
         addedCoAuthor.setFont(new Font("Arial", Font.PLAIN, 25));
 
         //!!!!!!!!display added author area!!!!!!!!!!!!!!!!!!!
-        addedCoAuthorArea = new JTextArea(5, 1);
+        addedCoAuthorArea = new JTextArea(5, 18);
         addedCoAuthorArea.setFont(new Font("Arial", Font.PLAIN, 15));
-        addedCoAuthorArea.setColumns(18);
+        addedCoAuthorArea.setEditable (false); //set textArea non-editable
+        JScrollPane scrollPane = new JScrollPane(addedCoAuthorArea);
+        scrollPane.setVerticalScrollBarPolicy (ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+
 
 
         //shared password
@@ -189,7 +218,7 @@ public class AuthorRegisterInterface extends JFrame implements ActionListener, I
 
         //register button
         register = new JButton("Register and submit the article");
-        //back.addActionListener(this);
+        register.addActionListener(this);
         register.setFont(new Font("Tahoma", Font.PLAIN, 20));
 
         //back button
@@ -252,21 +281,21 @@ public class AuthorRegisterInterface extends JFrame implements ActionListener, I
         //journalPanel
         articlePanel.add(space, left);
         articlePanel.add(atFormTitle, right);
-        articlePanel.add(lblcategory, left);
-        articlePanel.add(comboCtTypes, right);
-        articlePanel.add(journalTitle, left);
-        articlePanel.add(jnTitleField, right);
+        articlePanel.add(lblJournal, left);
+        articlePanel.add(comboJnTypes, right);
+        articlePanel.add(articleTitle, left);
+        articlePanel.add(articleTitleField, right);
         articlePanel.add(atAbstract, left);
         articlePanel.add(atAbstractField, right);
         articlePanel.add(btnAddPdf, left);
-        articlePanel.add(addedPDF, right);
+        articlePanel.add(pdfPane, right);
 
         //coAuthorsPanel
         coAuthorsPanel.add(new JLabel("         "), left);
         coAuthorsPanel.add(coAuthorFormTitle, right);
         coAuthorsPanel.add(coEmail, left);
         coAuthorsPanel.add(coEmailField, right);
-        coAuthorsPanel.add(new JLabel("         "), left);
+        coAuthorsPanel.add(resetCoAuthor, left);
         coAuthorsPanel.add(addCoAuthor, right);
         coAuthorsPanel.add(sharedPassword, left);
         coAuthorsPanel.add(sharedPasswordField, right);
@@ -274,7 +303,7 @@ public class AuthorRegisterInterface extends JFrame implements ActionListener, I
         //addedCoAuthorsPanel
         addedCoAuthorsPanel.add(addedCoAuthor);
         addedCoAuthorsPanel.add(Box.createRigidArea(new Dimension(0, 5)));
-        addedCoAuthorsPanel.add(addedCoAuthorArea);
+        addedCoAuthorsPanel.add(scrollPane);
 
         //buttonPane
         buttonPane.add(back, buttonSpace);
@@ -296,29 +325,90 @@ public class AuthorRegisterInterface extends JFrame implements ActionListener, I
 
 
     public void itemStateChanged(ItemEvent e) {
-
-        //System.out.println(e.getItem());
         String item = (String)e.getItem();
-        switch (item) {
-            case "Computer Science":
-                category = "Journal of Computer Science";
-                break;
-            case "Software Engineering":
-                category = "Journal of Software Engineering";
-                break;
-            case "Artificial Intelligence":
-                category = "Journal of Artificial Intelligence";
-                break;
+        //System.out.println(e.getItem());
+        if(e.getSource()== comboTitleTypes){
+            switch (item) {
+                case "Prof":
+                    userTitle = "Prof";
+                    break;
+                case "Mr":
+                    userTitle = "Mr";
+                    break;
+                case "Ms":
+                    userTitle = "Ms";
+                    break;
+            }
+        } else if (e.getSource()==comboJnTypes){
+            switch (item) {
+                case "Computer Science":
+                    journal = "Journal of Computer Science";
+                    break;
+                case "Software Engineering":
+                    journal = "Journal of Software Engineering";
+                    break;
+                case "Artificial Intelligence":
+                    journal = "Journal of Artificial Intelligence";
+                    break;
+            }
         }
+
 
 
     }
 
     public void actionPerformed(ActionEvent e) {
-        if(e.getSource()== back){
+
+        if (e.getSource() == back) {
             this.setVisible(false);
             new LoginInterface();
         }
+        //btnAddPdf actionEvent : get file path from JFileChooser than convert it into file object
+        else if (e.getSource() == btnAddPdf) {
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setDialogTitle("Please select your article file");
+            fileChooser.setApproveButtonText("ok");
+            FileNameExtensionFilter filter = new FileNameExtensionFilter("Pdf Files", "pdf");
+            fileChooser.setFileFilter(filter);
+            fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+            if (JFileChooser.APPROVE_OPTION == fileChooser.showOpenDialog(this)) {
+                path= Paths.get(fileChooser.getSelectedFile().getPath());
+            }
+            addedPDF.setText(fileChooser.getSelectedFile().getPath());
+            pdf = path.toFile();
+
+        } else if (e.getSource() == addCoAuthor) {
+            //add co-author email to the emails list
+            String emails = coEmailField.getText();
+            UserController.addCoAuthor(emails);
+            addedCoAuthorArea.append(emails + "\n");
+            coEmailField.setText("");
+        } else if (e.getSource() == resetCoAuthor) {
+            UserController.coAuthorsList.clear();
+            addedCoAuthorArea.setText("");
+        } else if (e.getSource() == register) {
+            try {
+                String email = emailField.getText();
+                String forename = fnField.getText();
+                String surname = snField.getText();
+                String university = uniField.getText();
+                String password = String.valueOf(passwordField.getPassword());
+                String sharedPassword = String.valueOf(sharedPasswordField.getPassword());
+                String articleTitle = articleTitleField.getText();
+                String atAbstract = atAbstractField.getText();
+
+                if (UserController.mainAuthorRegistration(email, userTitle, forename,
+                        surname, university, password, sharedPassword, articleTitle, atAbstract,
+                        pdf, issn)) {
+                    JOptionPane.showMessageDialog(null, "You have registered successfully!");
+                    dispose();
+                    new AuthorInterface();
+                }
+            } catch (SQLException | FileNotFoundException ex) {
+                ex.printStackTrace();
+            }
+        }
+
     }
 
 
