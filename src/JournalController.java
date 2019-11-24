@@ -43,11 +43,21 @@ public class JournalController extends SqlController {
         return result;
     }
 
+    
+    /**
+     * Check if ISSN has at most 8 digits
+     * @param issn
+     * @return result true if issn is valid, false otherwise
+     */
+    public static boolean isValidIssn(int issn) {
+        return (issn <= 99999999);
+    }
+    
 
     /**
      * Check if ISSN exist in the database
      * @param issn
-     * @return result true if email exists, otherwise false
+     * @return result true if email exists, false otherwise
      */
     public static boolean checkIssn(int issn) throws SQLException {
         openConnection();
@@ -190,21 +200,42 @@ public class JournalController extends SqlController {
     }
 
     /**
-         * Get all journals from database
-         * @return list of journals
-         * @throws SQLException
-         * @throws IOException
-         */
-        //public static LinkedList<String> getJournals() throws SQLException, IOException
+     * Get a list of all journals from database
+     * @return list of journals
+     * @throws SQLException
+     */
+    public static LinkedList<Journal> getJournals() throws SQLException {
+        LinkedList<Journal> journals = new LinkedList<Journal>();
+        openConnection();
+        Statement stmt = null;
+        try {
+            stmt = con.createStatement();
+            ResultSet res = stmt.executeQuery("SELECT * FROM `journal`");
+
+            while (res.next()) {
+                int issn = res.getInt("ISSN");
+                String title = res.getString("title");
+                String chiefEditorEmail = res.getString("chiefEditorEmail");
+                Journal journal = new Journal(issn, title, chiefEditorEmail);
+                journals.add(journal);
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (stmt != null) stmt.close();
+            closeConnection();
+        }
+        return journals;
+    }
 
     /**
-     * Get a list of all journals
-     * @return a list of journals
+     * Get a list of all volumes of a given journal
+     * @param issn
+     * @return a list of volumes
      * @throws SQLException
-     * @throws IOException
      */
-    public static LinkedList<Integer> getVolumes(int issn) throws SQLException {
-        LinkedList<Integer> volumes = new LinkedList<Integer>();
+    public static LinkedList<Volume> getVolumes(int issn) throws SQLException {
+        LinkedList<Volume> volumes = new LinkedList<Volume>();
         openConnection();
         PreparedStatement pstmt = null;
         try {
@@ -214,7 +245,10 @@ public class JournalController extends SqlController {
 
             while (res.next()) {
                 int volNum = res.getInt("volNum");
-                volumes.add(volNum);
+                int pubYear = res.getInt("pubYear");
+                int editionCount= res.getInt("ISSN");
+                Volume volume = new Volume(volNum, pubYear, issn, editionCount);
+                volumes.add(volume);
             }
 
         } catch (SQLException ex) {
@@ -225,11 +259,13 @@ public class JournalController extends SqlController {
         }
         return volumes;
     }
+    
 
     public static void main (String[] args) throws IOException {
     	File pdfFile = new File("./Systems Design Project.pdf");
         try {
 
+            System.out.println(getJournals());
             //create article test
             //System.out.println(createArticle("Long and Dark11", "long and dark nights11", pdfFile, 2934554, "john.barker@dheffff11.ac.uk" ));
             //System.out.println(createSubmission(pdfFile));

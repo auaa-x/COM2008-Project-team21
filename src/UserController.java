@@ -82,7 +82,21 @@ public class UserController extends SqlController {
         }
         return result;
     }
-
+    
+    /**
+     * Check if password is strong enough, criteria:
+     * at least 8 characters
+     * a digit must occur at least once
+     * a lower case letter must occur at least once
+     * an upper case letter must occur at least once
+     * space not allowed in the entire string
+     * @param password
+     * @return result true if password satisfies all of the criteria, false otherwise
+     */
+    public static boolean checkPasswordStrength(String password) {
+        String regex = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=\\S+$).{8,}$";
+        return password.matches(regex);
+    }
 
     /**
      * Hash a password using SHA2, can only be used when connection is open
@@ -151,7 +165,7 @@ public class UserController extends SqlController {
      * @param email
      * @param password
      * @param usertype (1 - editor, 2 - author, 3 - reviewer)
-     * @return result true if login details are correct
+     * @return result true if login details are correct, false otherwise
      */
     public static boolean login(String email, String password, int usertype) throws SQLException {
         if (checkEmail(email) && checkUsertype(email, usertype)) {
@@ -199,7 +213,7 @@ public class UserController extends SqlController {
      * @param university
      * @param password
      * @param usertype
-     * @return result true if registration is successful
+     * @return result true if registration is successful, false otherwise
      * @throws SQLException
      */
     public static boolean createUser(String email, String title, String forename,
@@ -253,7 +267,7 @@ public class UserController extends SqlController {
      * @param email
      * @param password
      * @param usertype
-     * @return result true if registration is successful
+     * @return result true if registration is successful, false otherwise
      * @throws SQLException
      */
     public static boolean createTempUser(String email, String password, int usertype) throws SQLException {
@@ -297,7 +311,7 @@ public class UserController extends SqlController {
      * Add a role for a user
      * @param email
      * @param usertype
-     * @return result true if role addition is successful
+     * @return result true if role addition is successful, false otherwise
      * @throws SQLException
      */
     public static boolean addRole(String email, int usertype) throws SQLException {
@@ -343,7 +357,7 @@ public class UserController extends SqlController {
      * @param password
      * @param journal
      * @param issn
-     * @return result true if registration is successful
+     * @return result true if registration is successful, false otherwise
      * @throws SQLException
      */
     public static boolean chiefEditorRegistration(String email, String title, String forename,
@@ -365,7 +379,7 @@ public class UserController extends SqlController {
      * Create an editor
      * @param email
      * @param issn
-     * @return result true if registration is successful
+     * @return result true if registration is successful, false otherwise
      * @throws SQLException
      */
     public static boolean createEditor(String email, int issn) throws SQLException {
@@ -449,7 +463,7 @@ public class UserController extends SqlController {
      * Create a reviewer
      * @param anonID
      * @param email
-     * @return true if registration is successful
+     * @return true if registration is successful, false otherwise
      * @throws SQLException
      */
     public static boolean createReviewer(String anonID, String email) throws SQLException {
@@ -565,6 +579,15 @@ public class UserController extends SqlController {
             System.out.println(isValidEmail("ula.talalaj@gmail.com"));
             System.out.println(isValidEmail("ula.talalajgmail.com"));
             System.out.println(isValidEmail(""));
+            
+            System.out.println();
+            System.out.println(checkPasswordStrength("fdsofFjiao3"));
+            System.out.println(checkPasswordStrength("jfdsofjiao"));
+            System.out.println(checkPasswordStrength("ASAHDHJFHKJD"));
+            System.out.println(checkPasswordStrength("jfdao"));
+            System.out.println(checkPasswordStrength("jfdsofjiaFo"));
+            System.out.println(checkPasswordStrength("jfdsofje33iao"));
+            System.out.println(checkPasswordStrength("fdsofFj iao3"));
 
 
         } catch (SQLException ex) {

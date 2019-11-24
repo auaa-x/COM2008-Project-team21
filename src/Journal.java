@@ -4,11 +4,11 @@
  */
 public class Journal {
 
-    private String title;
     private int issn;
+    private String title;
     private String chief;
     
-    Journal(String title, int issn, String chief) {
+    Journal(int issn, String title, String chief) {
         this.title = title;
         this.issn = issn;
         this.chief = chief;              
