@@ -1,4 +1,7 @@
-
+/**
+ * Class for Journal object
+ * @author Urszula Talalaj
+ */
 public class Journal {
 
     private String title;

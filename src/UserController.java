@@ -37,7 +37,17 @@ public class UserController extends SqlController {
         }
      return result;
     }
-
+    
+    
+    /**
+     * Check if email is valid
+     * @param email
+     * @return result true if email is valid, false otherwise
+     */
+    public static boolean isValidEmail(String email) {
+        String regex = "^[\\w-_\\.+]*[\\w-_\\.]\\@([\\w]+\\.)+[\\w]+[\\w]$";
+        return email.matches(regex);
+    }
 
     /**
      * Check if password is correct
@@ -532,25 +542,29 @@ public class UserController extends SqlController {
         try {
 
             // chief editor REGISTRATION test case true - all details correct
-            chiefEditorRegistration("james.potter@warwick.ac.uk", "Dr", "James", "Potter",
-                    "University of Warwick", "test_password", "Journal of Pottery", 65432345);
+            // chiefEditorRegistration("james.potter@warwick.ac.uk", "Dr", "James", "Potter",
+                //    "University of Warwick", "test_password", "Journal of Pottery", 65432345);
             
             // chief editor LOGIN test case true - all details correct
            login("james.potter@warwick.ac.uk", "test_password", 1);
             
             // test create journal
-            JournalController.createJournal("kate.bush@edinburgh.ac.uk", "Foundations of CompSci", 85491254);
+            //JournalController.createJournal("kate.bush@edinburgh.ac.uk", "Foundations of CompSci", 85491254);
 
             // chief editor REGISTRATION test case false - journal with this ISSN already exists
-            chiefEditorRegistration("harry.potter@hogwarts.ac.uk", "Professor", "Harry", "Potter",
-                    "University of Hogwarts", "gryffindor", "Journal of Wizardry", 65432345);
+            //chiefEditorRegistration("harry.potter@hogwarts.ac.uk", "Professor", "Harry", "Potter",
+                   // "University of Hogwarts", "gryffindor", "Journal of Wizardry", 65432345);
             
             // add co-authors to the list
-            addCoAuthor("luna.glovegood@hogwarts.ac.uk");
-            addCoAuthor("cedric.diggory@hogwarts.ac.uk");
+            //addCoAuthor("luna.glovegood@hogwarts.ac.uk");
+            //addCoAuthor("cedric.diggory@hogwarts.ac.uk");
             
             // add them as users
-            System.out.println(addCoAuthors("hufflepuff", 123));
+            //System.out.println(addCoAuthors("hufflepuff", 123));
+            
+            System.out.println(isValidEmail("ula.talalaj@gmail.com"));
+            System.out.println(isValidEmail("ula.talalajgmail.com"));
+            System.out.println(isValidEmail(""));
 
 
         } catch (SQLException ex) {
