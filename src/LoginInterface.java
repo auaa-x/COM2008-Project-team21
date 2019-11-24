@@ -169,7 +169,7 @@ public class LoginInterface extends JFrame implements ActionListener, ItemListen
                         JOptionPane.showMessageDialog(null, "Logged in");
                         switch (userType) {
                             case 1 : //Editor
-                                new ChiefEditorInterface();
+                                new CfEditorRegInterface();
                                 break;
                             case 2 : //Author
                                 new AuthorInterface();
