@@ -219,7 +219,7 @@ public class CfEditorRegInterface extends JFrame implements ActionListener, Item
         String issn = String.valueOf(issnField.getText());
 
 
-        if(e.getSource()== back){
+        if(e.getSource() == back){
             this.setVisible(false);
             new LoginInterface();
         }
@@ -241,7 +241,7 @@ public class CfEditorRegInterface extends JFrame implements ActionListener, Item
                 }
             }
             else {
-                JOptionPane.showMessageDialog(null, "Please fill in!");
+                JOptionPane.showMessageDialog(null, "Please fill in all the fields!");
             }
 
         }

@@ -179,7 +179,7 @@ public class LoginInterface extends JFrame implements ActionListener, ItemListen
                                 break;
                         }
                     } else {
-                        JOptionPane.showMessageDialog(null, "Wrong Username & Password");
+                        JOptionPane.showMessageDialog(null, "Incorrect Username or Password");
                     }
                 }
                 else{
