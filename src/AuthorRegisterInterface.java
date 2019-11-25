@@ -327,17 +327,29 @@ public class AuthorRegisterInterface extends JFrame implements ActionListener, I
     public void itemStateChanged(ItemEvent e) {
         String item = (String)e.getItem();
         //System.out.println(e.getItem());
+        //{"Prof", "Dr", "Mr","Mrs", "Ms", "Miss"};
         if(e.getSource()== comboTitleTypes){
             switch (item) {
                 case "Prof":
                     userTitle = "Prof";
                     break;
+                case "Dr":
+                    userTitle = "Dr";
+                    break;
                 case "Mr":
                     userTitle = "Mr";
+                    break;
+                case "Mrs":
+                    userTitle = "Mrs";
                     break;
                 case "Ms":
                     userTitle = "Ms";
                     break;
+                case "Miss":
+                    userTitle = "Miss";
+                    break;
+                default:
+                    throw new IllegalStateException("Unexpected value: " + item);
             }
         } else if (e.getSource()==comboJnTypes){
             switch (item) {
