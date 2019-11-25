@@ -10,6 +10,7 @@ import java.awt.event.*;
 import java.sql.SQLException;
 
 
+@SuppressWarnings("serial")
 public class CfEditorRegInterface extends JFrame implements ActionListener, ItemListener {
     private JTextField emailField;
     private JPasswordField passwordField;
@@ -218,7 +219,7 @@ public class CfEditorRegInterface extends JFrame implements ActionListener, Item
         String issn = String.valueOf(issnField.getText());
 
 
-        if(e.getSource()== back){
+        if(e.getSource() == back){
             this.setVisible(false);
             new LoginInterface();
         }
@@ -231,7 +232,7 @@ public class CfEditorRegInterface extends JFrame implements ActionListener, Item
                             surname,university,password,journalTitle, Integer.parseInt(issn))){
                         this.dispose();
                         JOptionPane.showMessageDialog(null, "You have registered successfully!");
-                        new ChiefEditorInterface();
+                        new CfEditorRegInterface();
                     } else {
                         JOptionPane.showMessageDialog(null, "Please check that you have completed the form correctly!");
                     }
@@ -240,7 +241,7 @@ public class CfEditorRegInterface extends JFrame implements ActionListener, Item
                 }
             }
             else {
-                JOptionPane.showMessageDialog(null, "Please fill in!");
+                JOptionPane.showMessageDialog(null, "Please fill in all the fields!");
             }
 
         }
