@@ -6,6 +6,7 @@
 import java.awt.*;
 import javax.swing.*;
 import java.awt.event.*;
+import java.io.IOException;
 import java.sql.SQLException;
 
 
@@ -195,7 +196,11 @@ public class LoginInterface extends JFrame implements ActionListener, ItemListen
         }
         else if (e.getSource() == btnNoLogin){
             this.dispose();
-            new readerInterface();
+            try {
+                new readerInterface();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
         }
         else if (e.getSource() == btnRegister){
             String[] options = {"Author", "Chief Editor","back"};
