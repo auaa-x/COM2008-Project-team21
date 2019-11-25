@@ -188,7 +188,7 @@ public class UserController extends SqlController {
     
     /**
      * Get logged user type
-     * @return user type (1 - editor, 2 - author, 3 - reviewer)
+     * @return user type (1 - editor, 2 - author, 3 - reviewer, 4 - logged out)
      */
     public static int getLoggedUserType() {
         return loggedUserType;
@@ -201,6 +201,15 @@ public class UserController extends SqlController {
      */
     public static String getLoggedUserEmail() {
         return loggedUserEmail;
+    }
+    
+    
+    /**
+     * Logout the current user
+     */
+    public static void logout() {
+        loggedUserType = 4;
+        loggedUserEmail = "";
     }
 
 

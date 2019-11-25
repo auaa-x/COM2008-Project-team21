@@ -120,13 +120,13 @@ public class ChangePw extends JFrame implements ActionListener {
         new AuthorInterface();
 
         try {
-            if (UserController.changePassword(loggedUserEmail,oldPassword, newPassword, cfPassword)) {
+            if (UserController.changePassword(loggedUserEmail, oldPassword, newPassword, cfPassword)) {
                 JOptionPane.showMessageDialog(null, "Password changed successfully!");
                 //AuthorInterface.authorPwChanged = true;
                 dispose();
                 new AuthorInterface();
             } else {
-                JOptionPane.showMessageDialog(null, "Please confirm your new password!");
+                JOptionPane.showMessageDialog(null, "Details incorrect!");
             }
         } catch (SQLException ex) {
             ex.printStackTrace();
