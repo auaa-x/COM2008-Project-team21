@@ -48,6 +48,7 @@ public class UserController extends SqlController {
         String regex = "^[\\w-_\\.+]*[\\w-_\\.]\\@([\\w]+\\.)+[\\w]+[\\w]$";
         return email.matches(regex);
     }
+    
 
     /**
      * Check if password is correct
@@ -83,6 +84,7 @@ public class UserController extends SqlController {
         return result;
     }
     
+    
     /**
      * Check if password is strong enough, criteria:
      * at least 8 characters
@@ -97,6 +99,7 @@ public class UserController extends SqlController {
         String regex = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=\\S+$).{8,}$";
         return password.matches(regex);
     }
+    
 
     /**
      * Hash a password using SHA2, can only be used when connection is open
@@ -188,7 +191,7 @@ public class UserController extends SqlController {
     
     /**
      * Get logged user type
-     * @return user type (1 - editor, 2 - author, 3 - reviewer, 4 - logged out)
+     * @return user type (1 - editor, 2 - author, 3 - reviewer, 0 - logged out)
      */
     public static int getLoggedUserType() {
         return loggedUserType;
@@ -208,7 +211,7 @@ public class UserController extends SqlController {
      * Logout the current user
      */
     public static void logout() {
-        loggedUserType = 4;
+        loggedUserType = 0;
         loggedUserEmail = "";
     }
 
@@ -354,6 +357,46 @@ public class UserController extends SqlController {
         }   
         return result;
     }
+    
+    
+    /**
+     * Remove a role from a user
+     * @param email
+     * @param usertype
+     * @return result true if role removal is successful, false otherwise
+     * @throws SQLException
+     */
+    public static boolean removeRole(String email, int usertype) throws SQLException {
+        boolean result = false;
+        if (checkEmail(email)) {
+            openConnection();
+            PreparedStatement pstmt = null;
+            try {
+
+                switch(usertype) {
+                case 1:
+                    pstmt = con.prepareStatement("UPDATE `team021`.`user` SET `isEditor` = '0' WHERE (`email` = ?)");
+                    break;
+                case 2:
+                    pstmt = con.prepareStatement("UPDATE `team021`.`user` SET `isAuthor` = '0' WHERE (`email` = ?)");
+                    break;
+                case 3:
+                    pstmt = con.prepareStatement("UPDATE `team021`.`user` SET `isReviewer` = '0' WHERE (`email` = ?)");
+                    break;
+                }
+                pstmt.setString(1, email);
+                int count = pstmt.executeUpdate();
+                if (count != 0) result = true;
+                System.out.println("User role " + usertype +  " for user " + email + " removed");
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            } finally {
+                if (pstmt != null) pstmt.close();
+                closeConnection();
+            }
+        }   
+        return result;
+    }
 
     
     /**
@@ -411,7 +454,35 @@ public class UserController extends SqlController {
         }
         return result;
     }
+    
+    
+    /**
+     * Delete an editor
+     * @param email
+     * @param issn
+     * @return result true if registration is successful, false otherwise
+     * @throws SQLException
+     */
+    public static boolean deleteEditor(String email, int issn) throws SQLException {
+        boolean result = false;
+        openConnection();
+        PreparedStatement pstmt = null;
+        try {
+            pstmt = con.prepareStatement("DELETE FROM `team021`.`editor` WHERE (`email` = ?) and (`ISSN` = ?);");
+            pstmt.setString(1, email);
+            pstmt.setInt(2, issn);
 
+            int count = pstmt.executeUpdate();
+            if (count != 0) result = true;
+            System.out.println("Editor deleted: " + email);
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        return result;
+    }
 
 
     /**
@@ -469,6 +540,35 @@ public class UserController extends SqlController {
     
     
     /**
+     * Delete an author
+     * @param email
+     * @param submissionID
+     * @return true if deletion is successful
+     * @throws SQLException
+     */
+    public static boolean deleteAuthor(String email, int submissionID) throws SQLException {
+        boolean result = false;
+        openConnection();
+        PreparedStatement pstmt = null;
+        try {
+            pstmt = con.prepareStatement("DELETE FROM `team021`.`author` WHERE (`email` = ?) and (`submissionID` = ?)");
+            pstmt.setString(1, email);
+            pstmt.setInt(2, submissionID);
+
+            int count = pstmt.executeUpdate();
+            if (count != 0) result = true;
+            System.out.println("Author deleted: " + email);
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        return result;
+    }
+    
+    
+    /**
      * Create a reviewer
      * @param anonID
      * @param email
@@ -498,10 +598,39 @@ public class UserController extends SqlController {
     
     
     /**
+     * Delete a reviewer
+     * @param anonID
+     * @param email
+     * @return true if deletion is successful, false otherwise
+     * @throws SQLException
+     */
+    public static boolean deleteReviewer(String anonID, String email) throws SQLException {
+        boolean result = false;
+        openConnection();
+        PreparedStatement pstmt = null;
+        try {
+            pstmt = con.prepareStatement("DELETE FROM `team021`.`reviewer` WHERE (`anonID` = ?) and (`email` = ?)");
+            pstmt.setString(1, anonID);
+            pstmt.setString(2, email);
+
+            int count = pstmt.executeUpdate();
+            if (count != 0) result = true;
+            System.out.println("Reviewer deleted: " + email);
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        return result;
+    }
+    
+    
+    /**
      * Register co-authors of the article with temporary password
      * @param sharedPassword
      * @param submissionID
-     * @return true if registration of all authors is successful, false otherwise
+     * @return true if registration of at least one author is successful
      * @throws SQLException
      */
     public static boolean addCoAuthors(String sharedPassword, int submissionID) throws SQLException {
@@ -510,14 +639,14 @@ public class UserController extends SqlController {
         // create user account for each co-author on the list
         while(iterator.hasNext()) {
             String email = iterator.next().toString();
-            if(!createTempUser(email, sharedPassword, 2) || !addRole(email, 3)) {
-                return false; // return false if user can't be created
-            }
+            createTempUser(email, sharedPassword, 2);
+            addRole(email, 3);
             result = true;
         }
         return result;
     }
- 
+
+    
     /**
      * Add co-author email to the co-authors' list
      * @param email
@@ -525,6 +654,7 @@ public class UserController extends SqlController {
     public static void addCoAuthor(String email) {
         coAuthorsList.add(email);
     }
+
     
     /**
      * Change password for one user
@@ -559,7 +689,35 @@ public class UserController extends SqlController {
         return result;
     }
 
+    
+    /**
+     * Remove user account if there are no active roles
+     * @return true if user account was removed successfully, false otherwise
+     * @throws SQLException
+     */
+    public static boolean removeAccountIfUseless(String email) throws SQLException {
+        boolean result = false;
+        if (!checkUsertype(email, 1) && !checkUsertype(email, 2) && !checkUsertype(email, 3)) {
+            openConnection();
+            PreparedStatement pstmt = null;
+            try {
+                pstmt = con.prepareStatement("DELETE FROM `team021`.`user` WHERE (`email` = ?;");
+                pstmt.setString(1, email);
 
+                int count = pstmt.executeUpdate();
+                if (count != 0) result = true;
+                System.out.println("Password changed for user: " + email);
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            } finally {
+                if (pstmt != null) pstmt.close();
+                closeConnection();
+            }
+        }
+        return result;
+    }
+    
+    
     public static void main (String[] args) {
 
         try {
