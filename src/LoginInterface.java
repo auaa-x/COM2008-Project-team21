@@ -6,128 +6,220 @@
 import java.awt.*;
 import javax.swing.*;
 import java.awt.event.*;
+import java.io.IOException;
 import java.sql.SQLException;
 
 
 public class LoginInterface extends JFrame implements ActionListener, ItemListener {
 
-    public static void main (String[] args) {
-        //launching code goes in here
-        new LoginInterface();
-    }
-
-
     // Needed for serialisation
     private static final long serialVersionUID = 1L;
-    private JTextField textField;
+    private JTextField emailField;
     private JPasswordField passwordField;
     private int userType;
+    private JButton btnLogin;
+    private JButton btnNoLogin;
+    private JButton btnRegister;
+
 
 
     // Constructor with frame title
-    public LoginInterface() {
-        //construction code goes in here
-        super("Login");  //pass the title name
-
-        /* centre window
-        Toolkit toolkit = Toolkit.getDefaultToolkit();
-        Dimension screenSize = toolkit.getScreenSize();
-        setSize(screenSize.width/2, screenSize.height/2);
-        setLocation(screenSize.width/4, screenSize.height/4);
-        */
+    LoginInterface() {
+        this.setTitle("Journal Publishing System");
+        this.setSize(1000, 600);
+        this.setLocationRelativeTo(null);
 
 
-        //container pane
-        Container contentPane = getContentPane();
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(1000, 600);
-        setLocationRelativeTo(null);
-        setResizable(false);
-        contentPane = new JPanel();
-        contentPane.setBounds(5, 5, 5, 5);
-        setContentPane(contentPane);
-        contentPane.setLayout(null);
+
+        //button panel
+        JPanel noticePanel = new JPanel();
+        JPanel buttonPane = new JPanel();
+        JPanel fieldsPanel = new JPanel();
+
 
         //Welcome banner
-        JLabel lblNewLabel = new JLabel("Welcome");
-        lblNewLabel.setFont(new Font("Tahoma", Font.PLAIN, 46));
-        lblNewLabel.setBounds(425, 40, 270, 90);
-        contentPane.add(lblNewLabel);
+        JLabel banner = new JLabel("Welcome");
+        banner.setFont(new Font("Tahoma", Font.PLAIN, 50));
+        banner.setBorder(BorderFactory.createEmptyBorder(70, 200, 50, 200));
+
 
 
         //user types combobox
+        JLabel role = new JLabel("Role: ");
+        role.setFont(new Font("Tahoma", Font.PLAIN, 26));
         String[] userTypes = {"User Type", "Editor", "Author", "Reviewer"};
         JComboBox<String> comboUserTypes = new JComboBox<>(userTypes);
         comboUserTypes.addItemListener(this);
-
         comboUserTypes.setFont(new Font("Tahoma", Font.PLAIN, 20));
-        comboUserTypes.setBounds(550, 165, 190, 50);
-        contentPane.add(comboUserTypes);
+
 
 
         //username
         JLabel lblEmail = new JLabel("Email address");
-        lblEmail.setFont(new Font("Tahoma", Font.PLAIN, 28));
-        lblEmail.setBounds(255, 230, 280, 50);
-        contentPane.add(lblEmail);
-
-        textField = new JTextField();
-        textField.setFont(new Font("Tahoma", Font.PLAIN, 28));
-        textField.setBounds(480, 235, 260, 50);
-        textField.setColumns(10);
-        contentPane.add(textField);
+        lblEmail.setFont(new Font("Tahoma", Font.PLAIN, 26));
+        emailField = new JTextField();
+        emailField.setFont(new Font("Tahoma", Font.PLAIN, 26));
+        emailField.setColumns(10);
 
 
         //password
         JLabel lblPassword = new JLabel("Password");
-        lblPassword.setFont(new Font("Tahoma", Font.PLAIN, 28));
-        lblPassword.setBounds(290, 310, 170, 50);
-        contentPane.add(lblPassword);
-
+        lblPassword.setFont(new Font("Tahoma", Font.PLAIN, 26));
         passwordField = new JPasswordField();
-        passwordField.setFont(new Font("Tahoma", Font.PLAIN, 28));
-        passwordField.setBounds(480, 315, 260, 50);
-        contentPane.add(passwordField);
+        passwordField.setFont(new Font("Tahoma", Font.PLAIN, 26));
+        passwordField.setColumns(10);
+
 
 
         //login button
-        JButton btnLogin = new JButton("Log in");
+        btnLogin = new JButton("Log in");
         btnLogin.addActionListener(this);
+        btnLogin.setFont(new Font("Tahoma", Font.PLAIN, 22));
 
-        btnLogin.setFont(new Font("Tahoma", Font.PLAIN, 25));
-        btnLogin.setBounds(410, 415, 200, 45);
-        contentPane.add(btnLogin);
 
+        //enter as a reader
+        btnNoLogin = new JButton("Enter as a reader");
+        btnNoLogin.addActionListener(this);
+        btnNoLogin.setFont(new Font("Tahoma", Font.PLAIN, 22));
+
+
+        //register
+        btnRegister = new JButton("Register");
+        btnRegister.addActionListener(this);
+        btnRegister.setFont(new Font("Tahoma", Font.PLAIN, 22));
+
+
+
+        //layouts
+        //notice panel
+        noticePanel.setLayout(new FlowLayout());
+        //fields panel
+        fieldsPanel.setLayout(new GridBagLayout());
+        GridBagConstraints left = new GridBagConstraints();
+        left.anchor = GridBagConstraints.EAST;
+        left.weighty = 10.0;
+        left.insets = new Insets(5, 2, 5, 5);
+        left.ipadx = 2;
+        GridBagConstraints right = new GridBagConstraints();
+        right.anchor = GridBagConstraints.WEST;
+        right.ipady = 5;
+        right.insets = new Insets(0, 0, 0, 20);
+        right.gridwidth = GridBagConstraints.REMAINDER;
+        right.weightx = 0.5;
+        right.weighty = 0.5;
+        fieldsPanel.setBorder(BorderFactory.createEmptyBorder(0, 80, 50, 25));
+        //button panel
+        buttonPane.setLayout(new GridBagLayout());
+        GridBagConstraints buttonSpace = new GridBagConstraints();
+        buttonSpace.insets = new Insets(0, 50, 0, 5);
+
+
+
+        //add functions
+        //noticePanel
+        noticePanel.add(banner);
+        //fieldsPanel
+        fieldsPanel.add(role, left);
+        fieldsPanel.add(comboUserTypes, right);
+        fieldsPanel.add(lblEmail, left);
+        fieldsPanel.add(emailField, right);
+        fieldsPanel.add(lblPassword, left);
+        fieldsPanel.add(passwordField, right);
+
+
+        buttonPane.add(btnLogin,buttonSpace);
+        buttonPane.add(btnNoLogin,buttonSpace);
+        buttonPane.add(btnRegister,buttonSpace);
+
+        this.add(noticePanel);
+        this.add(fieldsPanel);
+        this.add(buttonPane);
+
+        this.setLayout(new FlowLayout());
         setDefaultCloseOperation(EXIT_ON_CLOSE); //ensure that Java terminates on close
         setVisible(true);
     }
 
     public void itemStateChanged(ItemEvent e) {
 
-        //System.out.println(e.getItem());
         String item = (String)e.getItem();
-        if(item == "Editor"){
-            userType = 1;
-        } else if (item == "Author"){
-            userType = 2;
-        } else if (item == "Reviewer"){
-            userType = 3;
-        };
+        switch (item) {
+            case "Editor":
+                userType = 1;
+                break;
+            case "Author":
+                userType = 2;
+                break;
+            case "Reviewer":
+                userType = 3;
+                break;
+            default:
+                throw new IllegalStateException("Unexpected value: " + item);
+        }
     }
 
     public void actionPerformed(ActionEvent e) {
-            String userName = textField.getText();
+        if (e.getSource() == btnLogin) {
+            String userName = emailField.getText();
             String password = String.valueOf(passwordField.getPassword());
 
             try {
-                if(UserController.login(userName, password, userType)){
-                    JOptionPane.showMessageDialog(null, "Logged in");
-                } else {
-                    JOptionPane.showMessageDialog(null, "Wrong Username & Password");
+                if (!userName.trim().isEmpty() && !password.trim().isEmpty()) {
+                    if(UserController.login(userName, password, userType)){
+                        this.dispose();
+                        JOptionPane.showMessageDialog(null, "Logged in");
+                        switch (userType) {
+                            case 1 : //Editor
+                                new CfEditorRegInterface();
+                                break;
+                            case 2 : //Author
+                                new AuthorInterface();
+                                break;
+                            case 3 : //Reviewer
+                                //new ReviewerInterface();
+                                break;
+                        }
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Incorrect Username or Password");
+                    }
+                }
+                else{
+                    if (userName.trim().isEmpty()){
+                        JOptionPane.showMessageDialog(null, "Please enter your email address!");
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Please enter your password!");
+                    }
                 }
             } catch (SQLException ex) {
                 ex.printStackTrace();
-            };
-
+            }
+        }
+        else if (e.getSource() == btnNoLogin){
+            this.dispose();
+            try {
+                new readerInterface();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
+        else if (e.getSource() == btnRegister){
+            String[] options = {"Author", "Chief Editor","back"};
+            int x = JOptionPane.showOptionDialog(null, "Would you like register as:",
+                    "Select your role",
+                    JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, options[0]);
+            if (x == 0){
+                this.setVisible(false);
+                new AuthorRegisterInterface();
+            } else if (x == 1){
+                this.setVisible(false);
+                new CfEditorRegInterface();
+            }
+        }
     }
+
+    public static void main (String[] args) {
+        //launching code goes in here
+        new LoginInterface();
+    }
+
 }

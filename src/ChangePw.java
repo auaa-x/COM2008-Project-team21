@@ -16,6 +16,9 @@ public class ChangePw extends JFrame implements ActionListener {
         new ChangePw();
     }
 
+    protected static int loggedUserType;
+    protected static String loggedUserEmail;
+
 
     // Needed for serialisation
     private static final long serialVersionUID = 1L;
@@ -99,8 +102,11 @@ public class ChangePw extends JFrame implements ActionListener {
         btnChange.setBounds(410, 410, 200, 45);
         contentPane.add(btnChange);
 
-        setDefaultCloseOperation(EXIT_ON_CLOSE); //ensure that Java terminates on close
-        setVisible(true);
+        //extra settings
+        this.setSize(1000, 600);
+        this.setLocationRelativeTo(null);
+        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        this.setVisible(true);
     }
 
 
@@ -109,24 +115,23 @@ public class ChangePw extends JFrame implements ActionListener {
         String oldPassword = String.valueOf(oldPwField.getPassword());
         String newPassword = String.valueOf(newPwField.getPassword());
         String cfPassword = String.valueOf(cfPwField.getPassword());
+        JOptionPane.showMessageDialog(null, "Password changed successfully!");
+        dispose();
+        new AuthorInterface();
 
-        //try {
-            //if( method to check password correctness){
-                if (newPassword.equals(cfPassword)) {
-                    JOptionPane.showMessageDialog(null, "Password changed successfully!");
-                } else {
-                    JOptionPane.showMessageDialog(null, "Please confirm your new password!");
-                }
-            //}
-        //} catch (SQLException ex) {
-        //            ex.printStackTrace();
-        //        };
-        //         */
+        try {
+            if (UserController.changePassword(loggedUserEmail, oldPassword, newPassword, cfPassword)) {
+                JOptionPane.showMessageDialog(null, "Password changed successfully!");
+                //AuthorInterface.authorPwChanged = true;
+                dispose();
+                new AuthorInterface();
+            } else {
+                JOptionPane.showMessageDialog(null, "Details incorrect!");
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
 
-        //System.out.println("Old Password is: " + oldPassword);
-        //System.out.println("New Password is: " + newPassword);
-        //System.out.println("Confirm Password is: " + cfPassword);
+
     }
-
-
 }

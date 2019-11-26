@@ -21,13 +21,14 @@ public class CfEditorRegInterface extends JFrame implements ActionListener, Item
     private JTextField jnTitleField;
     private JTextField issnField;
     private String userTitle;
-    private JFrame frame;
+    private JButton register;
+    private JButton back;
 
-    public CfEditorRegInterface() {
-
-        frame = new JFrame("Chief Editor Registration");
-        frame.setSize(1000, 600);
-        frame.setLocationRelativeTo(null);
+    CfEditorRegInterface() {
+        this.setTitle("Chief Editor Registration");
+        this.setSize(1000, 600);
+        this.setLocationRelativeTo(null);
+        this.setResizable(false);
 
         JPanel noticePanel = new JPanel();
         JPanel userPanel = new JPanel();
@@ -67,7 +68,7 @@ public class CfEditorRegInterface extends JFrame implements ActionListener, Item
         JLabel title = new JLabel("Title");
         title.setFont(new Font("Arial", Font.PLAIN, 20));
         //title combobox
-        String[] titleTypes = {"Prof", "Mr", "Ms"};
+        String[] titleTypes = {"Prof", "Dr", "Mr", "Ms"};
         comboTitleTypes = new JComboBox<>(titleTypes);
         comboTitleTypes.addItemListener(this);
         comboTitleTypes.setFont(new Font("Arial", Font.PLAIN, 16));
@@ -101,7 +102,6 @@ public class CfEditorRegInterface extends JFrame implements ActionListener, Item
         //journal title
         JLabel journalTitle = new JLabel("Title");
         journalTitle.setFont(new Font("Arial", Font.PLAIN, 20));
-
         jnTitleField = new JTextField(15);
         jnTitleField.setFont(new Font("Arial", Font.PLAIN, 15));
 
@@ -114,14 +114,14 @@ public class CfEditorRegInterface extends JFrame implements ActionListener, Item
 
 
         //register button
-        JButton register = new JButton("Register");
+        register = new JButton("Register");
         register.addActionListener(this);
         register.setFont(new Font("Tahoma", Font.PLAIN, 20));
 
 
         //back button
-        JButton back = new JButton("Back");
-        //back.addActionListener(this);
+        back = new JButton("Back");
+        back.addActionListener(this);
         back.setFont(new Font("Tahoma", Font.PLAIN, 20));
 
 
@@ -180,15 +180,15 @@ public class CfEditorRegInterface extends JFrame implements ActionListener, Item
         buttonPane.add(register, buttonSpace);
         buttonPane.add(back, buttonSpace);
         //frame
-        frame.add(noticePanel);
-        frame.add(userPanel);
-        frame.add(journalPanel);
-        frame.add(buttonPane);
-        frame.setLayout(new FlowLayout());
+        this.add(noticePanel);
+        this.add(userPanel);
+        this.add(journalPanel);
+        this.add(buttonPane);
+        this.setLayout(new FlowLayout());
 
         //extra settings
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setVisible(true);
+        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        this.setVisible(true);
     }
 
 
@@ -196,13 +196,17 @@ public class CfEditorRegInterface extends JFrame implements ActionListener, Item
 
         //System.out.println(e.getItem());
         String item = (String)e.getItem();
-        if(item == "Prof"){
-            userTitle = "Prof";
-        } else if (item == "Mr"){
-            userTitle = "Mr";
-        } else if (item == "Ms"){
-            userTitle = "Ms";
-        };
+        switch (item) {
+            case "Prof":
+                userTitle = "Prof";
+                break;
+            case "Mr":
+                userTitle = "Mr";
+                break;
+            case "Ms":
+                userTitle = "Ms";
+                break;
+        }
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -212,22 +216,39 @@ public class CfEditorRegInterface extends JFrame implements ActionListener, Item
         String surname = snField.getText();
         String university = uniField.getText();
         String journalTitle = jnTitleField.getText();
-        int issn = Integer.valueOf(issnField.getText());
+        String issn = String.valueOf(issnField.getText());
 
-        try {
-            if(UserController.chiefEditorRegistration(email, userTitle, forename,
-                    surname,university,password,journalTitle, issn)){
-                JOptionPane.showMessageDialog(null, "Logged in");
-            } else {
-                JOptionPane.showMessageDialog(null, "Please check that you have completed the form correctly!");
+
+        if(e.getSource() == back){
+            this.setVisible(false);
+            new LoginInterface();
+        }
+        else {
+            if( !email.trim().isEmpty() && !password.trim().isEmpty() && !forename.trim().isEmpty() &&
+                    !surname.trim().isEmpty() && !university.trim().isEmpty()
+                    && !journalTitle.trim().isEmpty() && !(issn).trim().isEmpty()){
+                try {
+                    if(UserController.chiefEditorRegistration(email, userTitle, forename,
+                            surname,university,password,journalTitle, Integer.parseInt(issn))){
+                        this.dispose();
+                        JOptionPane.showMessageDialog(null, "You have registered successfully!");
+                        new CfEditorRegInterface();
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Please check that you have completed the form correctly!");
+                    }
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
             }
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        };
+            else {
+                JOptionPane.showMessageDialog(null, "Please fill in all the fields!");
+            }
+
+        }
     }
 
 
-    public static void main(String args[]) {
+    public static void main(String[] args) {
         new CfEditorRegInterface();
     }
 }
