@@ -190,7 +190,7 @@ public class JournalController extends SqlController {
     }
 
     /**
-         * Get all journals from database
+         * Get all journals titles from database
          * @return list of journals
          * @throws SQLException
          * @throws IOException
@@ -199,7 +199,6 @@ public class JournalController extends SqlController {
         	LinkedList<String> journals = new LinkedList<String>();
             openConnection();
             Statement stmt = null;
-            boolean result = false;
             try {
 
                 ResultSet res = stmt.executeQuery("SELECT * FROM journals");
@@ -208,8 +207,18 @@ public class JournalController extends SqlController {
                 	int issn = res.getInt(1);
                 	String title = res.getString(2);
                 	String email = res.getString(3);
+                	journals add 
 
                 }
+                
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            } finally {
+                if (stmt != null) stmt.close();
+                closeConnection();
+            }
+            return journals;
+        }
 
     /**
      * Get a list of all journals
