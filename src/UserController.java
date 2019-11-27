@@ -743,18 +743,7 @@ public class UserController extends SqlController {
             // add them as users
             //System.out.println(addCoAuthors("hufflepuff", 123));
             
-            System.out.println(isValidEmail("ula.talalaj@gmail.com"));
-            System.out.println(isValidEmail("ula.talalajgmail.com"));
-            System.out.println(isValidEmail(""));
-            
-            System.out.println();
-            System.out.println(checkPasswordStrength("fdsofFjiao3"));
-            System.out.println(checkPasswordStrength("jfdsofjiao"));
-            System.out.println(checkPasswordStrength("ASAHDHJFHKJD"));
-            System.out.println(checkPasswordStrength("jfdao"));
-            System.out.println(checkPasswordStrength("jfdsofjiaFo"));
-            System.out.println(checkPasswordStrength("jfdsofje33iao"));
-            System.out.println(checkPasswordStrength("fdsofFj iao3"));
+            //changePassword("james.potter@warwick.ac.uk", "test_password2", "test_password", "test_password");
 
 
         } catch (SQLException ex) {

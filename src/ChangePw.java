@@ -10,12 +10,12 @@ import java.sql.SQLException;
 
 
 public class ChangePw extends JFrame implements ActionListener {
-//
-//    public static void main (String[] args) {
-//        //launching code goes in here
-//        new ChangePw();
-//    }
-//
+
+    public static void main (String[] args) {
+        //launching code goes in here
+        new ChangePw("james.potter@warwick.ac.uk");
+    }
+
 
 
     // Needed for serialisation

@@ -8,6 +8,8 @@ import java.util.LinkedList;
 import java.io.*;
 
 public class JournalController extends SqlController {
+    
+    private String currentJournal;
 
 
 	/**
@@ -204,7 +206,7 @@ public class JournalController extends SqlController {
      * @return list of journals
      * @throws SQLException
      */
-    public static LinkedList<Journal> getJournals() throws SQLException {
+    public static LinkedList<Journal> getAllJournals() throws SQLException {
         LinkedList<Journal> journals = new LinkedList<Journal>();
         openConnection();
         Statement stmt = null;
@@ -223,6 +225,35 @@ public class JournalController extends SqlController {
             ex.printStackTrace();
         } finally {
             if (stmt != null) stmt.close();
+            closeConnection();
+        }
+        return journals;
+    }
+    
+    
+    /**
+     * Get a list of a given editor
+     * @return list of journals
+     * @throws SQLException
+     */
+    public static LinkedList<Integer> getEditorsJournals(String email) throws SQLException {
+        LinkedList<Integer> journals = new LinkedList<Integer>();
+        openConnection();
+        PreparedStatement pstmt = null;
+        try {
+            pstmt = con.prepareStatement("SELECT * FROM `editor` WHERE email = ?");
+            pstmt.setString(1, email);
+            ResultSet res = pstmt.executeQuery();
+
+            while (res.next()) {
+                int issn = res.getInt("ISSN");
+                System.out.println(issn);
+                journals.add(issn);
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
             closeConnection();
         }
         return journals;
@@ -387,7 +418,7 @@ public class JournalController extends SqlController {
     	//File pdfFile = new File("./Systems Design Project.pdf");
         try {
 
-            System.out.println(getJournals());
+            System.out.println(getAllJournals());
             //create article test
             //System.out.println(createArticle("Long and Dark11", "long and dark nights11", pdfFile, 2934554, "john.barker@dheffff11.ac.uk" ));
             //System.out.println(createSubmission(pdfFile));
@@ -395,7 +426,9 @@ public class JournalController extends SqlController {
             System.out.println(getVolumes(65432345));
             
             //UserController.createEditor("neweidtorr", 65432345);
-            chiefEditorRetire("james.potter@warwick.ac.uk", 65432345);
+            //chiefEditorRetire("james.potter@warwick.ac.uk", 65432345);
+            
+            getEditorsJournals("neweidtorr");
             
         } catch (SQLException ex) {
             ex.printStackTrace();
