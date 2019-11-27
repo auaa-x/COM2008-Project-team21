@@ -30,7 +30,7 @@ public class readerInterface extends JFrame implements ActionListener {
     private JButton open;
 
 
-    readerInterface() throws IOException {
+    public readerInterface() throws IOException {
         this.setTitle("Reader Interface");
         this.setSize(1000, 600);
         this.setLocationRelativeTo(null);
