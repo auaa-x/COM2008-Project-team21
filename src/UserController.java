@@ -742,8 +742,72 @@ public class UserController extends SqlController {
         }
         return result;
     }
+    
+    //put into JournalController after done
+    /**
+     * Get a list of all articles from database
+     * @return list of articles
+     * @throws SQLException
+     */
+    public static LinkedList<Article> getAllArticles() throws SQLException {
+        LinkedList<Article> articles = new LinkedList<Article>();
+        openConnection();
+        Statement stmt = null;
+        try {
+            stmt = con.createStatement();
+            ResultSet res = stmt.executeQuery("SELECT * FROM `article`");
 
+            while (res.next()) {
+            	int submissionID = getSubmissionID("submissionID"); 
+                String title = res.getString("title");
+                String artAbstract = res.getAbstract("abstract");
+                File linkedFinalPDF = res.getLinkedFinalPDF("linkedFinalPDF");
+                boolean isPublished = res.getIsPublished("isPublished");
+                int issn = res.getIssn("ISSN");
+                String mAuthorEmail = res.getMAuthorEmail("mAuthorEmail");
+                Article article = new Article(submissionID, title, artAbstract, linkedFinalPDF, isPublished, issn, mAuthorEmail);
+                articles.add(article);
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (stmt != null) stmt.close();
+            closeConnection();
+        }
+        return articles;
+    }
 
+    /**
+     * Get a list of all editions from database
+     * @return list of editions
+     * @throws SQLException
+     */
+    public static LinkedList<Edition> getEditions() throws SQLException {
+        LinkedList<Edition> editions = new LinkedList<Edition>();
+        openConnection();
+        Statement stmt = null;
+        try {
+            stmt = con.createStatement();
+            ResultSet res = stmt.executeQuery("SELECT * FROM `edition`");
+
+            while (res.next()) {
+            	int noNum = res.getNoNum("noNum");
+                int pubMonth = res.getPubMonth("pubMonth");
+                int volNum = res.getVolNum("volNum");
+                int artCount = res.getArtCount("artCount");
+            	
+                Edition edition = new Edition(noNum, pubMonth, volNum, artCount);
+                editions.add(edition);
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (stmt != null) stmt.close();
+            closeConnection();
+        }
+        return editions;
+    }
+    
     public static void main (String[] args) {
 
         try {
