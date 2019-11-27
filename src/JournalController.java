@@ -4,6 +4,7 @@
  * @author Julia Derebecka
  */
 import java.sql.*;
+import java.util.Calendar;
 import java.util.LinkedList;
 import java.io.*;
 
@@ -78,6 +79,62 @@ public class JournalController extends SqlController {
             closeConnection();
         }
      return result;
+    }
+    
+    
+    /**
+     * Create a new journal with all parameters
+     * @param email
+     * @param journal
+     * @param ISSN
+     * @return result true if journal is created successfully
+     * @throws SQLException
+     */
+    public static boolean createVolume(int issn) throws SQLException {
+        boolean result = false;
+        int volNum = 2;
+        int pubYear = Calendar.getInstance().get(Calendar.YEAR);
+        openConnection();  ;
+        PreparedStatement pstmt1 = null;
+        PreparedStatement pstmt2 = null;
+        PreparedStatement pstmt3 = null;
+            try {
+                // check if this year's volume already exists
+                pstmt1 = con.prepareStatement("SELECT * FROM `team021`.`volume` WHERE (`ISSN` = ?) and (`pubYear` = ?)");
+                pstmt1.setInt(1, issn);
+                pstmt1.setInt(2, pubYear);
+                ResultSet res1 = pstmt1.executeQuery();
+                
+                // don't create new volume if one already exists this year
+                if (res1.next()) return false;
+                
+                // find out what's the volNum of the new volume
+                pstmt2 = con.prepareStatement("SELECT * FROM `team021`.`volume` WHERE (`ISSN` = ?)");
+                pstmt2.setInt(1, issn);
+                ResultSet res2 = pstmt2.executeQuery();
+                while (res2.next()) {
+                    volNum++;
+                }
+                
+                // update database
+                pstmt3 = con.prepareStatement("INSERT INTO `team021`.`volume` (`volNum`, `pubYear`, `ISSN`) VALUES (?, ?, ?)");
+                pstmt3.setInt(1, volNum);
+                pstmt3.setInt(2, pubYear);
+                pstmt3.setInt(3, issn);
+
+                int count = pstmt3.executeUpdate();
+                if (count != 0) result = true;
+                System.out.println("Volume " + volNum + " " + issn + " added");
+
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            } finally {
+                if (pstmt1 != null) pstmt1.close();
+                if (pstmt2 != null) pstmt2.close();
+                if (pstmt3 != null) pstmt3.close();
+                closeConnection();
+            }
+        return result;
     }
 
 
@@ -429,6 +486,11 @@ public class JournalController extends SqlController {
             //chiefEditorRetire("james.potter@warwick.ac.uk", 65432345);
             
             getEditorsJournals("neweidtorr");
+            
+            System.out.println("Create volume test:");
+            System.out.println(createVolume(87645312)); // false
+            System.out.println(createVolume(65432345)); // true
+            
             
         } catch (SQLException ex) {
             ex.printStackTrace();
