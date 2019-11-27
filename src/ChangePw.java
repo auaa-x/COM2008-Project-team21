@@ -13,14 +13,13 @@ public class ChangePw extends JFrame implements ActionListener {
 
     public static void main (String[] args) {
         //launching code goes in here
-        new ChangePw();
+        new ChangePw("james.potter@warwick.ac.uk");
     }
 
-    protected static int loggedUserType;
-    protected static String loggedUserEmail;
 
 
     // Needed for serialisation
+	private String username;
     private static final long serialVersionUID = 1L;
     private JPasswordField oldPwField;
     private JPasswordField newPwField;
@@ -28,9 +27,12 @@ public class ChangePw extends JFrame implements ActionListener {
 
 
     // Constructor with frame title
-    public ChangePw() {
-        //construction code goes in here
-        super("Change Password");  //pass the title name
+    public ChangePw(String username) {
+    	//pass the title name
+        super("Change Password");  
+        //pass the username 
+        this.username = username;
+        this.setResizable(false);
 
         //access useful window system constants
         Toolkit toolkit = Toolkit.getDefaultToolkit();
@@ -115,16 +117,16 @@ public class ChangePw extends JFrame implements ActionListener {
         String oldPassword = String.valueOf(oldPwField.getPassword());
         String newPassword = String.valueOf(newPwField.getPassword());
         String cfPassword = String.valueOf(cfPwField.getPassword());
-        JOptionPane.showMessageDialog(null, "Password changed successfully!");
-        dispose();
-        new AuthorInterface();
+        //JOptionPane.showMessageDialog(null, "Password changed successfully!");
+       //dispose();
+        //new AuthorInterface(username);
 
         try {
-            if (UserController.changePassword(loggedUserEmail, oldPassword, newPassword, cfPassword)) {
+            if (UserController.changePassword(username, oldPassword, newPassword, cfPassword)) {
                 JOptionPane.showMessageDialog(null, "Password changed successfully!");
                 //AuthorInterface.authorPwChanged = true;
                 dispose();
-                new AuthorInterface();
+                new AuthorInterface(username);
             } else {
                 JOptionPane.showMessageDialog(null, "Details incorrect!");
             }

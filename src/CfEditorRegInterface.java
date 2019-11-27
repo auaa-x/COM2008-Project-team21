@@ -206,6 +206,15 @@ public class CfEditorRegInterface extends JFrame implements ActionListener, Item
             case "Ms":
                 userTitle = "Ms";
                 break;
+            case "Dr":
+            	userTitle = "Dr";
+            	break;
+            case "Mrs":
+            	userTitle = "Mrs";
+            	break;
+            case "Miss":
+            	userTitle = "Miss";
+            	break;
         }
     }
 
@@ -226,7 +235,7 @@ public class CfEditorRegInterface extends JFrame implements ActionListener, Item
         else {
             if( !email.trim().isEmpty() && !password.trim().isEmpty() && !forename.trim().isEmpty() &&
                     !surname.trim().isEmpty() && !university.trim().isEmpty()
-                    && !journalTitle.trim().isEmpty() && !(issn).trim().isEmpty()){
+                    && !journalTitle.trim().isEmpty() && !(issn).trim().isEmpty() && UserController.isValidEmail(email)){
                 try {
                     if(UserController.chiefEditorRegistration(email, userTitle, forename,
                             surname,university,password,journalTitle, Integer.parseInt(issn))){

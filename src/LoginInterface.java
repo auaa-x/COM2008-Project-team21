@@ -28,6 +28,7 @@ public class LoginInterface extends JFrame implements ActionListener, ItemListen
         this.setTitle("Journal Publishing System");
         this.setSize(1000, 600);
         this.setLocationRelativeTo(null);
+        this.setResizable(false);
 
 
 
@@ -153,8 +154,8 @@ public class LoginInterface extends JFrame implements ActionListener, ItemListen
             case "Reviewer":
                 userType = 3;
                 break;
-            default:
-                throw new IllegalStateException("Unexpected value: " + item);
+            //default:
+              //  throw new IllegalStateException("Unexpected value: " + item);
         }
     }
 
@@ -170,10 +171,10 @@ public class LoginInterface extends JFrame implements ActionListener, ItemListen
                         JOptionPane.showMessageDialog(null, "Logged in");
                         switch (userType) {
                             case 1 : //Editor
-                                new CfEditorRegInterface();
+                                new ChiefEditorInterface(userName);
                                 break;
                             case 2 : //Author
-                                new AuthorInterface();
+                                new AuthorInterface(userName);
                                 break;
                             case 3 : //Reviewer
                                 //new ReviewerInterface();

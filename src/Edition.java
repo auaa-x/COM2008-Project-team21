@@ -31,4 +31,8 @@ public class Edition {
     public int getArtCount() {
         return artCount;
     }
+    
+    public String toString() {
+    	return "vol. " + getVolNum() + "no. " + getNoNum();
+    }
 }

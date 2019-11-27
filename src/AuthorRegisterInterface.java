@@ -25,7 +25,7 @@ public class AuthorRegisterInterface extends JFrame implements ActionListener, I
     private JTextField uniField;
     private JComboBox<String> comboJnTypes;
     private JTextField articleTitleField;
-    private JTextField atAbstractField;
+    private JTextArea atAbstractField;
     private JPasswordField sharedPasswordField;
     private JTextArea addedPDF;
     private JTextField coEmailField;
@@ -145,11 +145,14 @@ public class AuthorRegisterInterface extends JFrame implements ActionListener, I
         articleTitleField = new JTextField(15);
         articleTitleField.setFont(new Font("Arial", Font.PLAIN, 15));
 
+
         //article abstract
         JLabel atAbstract = new JLabel("Abstract");
         atAbstract.setFont(new Font("Arial", Font.PLAIN, 20));
-        atAbstractField = new JTextField(15);
+        atAbstractField = new JTextArea(5,20);
         atAbstractField.setFont(new Font("Arial", Font.PLAIN, 15));
+        JScrollPane abstractPane = new JScrollPane(atAbstractField);
+        abstractPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 
         //add PDF button and display
         addedPDF = new JTextArea(1,15);
@@ -197,7 +200,7 @@ public class AuthorRegisterInterface extends JFrame implements ActionListener, I
         addedCoAuthor.setVerticalAlignment(SwingConstants.CENTER);
         addedCoAuthor.setFont(new Font("Arial", Font.PLAIN, 25));
 
-        //!!!!!!!!display added author area!!!!!!!!!!!!!!!!!!!
+        //display added author area
         addedCoAuthorArea = new JTextArea(5, 18);
         addedCoAuthorArea.setFont(new Font("Arial", Font.PLAIN, 15));
         addedCoAuthorArea.setEditable (false); //set textArea non-editable
@@ -247,7 +250,7 @@ public class AuthorRegisterInterface extends JFrame implements ActionListener, I
         userPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 15, 25));
         //articlePanel layout
         articlePanel.setLayout(new GridBagLayout());
-        articlePanel.setBorder(BorderFactory.createEmptyBorder(10, 20, 90, 50));
+        articlePanel.setBorder(BorderFactory.createEmptyBorder(10, 20, 0, 50));
         //coAuthorsPanel layout
         coAuthorsPanel.setLayout(new GridBagLayout());
         coAuthorsPanel.setBorder(BorderFactory.createEmptyBorder(0, 20, 10, 50));
@@ -286,7 +289,7 @@ public class AuthorRegisterInterface extends JFrame implements ActionListener, I
         articlePanel.add(articleTitle, left);
         articlePanel.add(articleTitleField, right);
         articlePanel.add(atAbstract, left);
-        articlePanel.add(atAbstractField, right);
+        articlePanel.add(abstractPane, right);
         articlePanel.add(btnAddPdf, left);
         articlePanel.add(pdfPane, right);
 
@@ -399,27 +402,34 @@ public class AuthorRegisterInterface extends JFrame implements ActionListener, I
             UserController.coAuthorsList.clear();
             addedCoAuthorArea.setText("");
         } else if (e.getSource() == register) {
+        	String email = emailField.getText();
+            String surname = snField.getText();
+            String forename = fnField.getText();
+            String university = uniField.getText();
+            String password = String.valueOf(passwordField.getPassword());
+            String sharedPassword = String.valueOf(sharedPasswordField.getPassword());
+            String articleTitle = articleTitleField.getText();
+            String atAbstract = atAbstractField.getText();
+            int issn = 00000000;
+            
+        	if  (!email.trim().isEmpty() && !password.trim().isEmpty() && !forename.trim().isEmpty() &&
+            !surname.trim().isEmpty() && !university.trim().isEmpty()
+            && !sharedPassword.trim().isEmpty() &&  !articleTitle.trim().isEmpty() && UserController.isValidEmail(email)) {
             try {
-                String email = emailField.getText();
-                String forename = fnField.getText();
-                String surname = snField.getText();
-                String university = uniField.getText();
-                String password = String.valueOf(passwordField.getPassword());
-                String sharedPassword = String.valueOf(sharedPasswordField.getPassword());
-                String articleTitle = articleTitleField.getText();
-                String atAbstract = atAbstractField.getText();
-
                 if (UserController.mainAuthorRegistration(email, userTitle, forename,
                         surname, university, password, sharedPassword, articleTitle, atAbstract,
                         pdf, issn)) {
                     JOptionPane.showMessageDialog(null, "You have registered successfully!");
                     dispose();
-                    new AuthorInterface();
+                    new AuthorInterface(email);
                 }
             } catch (SQLException | FileNotFoundException ex) {
                 ex.printStackTrace();
             }
         }
+        	} else {
+        		JOptionPane.showMessageDialog(null, "Please fill in all fields!");
+        	}
 
     }
 

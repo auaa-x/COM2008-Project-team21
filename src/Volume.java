@@ -3,7 +3,7 @@
  * @author Urszula Talalaj
  */
 public class Volume {
-    
+    //private Journal journal;
     private int volNum;
     private int pubYear;
     private int issn;
@@ -31,5 +31,8 @@ public class Volume {
     public int getEditionCount() {
         return editionCount;
     }
-
+    
+    public String toString() {
+    	return "vol. " +  getVolNum();
+    }
 }

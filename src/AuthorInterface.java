@@ -1,7 +1,6 @@
 /**
  * Class for Author Interface
  * @author Ting Guo
- * @author Huiqiang Liu
  */
 
 
@@ -12,21 +11,27 @@ import java.awt.event.*;
 
 public class AuthorInterface extends JFrame implements ActionListener{
 
-    public static boolean authorPwChanged = false;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	public static boolean authorPwChanged = false;
     private JMenuBar menubar;
     // JMenu
     private JMenu file;
     private JMenu create;
     private JTable articlesTable;
+    private String username;
 
 
     // Menu items
-    private JMenuItem articles, submissions, createSub,changePw;
+    private JMenuItem articles, submissions, createSub,changePw, logOut ;
 
     //Articles display panel
 
 
-    public AuthorInterface(){
+    public AuthorInterface(String username){
+    	this.username = username;
         this.setTitle("Author");
         this.setSize(1000, 600);
         this.setLocationRelativeTo(null);
@@ -39,12 +44,14 @@ public class AuthorInterface extends JFrame implements ActionListener{
         articles = new JMenuItem("Articles");
         submissions = new JMenuItem("Submissions");
         changePw = new JMenuItem("Change Password");
-        if (authorPwChanged){ changePw.setEnabled(false);} else {changePw.setEnabled(true);}
+        logOut = new JMenuItem("Log out");
+        //if (authorPwChanged){ changePw.setEnabled(false);} else {changePw.setEnabled(true);}
 
 
         articles.addActionListener(this);
         submissions.addActionListener(this);
         changePw.addActionListener(this);
+        logOut.addActionListener(this);
 
 
         file.add(articles);
@@ -58,6 +65,7 @@ public class AuthorInterface extends JFrame implements ActionListener{
 
         menubar.add(file);
         menubar.add(create);
+        menubar.add(logOut);
         this.setJMenuBar(menubar);
 
         //Articles information display table
@@ -91,13 +99,18 @@ public class AuthorInterface extends JFrame implements ActionListener{
             System.out.println("Menu B clicked"); }
         else if(e.getSource()==changePw){
             this.setVisible(false);
-            new ChangePw();
+            new ChangePw(username);
+        }
+        else if (e.getSource()==logOut) {
+        	this.dispose();
+        	JOptionPane.showMessageDialog(null, "You have logged out successfully!");
+            new LoginInterface();
+            }
 
         }
-    }
 
     public static void main(String[] args) {
-        new AuthorInterface();
+        new AuthorInterface("test");
     }
 
 

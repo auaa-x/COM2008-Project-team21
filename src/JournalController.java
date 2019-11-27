@@ -8,6 +8,8 @@ import java.util.LinkedList;
 import java.io.*;
 
 public class JournalController extends SqlController {
+    
+    private String currentJournal;
 
 
 	/**
@@ -204,7 +206,7 @@ public class JournalController extends SqlController {
      * @return list of journals
      * @throws SQLException
      */
-    public static LinkedList<Journal> getJournals() throws SQLException {
+    public static LinkedList<Journal> getAllJournals() throws SQLException {
         LinkedList<Journal> journals = new LinkedList<Journal>();
         openConnection();
         Statement stmt = null;
@@ -223,6 +225,35 @@ public class JournalController extends SqlController {
             ex.printStackTrace();
         } finally {
             if (stmt != null) stmt.close();
+            closeConnection();
+        }
+        return journals;
+    }
+    
+    
+    /**
+     * Get a list of a given editor
+     * @return list of journals
+     * @throws SQLException
+     */
+    public static LinkedList<Integer> getEditorsJournals(String email) throws SQLException {
+        LinkedList<Integer> journals = new LinkedList<Integer>();
+        openConnection();
+        PreparedStatement pstmt = null;
+        try {
+            pstmt = con.prepareStatement("SELECT * FROM `editor` WHERE email = ?");
+            pstmt.setString(1, email);
+            ResultSet res = pstmt.executeQuery();
+
+            while (res.next()) {
+                int issn = res.getInt("ISSN");
+                System.out.println(issn);
+                journals.add(issn);
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
             closeConnection();
         }
         return journals;
@@ -259,18 +290,146 @@ public class JournalController extends SqlController {
         }
         return volumes;
     }
+    
+    
+    /**
+     * Get a list of all editors' emails of a given journal
+     * @param issn
+     * @return a list of editors' emails
+     * @throws SQLException
+     */
+    public static LinkedList<String> getEditors(int issn) throws SQLException {
+        LinkedList<String> editors = new LinkedList<String>();
+        openConnection();
+        PreparedStatement pstmt = null;
+        try {
+            pstmt = con.prepareStatement("SELECT * FROM `editor` WHERE ISSN = ?");
+            pstmt.setInt(1, issn);
+            ResultSet res = pstmt.executeQuery();
+
+            while (res.next()) {
+                String email = res.getString("email");
+                editors.add(email);
+            }
+
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        return editors;
+    }
+    
+    
+    /**
+     * Allows a chief editor of a given journal to retire if possible
+     * and automatically appoints the new chief editor
+     * @param issn
+     * @return true if retiring successful and new chief editor appointed, false otherwise
+     * @throws SQLException
+     */
+    public static boolean chiefEditorRetire(String email, int issn) throws SQLException {
+        boolean result = false;
+        String oldChiefEmail = email;
+        String newChiefEmail = null;
+        
+        // get all editors of a given journal
+        LinkedList<String> editors = getEditors(issn);
+        
+        openConnection();
+        PreparedStatement pstmt = null;
+        try {
+            // continue only if 2 or more editors are on board now
+            if (editors.size() <= 2) {
+                // remove the old chief editor from the list
+                editors.remove(oldChiefEmail);
+                // find a new editor
+                newChiefEmail = editors.getFirst();
+                // appoint the new chief editor
+                pstmt = con.prepareStatement("UPDATE `team021`.`journal` SET `chiefEditorEmail` = ? WHERE (`ISSN` = ?)");
+                pstmt.setString(1, newChiefEmail);
+                pstmt.setInt(2, issn);
+                int count = pstmt.executeUpdate();
+                if (count != 0) {
+                    result = true;
+                    System.out.println("New chief editor " + newChiefEmail + " appointed");
+                }
+            }
+
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        // retire the old chief editor
+        if (result) {
+            editorRetire(oldChiefEmail, issn);
+            System.out.println("Old chief editor " + oldChiefEmail + " retired");
+        }
+        return result;
+    }
+
+    
+    /**
+     * Allows an editor of a given journal to retire if possible
+     * @param email
+     * @param issn
+     * @return true if retiring successful, false otherwise
+     * @throws SQLException
+     */
+    public static boolean editorRetire(String email, int issn) throws SQLException {
+        boolean result = false;
+        openConnection();
+        PreparedStatement pstmt1 = null;
+        PreparedStatement pstmt2 = null;
+        try {
+            // get all others editors of the journal
+            pstmt1 = con.prepareStatement("SELECT * FROM `editor` WHERE `ISSN` = ?");
+            pstmt1.setInt(1, issn);
+            ResultSet res = pstmt1.executeQuery();
+            
+            // ensure at least two editors are in the board now
+            if (res.next()) {
+                if (res.next()) {
+                    pstmt2 = con.prepareStatement("DELETE FROM `team021`.`editor` WHERE (`email` = ?) and (`ISSN` = ?)");
+                    pstmt2.setString(1, email);
+                    pstmt2.setInt(2, issn);
+                    int count = pstmt2.executeUpdate();
+                    if (count != 0) result = true;
+                    System.out.println("Editor " + email + " deleted");
+                }
+            }
+
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt1 != null) pstmt1.close();
+            if (pstmt2 != null) pstmt2.close();
+            closeConnection();
+        }
+        return result;
+        
+    }
 
 
     public static void main (String[] args) throws IOException {
-    	File pdfFile = new File("./Systems Design Project.pdf");
+    	//File pdfFile = new File("./Systems Design Project.pdf");
         try {
 
-            System.out.println(getJournals());
+            System.out.println(getAllJournals());
             //create article test
             //System.out.println(createArticle("Long and Dark11", "long and dark nights11", pdfFile, 2934554, "john.barker@dheffff11.ac.uk" ));
             //System.out.println(createSubmission(pdfFile));
 
             System.out.println(getVolumes(65432345));
+            
+            //UserController.createEditor("neweidtorr", 65432345);
+            //chiefEditorRetire("james.potter@warwick.ac.uk", 65432345);
+            
+            getEditorsJournals("neweidtorr");
+            
         } catch (SQLException ex) {
             ex.printStackTrace();
         }

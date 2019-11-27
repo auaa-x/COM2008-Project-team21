@@ -25,4 +25,9 @@ public class Journal {
     public String getChief() {
         return chief;
     }
+    
+    public String toString() {
+		return title;
+    	
+    }
 }

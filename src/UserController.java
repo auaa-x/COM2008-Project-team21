@@ -37,8 +37,8 @@ public class UserController extends SqlController {
         }
      return result;
     }
-    
-    
+
+
     /**
      * Check if email is valid
      * @param email
@@ -48,7 +48,7 @@ public class UserController extends SqlController {
         String regex = "^[\\w-_\\.+]*[\\w-_\\.]\\@([\\w]+\\.)+[\\w]+[\\w]$";
         return email.matches(regex);
     }
-    
+
 
     /**
      * Check if password is correct
@@ -83,8 +83,8 @@ public class UserController extends SqlController {
         }
         return result;
     }
-    
-    
+
+
     /**
      * Check if password is strong enough, criteria:
      * at least 8 characters
@@ -99,7 +99,7 @@ public class UserController extends SqlController {
         String regex = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=\\S+$).{8,}$";
         return password.matches(regex);
     }
-    
+
 
     /**
      * Hash a password using SHA2, can only be used when connection is open
@@ -187,8 +187,8 @@ public class UserController extends SqlController {
             return false;
         }
     }
-    
-    
+
+
     /**
      * Get logged user type
      * @return user type (1 - editor, 2 - author, 3 - reviewer, 0 - logged out)
@@ -196,8 +196,8 @@ public class UserController extends SqlController {
     public static int getLoggedUserType() {
         return loggedUserType;
     }
-    
-    
+
+
     /**
      * Get logged user email
      * @return email
@@ -205,8 +205,8 @@ public class UserController extends SqlController {
     public static String getLoggedUserEmail() {
         return loggedUserEmail;
     }
-    
-    
+
+
     /**
      * Logout the current user
      */
@@ -269,10 +269,10 @@ public class UserController extends SqlController {
                 if (hash != null) pstmt.close();
                 closeConnection();
             }
-        }      
+        }
         return result;
     }
-    
+
 
     /**
      * Create a user with temporary password
@@ -299,7 +299,7 @@ public class UserController extends SqlController {
                             + " VALUES (?, ?, 1)");
                     break;
                 }
-                
+
                 String hashed_password = hashPassword(password);
                 pstmt.setString(1, email);
                 pstmt.setString(2, hashed_password);
@@ -317,8 +317,8 @@ public class UserController extends SqlController {
         }
         return result;
     }
-    
-    
+
+
     /**
      * Add a role for a user
      * @param email
@@ -354,11 +354,11 @@ public class UserController extends SqlController {
                 if (pstmt != null) pstmt.close();
                 closeConnection();
             }
-        }   
+        }
         return result;
     }
-    
-    
+
+
     /**
      * Remove a role from a user
      * @param email
@@ -394,11 +394,11 @@ public class UserController extends SqlController {
                 if (pstmt != null) pstmt.close();
                 closeConnection();
             }
-        }   
+        }
         return result;
     }
 
-    
+
     /**
      * Register as a new chief editor and add a journal
      * @param email
@@ -425,7 +425,7 @@ public class UserController extends SqlController {
         }
         return result;
     }
-    
+
     /**
      * Check if user is chief editor
      * @param email
@@ -440,9 +440,9 @@ public class UserController extends SqlController {
             pstmt.setString(1, email);
             pstmt.setInt(2, issn);
             ResultSet res = pstmt.executeQuery();
-            
+
             result = res.next();
-            
+
         } catch (SQLException ex) {
             ex.printStackTrace();
         } finally {
@@ -451,8 +451,8 @@ public class UserController extends SqlController {
         }
      return result;
     }
-    
-    
+
+
     /**
      * Create an editor
      * @param email
@@ -480,8 +480,8 @@ public class UserController extends SqlController {
         }
         return result;
     }
-    
-    
+
+
     /**
      * Delete an editor
      * @param email
@@ -534,7 +534,7 @@ public class UserController extends SqlController {
         }
         return result;
     }
-    
+
 
     /**
      * Create an author
@@ -563,8 +563,8 @@ public class UserController extends SqlController {
         }
         return result;
     }
-    
-    
+
+
     /**
      * Delete an author
      * @param email
@@ -592,8 +592,8 @@ public class UserController extends SqlController {
         }
         return result;
     }
-    
-    
+
+
     /**
      * Create a reviewer
      * @param anonID
@@ -621,8 +621,8 @@ public class UserController extends SqlController {
         }
         return result;
     }
-    
-    
+
+
     /**
      * Delete a reviewer
      * @param anonID
@@ -650,8 +650,8 @@ public class UserController extends SqlController {
         }
         return result;
     }
-    
-    
+
+
     /**
      * Register co-authors of the article with temporary password
      * @param sharedPassword
@@ -672,7 +672,7 @@ public class UserController extends SqlController {
         return result;
     }
 
-    
+
     /**
      * Add co-author email to the co-authors' list
      * @param email
@@ -681,7 +681,7 @@ public class UserController extends SqlController {
         coAuthorsList.add(email);
     }
 
-    
+
     /**
      * Change password for one user
      * @param email
@@ -715,7 +715,7 @@ public class UserController extends SqlController {
         return result;
     }
 
-    
+
     /**
      * Remove user account if there are no active roles
      * @return true if user account was removed successfully, false otherwise
@@ -742,8 +742,8 @@ public class UserController extends SqlController {
         }
         return result;
     }
-    
-    
+
+
     public static void main (String[] args) {
 
         try {
@@ -751,40 +751,25 @@ public class UserController extends SqlController {
             // chief editor REGISTRATION test case true - all details correct
             // chiefEditorRegistration("james.potter@warwick.ac.uk", "Dr", "James", "Potter",
                 //    "University of Warwick", "test_password", "Journal of Pottery", 65432345);
-            
+
             // chief editor LOGIN test case true - all details correct
            login("james.potter@warwick.ac.uk", "test_password", 1);
-            
+
             // test create journal
             //JournalController.createJournal("kate.bush@edinburgh.ac.uk", "Foundations of CompSci", 85491254);
 
             // chief editor REGISTRATION test case false - journal with this ISSN already exists
             //chiefEditorRegistration("harry.potter@hogwarts.ac.uk", "Professor", "Harry", "Potter",
                    // "University of Hogwarts", "gryffindor", "Journal of Wizardry", 65432345);
-            
+
             // add co-authors to the list
             //addCoAuthor("luna.glovegood@hogwarts.ac.uk");
             //addCoAuthor("cedric.diggory@hogwarts.ac.uk");
-            
+
             // add them as users
             //System.out.println(addCoAuthors("hufflepuff", 123));
-            
-            System.out.println(isValidEmail("ula.talalaj@gmail.com"));
-            System.out.println(isValidEmail("ula.talalajgmail.com"));
-            System.out.println(isValidEmail(""));
-            
-            System.out.println("isChiefEditor: " + isChiefEditor("roary@gmail.com", 12345678));
-            System.out.println("isChiefEditor: " + isChiefEditor("roary@gmail.com", 123478));
-            System.out.println("isChiefEditor: " + isChiefEditor("roary@gmail", 12345678));
-            
-            System.out.println();
-            System.out.println(checkPasswordStrength("fdsofFjiao3"));
-            System.out.println(checkPasswordStrength("jfdsofjiao"));
-            System.out.println(checkPasswordStrength("ASAHDHJFHKJD"));
-            System.out.println(checkPasswordStrength("jfdao"));
-            System.out.println(checkPasswordStrength("jfdsofjiaFo"));
-            System.out.println(checkPasswordStrength("jfdsofje33iao"));
-            System.out.println(checkPasswordStrength("fdsofFj iao3"));
+
+            //changePassword("james.potter@warwick.ac.uk", "test_password2", "test_password", "test_password");
 
 
         } catch (SQLException ex) {
