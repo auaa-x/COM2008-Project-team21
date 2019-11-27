@@ -285,6 +285,70 @@ public class JournalController extends SqlController {
         return journals;
     }
     
+  //put into JournalController after done
+    /**
+     * Get a list of all articles from database
+     * @return list of articles
+     * @throws SQLException
+     */
+    public static LinkedList<Article> getAllArticles() throws SQLException {
+        LinkedList<Article> articles = new LinkedList<Article>();
+        openConnection();
+        Statement stmt = null;
+        try {
+            stmt = con.createStatement();
+            ResultSet res = stmt.executeQuery("SELECT * FROM `article`");
+
+            while (res.next()) {
+            	int submissionID = res.getInt("submissionID"); 
+                String title = res.getString("title");
+                String artAbstract = res.getString("abstract");
+                //without linkedFinalPDF
+                boolean isPublished = res.getBoolean("isPublished");
+                int issn = res.getInt("ISSN");
+                String mAuthorEmail = res.getString("mAuthorEmail");
+                Article article = new Article(submissionID, title, artAbstract, isPublished, issn, mAuthorEmail);
+                articles.add(article);
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (stmt != null) stmt.close();
+            closeConnection();
+        }
+        return articles;
+    }
+
+    /**
+     * Get a list of all editions from database
+     * @return list of editions
+     * @throws SQLException
+     */
+    public static LinkedList<Edition> getEditions() throws SQLException {
+        LinkedList<Edition> editions = new LinkedList<Edition>();
+        openConnection();
+        Statement stmt = null;
+        try {
+            stmt = con.createStatement();
+            ResultSet res = stmt.executeQuery("SELECT * FROM `edition`");
+
+            while (res.next()) {
+            	int noNum = res.getInt("noNum");
+                int pubMonth = res.getInt("pubMonth");
+                int volNum = res.getInt("volNum");
+                int artCount = res.getInt("artCount");
+            	
+                Edition edition = new Edition(noNum, pubMonth, volNum, artCount);
+                editions.add(edition);
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (stmt != null) stmt.close();
+            closeConnection();
+        }
+        return editions;
+    }
     
     /**
      * Get a list of a given editor journals
@@ -485,9 +549,11 @@ public class JournalController extends SqlController {
             
             getEditorsJournals("neweidtorr");
             
-            System.out.println("Create volume test:");
-            System.out.println(createVolume(87645312)); // false
-            System.out.println(createVolume(65432345)); // true
+           // System.out.println("Create volume test:");
+           // System.out.println(createVolume(87645312)); // false
+           // System.out.println(createVolume(65432345)); // true
+            System.out.println(getAllArticles());
+            System.out.println(getEditions());
             
             
         } catch (SQLException ex) {
