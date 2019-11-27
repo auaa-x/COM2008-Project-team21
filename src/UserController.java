@@ -426,6 +426,32 @@ public class UserController extends SqlController {
         return result;
     }
     
+    /**
+     * Check if user is chief editor
+     * @param email
+     * @return result true if user is chief editor , otherwise false
+     */
+    public static boolean isChiefEditor(String email, int issn) throws SQLException {
+        openConnection();
+        boolean result = false;
+        PreparedStatement pstmt = null;
+        try {
+            pstmt = con.prepareStatement("SELECT * FROM journal WHERE (`chiefEditorEmail` =?) and (`ISSN` = ?) ");
+            pstmt.setString(1, email);
+            pstmt.setInt(2, issn);
+            ResultSet res = pstmt.executeQuery();
+            
+            result = res.next();
+            
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+     return result;
+    }
+    
     
     /**
      * Create an editor
@@ -746,6 +772,10 @@ public class UserController extends SqlController {
             System.out.println(isValidEmail("ula.talalaj@gmail.com"));
             System.out.println(isValidEmail("ula.talalajgmail.com"));
             System.out.println(isValidEmail(""));
+            
+            System.out.println("isChiefEditor: " + isChiefEditor("roary@gmail.com", 12345678));
+            System.out.println("isChiefEditor: " + isChiefEditor("roary@gmail.com", 123478));
+            System.out.println("isChiefEditor: " + isChiefEditor("roary@gmail", 12345678));
             
             System.out.println();
             System.out.println(checkPasswordStrength("fdsofFjiao3"));
