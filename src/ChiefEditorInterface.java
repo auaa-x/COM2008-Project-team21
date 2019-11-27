@@ -235,11 +235,11 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 		}
 	}
 
-/*	public static void main(String[] args) {
+	public static void main(String[] args) {
 		SwingUtilities.invokeLater(() -> {
-			new ChiefEditorInterface();
+			new ChiefEditorInterface("Chief Editor");
 		});
-	}*/
+	}
 
 
 }
