@@ -44,4 +44,9 @@ public class Article {
     public String getMAuthorEmail() {
         return mAuthorEmail;
     }
+    
+    public String toString() {
+		return title;
+    	
+    }
 }
