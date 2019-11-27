@@ -83,11 +83,9 @@ public class JournalController extends SqlController {
     
     
     /**
-     * Create a new journal with all parameters
-     * @param email
-     * @param journal
+     * Create a new volume for a given journal
      * @param ISSN
-     * @return result true if journal is created successfully
+     * @return result true if volume is created successfully
      * @throws SQLException
      */
     public static boolean createVolume(int issn) throws SQLException {
@@ -289,7 +287,7 @@ public class JournalController extends SqlController {
     
     
     /**
-     * Get a list of a given editor
+     * Get a list of a given editor journals
      * @return list of journals
      * @throws SQLException
      */
