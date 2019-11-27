@@ -9,16 +9,14 @@ public class Article {
     private int submissionID;
     private String title;
     private String artAbstract;
-    private File linkedFinalPDF;
     private boolean isPublished;
     private int issn;
     private String mAuthorEmail;
     
-    Article(int submissionID, String title, String artAbstract, File linkedFinalPDF, boolean isPublished, int issn, String mAuthorEmail) {
+    Article(int submissionID, String title, String artAbstract, boolean isPublished, int issn, String mAuthorEmail) {
         this.submissionID = submissionID;
         this.title = title;
         this.artAbstract = artAbstract;
-        this.linkedFinalPDF = linkedFinalPDF;
         this.isPublished = isPublished;
         this.issn = issn;
         this.mAuthorEmail = mAuthorEmail;
@@ -36,9 +34,6 @@ public class Article {
         return artAbstract;
     }
     
-    public File getLinkedFinalPDF() {
-        return linkedFinalPDF;
-    }
     
     public boolean getIsPublished() {
         return isPublished;
