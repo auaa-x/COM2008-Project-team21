@@ -750,11 +750,10 @@ public class UserController extends SqlController {
         try {
 
             // chief editor REGISTRATION test case true - all details correct
-            // chiefEditorRegistration("james.potter@warwick.ac.uk", "Dr", "James", "Potter",
-                //    "University of Warwick", "test_password", "Journal of Pottery", 65432345);
+            // System.out.println(chiefEditorRegistration("james.potter@warwick.ac.uk", "Dr", "James", "Potter", "University of Warwick", "test_password", "Journal of Pottery", 65432345));
 
             // chief editor LOGIN test case true - all details correct
-           login("james.potter@warwick.ac.uk", "test_password", 1);
+            System.out.println(login("james.potter@warwick.ac.uk", "test_password", 1));
 
             // test create journal
             //JournalController.createJournal("kate.bush@edinburgh.ac.uk", "Foundations of CompSci", 85491254);
@@ -770,7 +769,7 @@ public class UserController extends SqlController {
             // add them as users
             //System.out.println(addCoAuthors("hufflepuff", 123));
 
-            //changePassword("james.potter@warwick.ac.uk", "test_password2", "test_password", "test_password");
+            changePassword("james.potter@warwick.ac.uk", "test_password2", "test_password", "test_password");
 
 
         } catch (SQLException ex) {
