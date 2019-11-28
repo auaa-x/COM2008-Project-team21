@@ -92,6 +92,7 @@ public class LoginInterface extends JFrame implements ActionListener, ItemListen
 
 
         //layouts
+        this.setLayout(new FlowLayout());
         //notice panel
         noticePanel.setLayout(new FlowLayout());
         //fields panel
@@ -136,7 +137,6 @@ public class LoginInterface extends JFrame implements ActionListener, ItemListen
         this.add(fieldsPanel);
         this.add(buttonPane);
 
-        this.setLayout(new FlowLayout());
         setDefaultCloseOperation(EXIT_ON_CLOSE); //ensure that Java terminates on close
         setVisible(true);
     }

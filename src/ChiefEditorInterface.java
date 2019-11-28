@@ -6,7 +6,6 @@
 
 import java.awt.*;
 import javax.swing.*;
-import javax.swing.event.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -37,7 +36,7 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 
 	ChiefEditorInterface(String username) throws SQLException {
 
-		this.setTitle("Editor Interface");
+		this.setTitle("Chief Editor Interface");
 		this.setSize(1000, 600);
 		this.setLocationRelativeTo(null);
 		this.setResizable(false);
@@ -45,7 +44,7 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 
 		this.username = username;
 		journals = new LinkedList<Integer>();
-		journals = JournalController.getEditorsJournals(username);
+		journals = JournalController.getEditorJournals(username);
 
 
 
