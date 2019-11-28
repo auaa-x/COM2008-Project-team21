@@ -99,7 +99,7 @@ public class AuthorInterface extends JFrame implements ActionListener{
             System.out.println("Menu B clicked"); }
         else if(e.getSource()==changePw){
             this.setVisible(false);
-            new ChangePw(username);
+            new ChangePw(username, 2);
         }
         else if (e.getSource()==logOut) {
         	this.dispose();
