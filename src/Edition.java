@@ -4,12 +4,14 @@
  */
 public class Edition {
 
+    private int issn;
+    private int volNum;
     private int noNum;
     private int pubMonth;
-    private int volNum;
     private int artCount;
     
-    Edition(int noNum, int pubMonth, int volNum, int artCount) {
+    
+    Edition(int issn, int volNum, int noNum, int pubMonth, int artCount) {
         this.noNum = noNum;
         this.pubMonth = pubMonth;
         this.volNum = volNum;
@@ -18,6 +20,10 @@ public class Edition {
     
     public int getNoNum() {
         return noNum;
+    }
+    
+    public int getIssn() {
+        return issn;
     }
     
     public int getPubMonth() {

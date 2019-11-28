@@ -10,9 +10,27 @@ import java.io.*;
 
 public class JournalController extends SqlController {
     
-    private String currentJournal;
+    private static int currentJournal;
 
+    
+    /**
+     * Set currently viewed journal
+     * @param ISSN
+     */
+    public static void setCurrentJournal(int issn) {
+        currentJournal = issn;
+    }
+    
+    
+    /**
+     * Get currently viewed journal
+     * @param ISSN
+     */
+    public static int getCurrentJournal(int issn) {
+        return currentJournal;
+    }
 
+    
 	/**
      * Create a new journal with all parameters
      * @param email
@@ -136,126 +154,6 @@ public class JournalController extends SqlController {
     }
 
 
-	/**
-     * Create a new article with all parameters
-     * @param title
-     * @param description
-     * @param pdfFile
-     * @param email
-     * @return result true if article is created successfully
-     * @throws SQLException
-	 * @throws FileNotFoundException
-     */
-    public static int createArticle(String title, String description, File pdfFile, int ISSN, String email) throws SQLException, FileNotFoundException {
-        openConnection();
-        PreparedStatement pstmt = null;
-        int submissionID = 0;
-        try {
-            FileInputStream inputStream = new FileInputStream(pdfFile);
-            try {
-                pstmt = con.prepareStatement(" INSERT INTO `team021`.`article` (`title`, `abstract`, `linkedFinalPDF`, `isPublished`, `ISSN`, `mAuthorEmail`)"
-                        + " VALUES (?, ?, ?, 0, ?, ?)");
-                pstmt.setString(1, title);
-                pstmt.setString(2, description);
-                pstmt.setBlob(3,inputStream);
-                pstmt.setInt(4, ISSN);
-                pstmt.setString(5, email);
-
-                ResultSet res = pstmt.executeQuery("SELECT * FROM `article` ORDER BY `submissionID` DESC LIMIT 1");
-                res.next();
-                submissionID = res.getInt(1) + 1;
-
-                int count = pstmt.executeUpdate();
-                System.out.println("Rows updated " + count);
-            } catch (SQLException ex) {
-                ex.printStackTrace();
-            } finally {
-                if (pstmt != null) pstmt.close();
-                closeConnection();
-            }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        return submissionID;
-    }
-
-    /**
-     * Create a new submission linked to article by submissionID
-     * @param pdfFile
-     * @return result true if article is created successfully
-     * @throws SQLException
-	 * @throws FileNotFoundException
-     */
-    public static int createSubmission(File pdfFile) throws SQLException, FileNotFoundException {
-        openConnection();
-        PreparedStatement pstmt = null;
-        Statement stmt = null;
-        FileInputStream inputStream= new FileInputStream(pdfFile);
-        int submissionID = 0;
-        try {
-        	 stmt = con.createStatement();
-        	 // get the id of article (last entry in the table)
-        	 ResultSet res = stmt.executeQuery("SELECT * FROM `article` ORDER BY `submissionID` DESC LIMIT 1");
-             res.next();
-             submissionID = res.getInt(1);
-
-             pstmt = con.prepareStatement(" INSERT INTO `team021`.`submission` (`submissionID`, `linkedDraftPDF`, `reviewCount`, `status`) "
-             		+ " VALUES (?, ?, 0, ?)");
-             pstmt.setInt(1, submissionID);
-             pstmt.setBlob(2, inputStream);
-             pstmt.setString(3,"submitted");
-
-             int count = pstmt.executeUpdate();
-             System.out.println("Rows updated " + count);
-         } catch (SQLException ex) {
-             ex.printStackTrace();
-         } finally {
-             if (pstmt != null) pstmt.close();
-             if (stmt != null) stmt.close();
-             closeConnection();
-         }
-         return submissionID;
-     }
-
-    /**
-     * Get an article with all parameters by submissionID
-     * @param submissionID
-     * @return selected article
-     * @throws SQLException
-     * @throws IOException
-     */
-    public static boolean getArticlePDF(int submissionId) throws SQLException, IOException {
-        openConnection();
-        PreparedStatement pstmt = null;
-        boolean result = false;
-        InputStream input = null;
-        FileOutputStream output = null;
-        try {
-
-        	pstmt = con.prepareStatement("SELECT * FROM article WHERE submissionID = ?");
-            pstmt.setInt(1, submissionId);
-            ResultSet res = pstmt.executeQuery();
-            File articlePDF = new File("article.pdf");
-            output = new FileOutputStream(articlePDF);
-            if (res.next()) {
-                result = true;
-            	input = res.getBinaryStream("linkedFinalPDF");
-            	byte[] buffer = new byte [1024];
-            	while (input.read(buffer) > 0) {
-            		output.write(buffer);
-            	}
-            }
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        } finally {
-            if (pstmt != null) pstmt.close();
-            if (input != null) input.close();
-            if (output != null) output.close();
-            closeConnection();
-        }
-        return result;
-    }
-
     /**
      * Get a list of all journals from database
      * @return list of journals
@@ -284,6 +182,7 @@ public class JournalController extends SqlController {
         }
         return journals;
     }
+    
     
     /**
      * Get a list of all articles from database
@@ -349,42 +248,43 @@ public class JournalController extends SqlController {
 
     
     /**
-     * Get a list of all editions from database
+     * Get a list of all editions by issn and volume number
      * @return list of editions
      * @throws SQLException
      */
-    public static LinkedList<Edition> getEditions() throws SQLException {
+    public static LinkedList<Edition> getEditions(int issn, int volNum) throws SQLException {
         LinkedList<Edition> editions = new LinkedList<Edition>();
         openConnection();
-        Statement stmt = null;
+        PreparedStatement pstmt = null;
         try {
-            stmt = con.createStatement();
-            ResultSet res = stmt.executeQuery("SELECT * FROM `edition`");
+            pstmt = con.prepareStatement("SELECT * FROM `edition` WHERE (`ISSN` = ?) and (`volNum` = ?)");
+            ResultSet res = pstmt.executeQuery();
+            
 
             while (res.next()) {
             	int noNum = res.getInt("noNum");
                 int pubMonth = res.getInt("pubMonth");
-                int volNum = res.getInt("volNum");
                 int artCount = res.getInt("artCount");
             	
-                Edition edition = new Edition(noNum, pubMonth, volNum, artCount);
+                Edition edition = new Edition(issn, volNum, noNum, pubMonth, artCount);
                 editions.add(edition);
             }
         } catch (SQLException ex) {
             ex.printStackTrace();
         } finally {
-            if (stmt != null) stmt.close();
+            if (pstmt != null) pstmt.close();
             closeConnection();
         }
         return editions;
     }
+    
     
     /**
      * Get a list of a given editor journals
      * @return list of journals
      * @throws SQLException
      */
-    public static LinkedList<Integer> getEditorsJournals(String email) throws SQLException {
+    public static LinkedList<Integer> getEditorJournals(String email) throws SQLException {
         LinkedList<Integer> journals = new LinkedList<Integer>();
         openConnection();
         PreparedStatement pstmt = null;
@@ -407,6 +307,7 @@ public class JournalController extends SqlController {
         return journals;
     }
 
+    
     /**
      * Get a list of all volumes of a given journal
      * @param issn
@@ -576,13 +477,12 @@ public class JournalController extends SqlController {
             //UserController.createEditor("neweidtorr", 65432345);
             //chiefEditorRetire("james.potter@warwick.ac.uk", 65432345);
             
-            getEditorsJournals("neweidtorr");
+            getEditorJournals("neweidtorr");
             
            // System.out.println("Create volume test:");
            // System.out.println(createVolume(87645312)); // false
            // System.out.println(createVolume(65432345)); // true
             System.out.println(getAllArticles());
-            System.out.println(getEditions());
             
             
         } catch (SQLException ex) {

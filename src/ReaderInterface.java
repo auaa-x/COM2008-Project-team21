@@ -41,7 +41,7 @@ public class ReaderInterface extends JFrame implements ActionListener {
 
         //create the menu
         menuBar = new JMenuBar();
-        login = new JMenuItem("Login");
+        login = new JMenuItem("Back to login");
         //file.addActionListener(this);
         login.addActionListener(this);
         menuBar.add(login);
@@ -194,6 +194,7 @@ public class ReaderInterface extends JFrame implements ActionListener {
         SwingUtilities.invokeLater(() -> {
             try {
                 new ReaderInterface();
+
             } catch (IOException | SQLException e) {
                 e.printStackTrace();
             }

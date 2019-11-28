@@ -199,7 +199,7 @@ public class LoginInterface extends JFrame implements ActionListener, ItemListen
             this.dispose();
             try {
                 new ReaderInterface();
-            } catch (IOException | SQLException ex) {
+            } catch (SQLException | IOException ex) {
                 ex.printStackTrace();
             }
         }
