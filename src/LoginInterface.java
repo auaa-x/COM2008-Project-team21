@@ -198,7 +198,7 @@ public class LoginInterface extends JFrame implements ActionListener, ItemListen
         else if (e.getSource() == btnNoLogin){
             this.dispose();
             try {
-                new readerInterface();
+                new ReaderInterface();
             } catch (IOException ex) {
                 ex.printStackTrace();
             }

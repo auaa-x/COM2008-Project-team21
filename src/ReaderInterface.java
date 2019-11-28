@@ -16,7 +16,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 
 
-public class readerInterface extends JFrame implements ActionListener {
+public class ReaderInterface extends JFrame implements ActionListener {
     private JTree tree;
     private JLabel selectedLabel;
     private JScrollPane treeScrolPane;
@@ -30,7 +30,7 @@ public class readerInterface extends JFrame implements ActionListener {
     private JButton open;
 
 
-    public readerInterface() throws IOException {
+    public ReaderInterface() throws IOException {
         this.setTitle("Reader Interface");
         this.setSize(1000, 600);
         this.setLocationRelativeTo(null);
@@ -38,7 +38,7 @@ public class readerInterface extends JFrame implements ActionListener {
 
         //create the menu
         menuBar = new JMenuBar();
-        login = new JMenuItem("Login");
+        login = new JMenuItem("Back to login");
         //file.addActionListener(this);
         login.addActionListener(this);
         menuBar.add(login);
@@ -220,7 +220,7 @@ public class readerInterface extends JFrame implements ActionListener {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             try {
-                new readerInterface();
+                new ReaderInterface();
             } catch (IOException e) {
                 e.printStackTrace();
             }

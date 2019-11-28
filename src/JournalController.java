@@ -483,7 +483,6 @@ public class JournalController extends SqlController {
            // System.out.println(createVolume(87645312)); // false
            // System.out.println(createVolume(65432345)); // true
             System.out.println(getAllArticles());
-            System.out.println(getEditions());
             
             
         } catch (SQLException ex) {
