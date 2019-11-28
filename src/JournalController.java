@@ -285,7 +285,6 @@ public class JournalController extends SqlController {
         return journals;
     }
     
-  //put into JournalController after done
     /**
      * Get a list of all articles from database
      * @return list of articles
@@ -318,7 +317,37 @@ public class JournalController extends SqlController {
         }
         return articles;
     }
+    
+    
+    /**
+     * Get a journal by issn
+     * @return list of articles
+     * @throws SQLException
+     */
+    public static Journal getJournal(int issn) throws SQLException {
+        openConnection();
+        PreparedStatement pstmt = null;
+        Journal journal = null;
+        try {
+            pstmt = con.prepareStatement("SELECT * FROM `journal` WHERE issn = ?");
+            pstmt.setInt(1, issn);
+            ResultSet res = pstmt.executeQuery();      
+                       
+            if (res.next()) {
+                String title = res.getString("title"); 
+                String chief = res.getString("chiefEditorEmail");
+                journal = new Journal(issn, title, chief);
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        return journal;
+    }
 
+    
     /**
      * Get a list of all editions from database
      * @return list of editions
