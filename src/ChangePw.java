@@ -117,6 +117,7 @@ public class ChangePw extends JFrame implements ActionListener {
         String oldPassword = String.valueOf(oldPwField.getPassword());
         String newPassword = String.valueOf(newPwField.getPassword());
         String cfPassword = String.valueOf(cfPwField.getPassword());
+        int userType = UserController.getLoggedUserType();
         //JOptionPane.showMessageDialog(null, "Password changed successfully!");
        //dispose();
         //new AuthorInterface(username);
@@ -126,6 +127,14 @@ public class ChangePw extends JFrame implements ActionListener {
                 JOptionPane.showMessageDialog(null, "Password changed successfully!");
                 //AuthorInterface.authorPwChanged = true;
                 dispose();
+                switch (userType){
+                    case 1:
+                        new EditorInterface(username);
+                    case 2:
+                        new AuthorInterface(username);
+                    case 3:
+                        //new ReviewerInterface(username);
+                }
                 new AuthorInterface(username);
             } else {
                 JOptionPane.showMessageDialog(null, "Details incorrect!");

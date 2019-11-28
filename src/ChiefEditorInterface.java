@@ -13,29 +13,45 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.LinkedList;
 
 
 public class ChiefEditorInterface extends JFrame implements ActionListener {
-	private JTree tree;
-	private JLabel selectedLabel;
-	private JScrollPane treeScrollPane;
 	private JMenuBar menuBar;
 	private JMenu staff, journal;
 	private JMenuItem register, appoint, passChiefEditor, retire, publish, delay, logOut;
 	private File article = new File("./article.pdf");
 	private Desktop desktop = Desktop.getDesktop();
-	private JPanel infoPanel = new JPanel();
+
+	private JTree tree;
+	private JLabel selectedLabel;
+	private JScrollPane treeScrollPane;
+	private JPanel treePanel;
+
+	private JPanel infoPanel;
 	private JLabel infoTitle;
 	private JButton open;
 	private String username;
+	private LinkedList<Integer> journals;
 
 
-	ChiefEditorInterface(String username) {
-		this.setTitle("Chief Editor Interface");
+	ChiefEditorInterface(String username) throws SQLException {
+
+		this.setTitle("Editor Interface");
 		this.setSize(1000, 600);
 		this.setLocationRelativeTo(null);
 		this.setResizable(false);
+
+
 		this.username = username;
+		journals = new LinkedList<Integer>();
+		journals = JournalController.getEditorsJournals(username);
+
+
+
+		//set up panels
+		infoPanel = new JPanel();
+		treePanel = new JPanel();
 
 		//create the menu
 		menuBar = new JMenuBar();
@@ -68,10 +84,9 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 		journal.add(publish);
 		journal.add(delay);
 
-
-
-
 		this.setJMenuBar(menuBar);
+
+
 		//set up the article information panel
 		infoPanel.setPreferredSize(new Dimension(725, 525));
 
@@ -86,8 +101,6 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 
 
 
-		//create the tree panel
-		JPanel treePanel = new JPanel();
 		//create the root node
 		DefaultMutableTreeNode root = new DefaultMutableTreeNode("Journal Publish System");
 		//create the child nodes as root name
@@ -175,34 +188,6 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 
 
 
-     /*   tree.addMouseListener(new MouseAdapter() {
-            public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() == 2) {
-                    DefaultMutableTreeNode node = (DefaultMutableTreeNode)
-                            tree.getLastSelectedPathComponent();
-                    if (node == null) return;
-                    Object nodeInfo = node.getUserObject();
-                    // Cast nodeInfo to your object and do whatever you want
-                }
-            }
-        });*/
-
-         /*
-    @Override
-            public void valueChanged(TreeSelectionEvent e) {
-            DefaultMutableTreeNode node = (DefaultMutableTreeNode)tree.getLastSelectedPathComponent();
-
-            if (node == null)
-                return;
-
-            Object object = node.getUserObject();
-            if (node.isLeaf()) {
-                Article title = (Article) object;
-                System.out.println("you choosed:"+ title.toString());
-            }
-     */
-
-
 
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		this.setVisible(true);
@@ -212,32 +197,60 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		//register, appoint, passChiefEditor, retire, publish, delay;
+		//log out
 		if (e.getSource() == logOut) {
 			this.dispose();
 			JOptionPane.showMessageDialog(null, "You have logged out successfully!");
 			new LoginInterface();
-		} else if(e.getSource() == register) {
+		}
 
-		} else if(e.getSource() == appoint) {
-			//String[] journalLists = {"here is journal"};
-			//JComboBox jcb = new JComboBox(list);
-			//JOptionPane.showMessageDialog( null, jcb, "select or type a value", JOptionPane.QUESTION_MESSAGE);
-			//jcb.getSelectedItem()
+		//register an editor
+		else if(e.getSource() == register) {
+
+		}
+
+		//appoint an editor (add user type 1(editor) to an existed user )
+		else if(e.getSource() == appoint) {
+			JComboBox journalSelection = new JComboBox(journals.toArray());
+			JOptionPane.showMessageDialog( null, journalSelection, "please select a journal", JOptionPane.QUESTION_MESSAGE);
+
 			String appointed  = JOptionPane.showInputDialog("Please enter other editor's email address");
-
+			try {
+				UserController.addRole(appointed, 1);
+				UserController.createEditor(appointed, (Integer)journalSelection.getSelectedItem());
+				if ( UserController.checkUsertype(appointed,1)) {
+					JOptionPane.showMessageDialog(null,"Editor added successfully!");
+				} else {
+					JOptionPane.showMessageDialog(null,"Please try again!");
+				}
+			} catch (SQLException ex) {
+				ex.printStackTrace();
+			}
 			//System.out.printf("The user's name is '%s'.\n", name);
-		} else if(e.getSource() == passChiefEditor) {
+		}
 
-		} else if(e.getSource() == retire) {
+		//pass the chief editor to other editor
+		else if (e.getSource() == passChiefEditor) {
 
-		} else if (e.getSource() == publish){
+		}
+
+		//retire
+		else if (e.getSource() == retire){
+
+		}
+		else if (e.getSource() == publish) {
 
 		}
 	}
 
 	public static void main(String[] args) {
 		SwingUtilities.invokeLater(() -> {
-			new ChiefEditorInterface("Chief Editor");
+			try {
+				new ChiefEditorInterface("Chief Editor");
+			} catch (SQLException e) {
+				JOptionPane.showMessageDialog(null, "Can not connect to the  server, please try again.");
+				e.printStackTrace();
+			}
 		});
 	}
 

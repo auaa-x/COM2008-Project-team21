@@ -14,12 +14,15 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.LinkedList;
 
 
-public class readerInterface extends JFrame implements ActionListener {
+public class ReaderInterface extends JFrame implements ActionListener {
     private JTree tree;
     private JLabel selectedLabel;
     private JScrollPane treeScrolPane;
+    private LinkedList<Journal> journals = new LinkedList<Journal>();
+    private LinkedList<Volume> volumes = new LinkedList<Volume>();
     private JMenuBar menuBar;
     private JMenu view;
     private JMenuItem login;
@@ -30,7 +33,7 @@ public class readerInterface extends JFrame implements ActionListener {
     private JButton open;
 
 
-    public readerInterface() throws IOException {
+    public ReaderInterface() throws IOException, SQLException {
         this.setTitle("Reader Interface");
         this.setSize(1000, 600);
         this.setLocationRelativeTo(null);
@@ -55,10 +58,6 @@ public class readerInterface extends JFrame implements ActionListener {
         open = new JButton("Open");
         open.addActionListener(this);
         open.setFont(new Font("Tahoma", Font.PLAIN, 15));
-
-
-
-
         /*
         infoPanel.setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
@@ -89,48 +88,22 @@ public class readerInterface extends JFrame implements ActionListener {
         JPanel treePanel = new JPanel();
         //create the root node
         DefaultMutableTreeNode root = new DefaultMutableTreeNode("Journal Publish System");
-        //create the child nodes as root name
-        DefaultMutableTreeNode csJournal = new DefaultMutableTreeNode("Journal of Computer Science");
-        DefaultMutableTreeNode seJournal = new DefaultMutableTreeNode("Journal of Software Engineering");
-        DefaultMutableTreeNode aiJournal = new DefaultMutableTreeNode("Journal of Artificial Intelligence");
+        journals = JournalController.getAllJournals();
+        //getVolumes(int issn);
+
+        for (Journal journal : journals) {
+            DefaultMutableTreeNode journal1 = new DefaultMutableTreeNode(journal.getTitle());
+            root.add(journal1);
+            for (Volume volume : JournalController.getVolumes(journal.getIssn())) {
+                DefaultMutableTreeNode volume1 = new DefaultMutableTreeNode("vol. " + volume.getVolNum());
+                journal1.add(volume1);
+                //for (Edition edition : JournalController.getEditors())
+            }
+        }
         DefaultMutableTreeNode test = new DefaultMutableTreeNode("test");
-
-        //create other tree items as Journals
-        DefaultMutableTreeNode volumeNode = new DefaultMutableTreeNode("Volume");
-        DefaultMutableTreeNode volumeNode1 = new DefaultMutableTreeNode("Volume1");
-        DefaultMutableTreeNode volumeNode2 = new DefaultMutableTreeNode("Volume");
         DefaultMutableTreeNode testFile = new DefaultMutableTreeNode("test file");
-
-        //add volumes to journal node
-        csJournal.add(volumeNode);
-        seJournal.add(volumeNode1);
-        aiJournal.add(volumeNode2);
         test.add(testFile);
-
-        //create other tree items as Volumes
-        DefaultMutableTreeNode editionNode = new DefaultMutableTreeNode("Edition");
-        DefaultMutableTreeNode editionNode1 = new DefaultMutableTreeNode("Edition1");
-        //add Editions to Volume node
-        volumeNode.add(editionNode);
-        volumeNode.add(editionNode1);
-        //create other tree items as Editions
-        editionNode.add(new DefaultMutableTreeNode("Capsicum"));
-        editionNode.add(new DefaultMutableTreeNode("Carrot"));
-        editionNode.add(new DefaultMutableTreeNode("Tomato"));
-        editionNode.add(new DefaultMutableTreeNode("Potato"));
-
-        editionNode1.add(new DefaultMutableTreeNode("Banana"));
-        editionNode1.add(new DefaultMutableTreeNode("Mango"));
-        editionNode1.add(new DefaultMutableTreeNode("Apple"));
-        editionNode1.add(new DefaultMutableTreeNode("Grapes"));
-        editionNode1.add(new DefaultMutableTreeNode("Orange"));
-
         testFile.add(new DefaultMutableTreeNode("Article"));
-
-        //add the child nodes to the root node
-        root.add(csJournal);
-        root.add(seJournal);
-        root.add(aiJournal);
         root.add(test);
 
         //create the tree by passing in the root node
@@ -211,7 +184,7 @@ public class readerInterface extends JFrame implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == login) {
-            this.setVisible(false);
+            this.dispose();
             System.out.println(1);
             new LoginInterface();
         }
@@ -220,8 +193,8 @@ public class readerInterface extends JFrame implements ActionListener {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             try {
-                new readerInterface();
-            } catch (IOException e) {
+                new ReaderInterface();
+            } catch (IOException | SQLException e) {
                 e.printStackTrace();
             }
         });
