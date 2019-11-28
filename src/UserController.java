@@ -529,7 +529,7 @@ public class UserController extends SqlController {
         // STILL NEED TO CREATE TABLE ENTRIES FOR AUTHOR AND REVIEWER !!!!!!!!!!!!
         if (createUser(email, title, forename, surname, university, password, 2) && addRole(email, 3)) {
             result = true;
-            int submissionID = JournalController.createArticle(articleTitle, description, pdfFile, ISSN, email);
+            int submissionID = ArticleController.createArticle(articleTitle, description, pdfFile, ISSN, email);
             addCoAuthors(sharedPassword, submissionID);
         }
         return result;
