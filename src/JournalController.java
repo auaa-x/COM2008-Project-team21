@@ -478,7 +478,7 @@ public class JournalController extends SqlController {
         PreparedStatement pstmt = null;
         try {
             // continue only if 2 or more editors are on board now
-            if (editors.size() <= 2) {
+            if (editors.size() >= 2) {
                 // remove the old chief editor from the list
                 editors.remove(oldChiefEmail);
                 // find a new editor
@@ -553,7 +553,7 @@ public class JournalController extends SqlController {
     public static void main (String[] args) throws IOException {
     	//File pdfFile = new File("./Systems Design Project.pdf");
         try {
-            System.out.println(getVolumes(777777777));
+            System.out.println(getVolumes(77777777));
             
         } catch (SQLException ex) {
             ex.printStackTrace();

@@ -42,7 +42,7 @@ public class ArticleController extends SqlController {
                 pstmt.setInt(4, ISSN);
                 pstmt.setString(5, email);
 
-                ResultSet res = pstmt.executeQuery("SELECT * FROM `article` ORDER BY `submissionID` DESC LIMIT 1");
+                ResultSet res = pstmt.executeQuery("SELECT COUNT(*) FROM `article`");
                 res.next();
                 submissionID = res.getInt(1) + 1;
 
@@ -177,8 +177,8 @@ public class ArticleController extends SqlController {
      * @return list of author's submissions
      * @throws SQLException
      */
-    public static LinkedList<Submissions> getSubmissions(String email) throws SQLException {
-        LinkedList<Submissions> submissions = new LinkedList<Submissions>();
+    public static LinkedList<Submission> getSubmissions(String email) throws SQLException {
+        LinkedList<Submission> submissions = new LinkedList<Submission>();
         openConnection();
         PreparedStatement pstmt = null;
         try {
@@ -192,7 +192,7 @@ public class ArticleController extends SqlController {
                 int reviewCount = res.getInt("reviewCount");
                 String status = res.getString("status");
                 
-                Submissions submission = new Submissions(submissionID, reviewCount, status);
+                Submission submission = new Submission(submissionID, reviewCount, status);
                 submissions.add(submission);
             }
         } catch (SQLException ex) {

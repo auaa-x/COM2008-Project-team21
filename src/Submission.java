@@ -1,15 +1,13 @@
-import java.io.File;
-
 /**
  * Class for Submissions object
  * @author Julia Derebecka
  */
-public class Submissions {
+public class Submission {
 	private int submissionID;
     private int reviewCount;
     private String status;
     
-    Submissions(int submissionID, int reviewCount, String status) {
+    Submission(int submissionID, int reviewCount, String status) {
         this.submissionID = submissionID;
         this.reviewCount = reviewCount;
         this.status = status;
