@@ -530,6 +530,7 @@ public class UserController extends SqlController {
         if (createUser(email, title, forename, surname, university, password, 2) && addRole(email, 3)) {
             result = true;
             int submissionID = ArticleController.createArticle(articleTitle, description, pdfFile, ISSN, email);
+            createAuthor(email, submissionID);
             if (!coAuthorsList.isEmpty()) addCoAuthors(sharedPassword, submissionID);
         }
         return result;
@@ -553,7 +554,7 @@ public class UserController extends SqlController {
             createTempUser(email, sharedPassword, 2);
             addRole(email, 2); // author role
             createAuthor(email, submissionID);
-            addRole(email, 3); // author role
+            addRole(email, 3); // reviewer role
             result = true;
         }
         return result;
