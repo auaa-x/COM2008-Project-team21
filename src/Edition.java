@@ -39,6 +39,6 @@ public class Edition {
     }
     
     public String toString() {
-    	return "vol. " + getVolNum() + "no. " + getNoNum();
+    	return "no. " + getNoNum();
     }
 }
