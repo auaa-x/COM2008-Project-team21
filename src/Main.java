@@ -3,8 +3,8 @@
  * @author Ting Guo
  */
 
-public class main {
-    public static void main (String[] args) {
+public class Main {
+    public static void Main (String[] args) {
         //launching code goes in here
         new LoginInterface();
     }

@@ -565,14 +565,14 @@ public class JournalController extends SqlController {
             //UserController.createEditor("neweidtorr", 65432345);
             //chiefEditorRetire("james.potter@warwick.ac.uk", 65432345);
             
-            //getEditorJournals("neweidtorr");
+            getEditorJournals("neweidtorr");
             
            // System.out.println("Create volume test:");
            // System.out.println(createVolume(87645312)); // false
            // System.out.println(createVolume(65432345)); // true
            // System.out.println(getAllArticles());
            // System.out.println(getPublishedArticles(12345678, 1, 1));
-            System.out.println(createEdition(12345678, 1));
+            System.out.println(createEdition(65432345, 2));
             
             
         } catch (SQLException ex) {
