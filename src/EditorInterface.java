@@ -212,6 +212,7 @@ public class EditorInterface extends JFrame implements ActionListener {
             new LoginInterface();
         }
         else if (e.getSource() == toChiefEditor) {
+            dispose();
             try {
                 new ChiefEditorInterface(username);
             } catch (SQLException ex) {
