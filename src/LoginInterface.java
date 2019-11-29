@@ -92,6 +92,7 @@ public class LoginInterface extends JFrame implements ActionListener, ItemListen
 
 
         //layouts
+        this.setLayout(new FlowLayout());
         //notice panel
         noticePanel.setLayout(new FlowLayout());
         //fields panel
@@ -136,7 +137,6 @@ public class LoginInterface extends JFrame implements ActionListener, ItemListen
         this.add(fieldsPanel);
         this.add(buttonPane);
 
-        this.setLayout(new FlowLayout());
         setDefaultCloseOperation(EXIT_ON_CLOSE); //ensure that Java terminates on close
         setVisible(true);
     }
@@ -171,7 +171,7 @@ public class LoginInterface extends JFrame implements ActionListener, ItemListen
                         JOptionPane.showMessageDialog(null, "Logged in");
                         switch (userType) {
                             case 1 : //Editor
-                                new ChiefEditorInterface(userName);
+                                new EditorInterface(userName);
                                 break;
                             case 2 : //Author
                                 new AuthorInterface(userName);
@@ -198,8 +198,8 @@ public class LoginInterface extends JFrame implements ActionListener, ItemListen
         else if (e.getSource() == btnNoLogin){
             this.dispose();
             try {
-                new readerInterface();
-            } catch (IOException ex) {
+                new ReaderInterface();
+            } catch (SQLException | IOException ex) {
                 ex.printStackTrace();
             }
         }
@@ -218,9 +218,9 @@ public class LoginInterface extends JFrame implements ActionListener, ItemListen
         }
     }
 
-    public static void main (String[] args) {
-        //launching code goes in here
-        new LoginInterface();
-    }
+        public static void main (String[] args) {
+            //launching code goes in here
+            new LoginInterface();
+        }
 
 }

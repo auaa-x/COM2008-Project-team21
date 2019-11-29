@@ -258,6 +258,8 @@ public class JournalController extends SqlController {
         PreparedStatement pstmt = null;
         try {
             pstmt = con.prepareStatement("SELECT * FROM `edition` WHERE (`ISSN` = ?) and (`volNum` = ?)");
+            pstmt.setInt(1, issn);
+            pstmt.setInt(2, volNum);
             ResultSet res = pstmt.executeQuery();
             
 
@@ -276,6 +278,44 @@ public class JournalController extends SqlController {
             closeConnection();
         }
         return editions;
+    }
+    
+    
+    /**
+     * Get all published articles by journal, volume and edition
+     * @return list of editions
+     * @throws SQLException
+     */
+    public static LinkedList<Article> getPublishedArticles(int issn, int volNum, int noNum) throws SQLException {
+        LinkedList<Article> articles = new LinkedList<Article>();
+        openConnection();
+        PreparedStatement pstmt = null;
+        try {
+            
+            pstmt = con.prepareStatement("SELECT * FROM article a, published_article p WHERE (a.submissionID = p.submissionID) "
+                    + "and (a.ISSN = ?) and (a.isPublished = 1) and (p.volNum = ?) and (p.noNum = ?)");
+            pstmt.setInt(1, issn);
+            pstmt.setInt(2, volNum);
+            pstmt.setInt(3, noNum); 
+            ResultSet res = pstmt.executeQuery();
+            
+            while (res.next()) {
+                int submissionID = res.getInt("submissionID");
+                String title = res.getString("title");
+                String artAbstract = res.getString("abstract");
+                boolean isPublished = res.getBoolean("isPublished");
+                String mAuthorEmail = res.getString("mAuthorEmail");
+                
+                Article article = new Article(submissionID, title, artAbstract, isPublished, issn, mAuthorEmail);
+                articles.add(article);
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        return articles;
     }
     
     
@@ -467,23 +507,23 @@ public class JournalController extends SqlController {
     	//File pdfFile = new File("./Systems Design Project.pdf");
         try {
 
-            System.out.println(getAllJournals());
+            //System.out.println(getAllJournals());
             //create article test
             //System.out.println(createArticle("Long and Dark11", "long and dark nights11", pdfFile, 2934554, "john.barker@dheffff11.ac.uk" ));
             //System.out.println(createSubmission(pdfFile));
 
-            System.out.println(getVolumes(65432345));
+            //System.out.println(getVolumes(65432345));
             
             //UserController.createEditor("neweidtorr", 65432345);
             //chiefEditorRetire("james.potter@warwick.ac.uk", 65432345);
             
-            getEditorJournals("neweidtorr");
+            //getEditorJournals("neweidtorr");
             
            // System.out.println("Create volume test:");
            // System.out.println(createVolume(87645312)); // false
            // System.out.println(createVolume(65432345)); // true
-            System.out.println(getAllArticles());
-            System.out.println(getEditions());
+           // System.out.println(getAllArticles());
+            System.out.println(getPublishedArticles(12345678, 1, 1));
             
             
         } catch (SQLException ex) {
