@@ -88,7 +88,7 @@ public class EditorInterface extends JFrame implements ActionListener {
 
         changePw.addActionListener(this);
         toChiefEditor.addActionListener(this);
-        if ( !UserController.isChiefEditor(username, issn )){ toChiefEditor.setEnabled(false);} else {toChiefEditor.setEnabled(true);}
+        //if ( !UserController.isChiefEditor(username, issn )){ toChiefEditor.setEnabled(false);} else {toChiefEditor.setEnabled(true);}
         retire.addActionListener(this);
         settings.add(changePw);
         settings.add(toChiefEditor);
@@ -211,7 +211,13 @@ public class EditorInterface extends JFrame implements ActionListener {
             JOptionPane.showMessageDialog(null, "You have logged out successfully!");
             new LoginInterface();
         }
-
+        else if (e.getSource() == toChiefEditor) {
+            try {
+                new ChiefEditorInterface(username);
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+        }
         //retire
         else if (e.getSource() == retire){
             String[] options = {"Yes", "No"};

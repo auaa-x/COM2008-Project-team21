@@ -8,6 +8,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.LinkedList;
 
 /**
  * Class for article data manipulation in MySQL database
@@ -136,12 +137,80 @@ public class ArticleController extends SqlController {
         return result;
     }
     
+    /**
+     * Get all published articles by author
+     * @return list of author's articles
+     * @throws SQLException
+     */
+    public static LinkedList<Article> getAuthorsArticles(String email) throws SQLException {
+        LinkedList<Article> articles = new LinkedList<Article>();
+        openConnection();
+        PreparedStatement pstmt = null;
+        try {
+            
+            pstmt = con.prepareStatement("SELECT * FROM article a, author p WHERE (a.submissionID = p.submissionID) and (p.email = ?) and (isPublished = 0)");
+            pstmt.setString(1, email); 
+            ResultSet res = pstmt.executeQuery();
+            
+            while (res.next()) {
+                int submissionID = res.getInt("submissionID");
+                String title = res.getString("title");
+                String artAbstract = res.getString("abstract");
+                boolean isPublished = res.getBoolean("isPublished");
+                int issn = res.getInt("ISSN");
+                String mAuthorEmail = res.getString("mAuthorEmail");
+                
+                Article article = new Article(submissionID, title, artAbstract, isPublished, issn, mAuthorEmail);
+                articles.add(article);
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        return articles;
+    }
+    
+    /**
+     * Get all submissions by author
+     * @return list of author's submissions
+     * @throws SQLException
+     */
+    public static LinkedList<Submissions> getSubmissions(String email) throws SQLException {
+        LinkedList<Submissions> submissions = new LinkedList<Submissions>();
+        openConnection();
+        PreparedStatement pstmt = null;
+        try {
+            
+            pstmt = con.prepareStatement("SELECT * FROM submission s, author a WHERE (s.submissionID = a.submissionID) and (a.email = ?)");
+            pstmt.setString(1, email); 
+            ResultSet res = pstmt.executeQuery();
+            
+            while (res.next()) {
+                int submissionID = res.getInt("submissionID");
+                int reviewCount = res.getInt("reviewCount");
+                String status = res.getString("status");
+                
+                Submissions submission = new Submissions(submissionID, reviewCount, status);
+                submissions.add(submission);
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        return submissions;
+    }
+    
+    
     public static void main (String[] args) throws IOException {
     
         try {
 
-            System.out.println(getArticlePDF(20));
-            
+            System.out.println(getSubmissions("severus.snape@hogwarts.co.uk"));
+            System.out.println(getSubmissions("john.barker@dheffff11.ac.uk"));
             
         } catch (SQLException ex) {
             ex.printStackTrace();
