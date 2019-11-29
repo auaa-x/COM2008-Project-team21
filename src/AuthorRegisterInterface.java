@@ -13,29 +13,34 @@ import java.io.FileNotFoundException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.SQLException;
+import java.util.LinkedList;
 
 
 @SuppressWarnings("serial")
 public class AuthorRegisterInterface extends JFrame implements ActionListener, ItemListener {
+    private static final long serialVersionUID = 1L;
     private JTextField emailField;
     private JPasswordField passwordField;
+    private JPasswordField cfPasswordField;
     private JComboBox<String> comboTitleTypes;
     private JTextField fnField;
     private JTextField snField;
     private JTextField uniField;
-    private JComboBox<String> comboJnTypes;
+    private JComboBox<Journal> comboJnTypes;
+    private ButtonGroup group;
+    private LinkedList<Journal> journals;
+    private Journal journalSelected;
     private JTextField articleTitleField;
     private JTextArea atAbstractField;
     private JPasswordField sharedPasswordField;
     private JTextArea addedPDF;
     private JTextField coEmailField;
     private JTextArea addedCoAuthorArea;
-    private String journal;
     private String userTitle;
     private Path path = null;
     private File pdf;
     private JProgressBar progressBar;
-    private int issn = 00000000;
+    private int issn;
 
     private JButton resetCoAuthor;
     private JButton btnAddPdf;
@@ -45,7 +50,7 @@ public class AuthorRegisterInterface extends JFrame implements ActionListener, I
 
 
 
-    public AuthorRegisterInterface() {
+    public AuthorRegisterInterface() throws SQLException, FontFormatException {
         this.setTitle("Author Registration");
         this.setSize(1200, 700);
         this.setLocationRelativeTo(null);
@@ -89,6 +94,12 @@ public class AuthorRegisterInterface extends JFrame implements ActionListener, I
         password.setFont(new Font("Arial", Font.PLAIN, 20));
         passwordField = new JPasswordField(15);
         passwordField.setFont(new Font("Arial", Font.PLAIN, 15));
+
+        //password
+        JLabel cfPassword = new JLabel("Confirm Password");
+        cfPassword.setFont(new Font("Arial", Font.PLAIN, 20));
+        cfPasswordField = new JPasswordField(15);
+        cfPasswordField.setFont(new Font("Arial", Font.PLAIN, 15));
 
 
         //user title
@@ -134,28 +145,33 @@ public class AuthorRegisterInterface extends JFrame implements ActionListener, I
         //journal categories combobox
         JLabel lblJournal = new JLabel("Journal");
         lblJournal.setFont(new Font("Arial", Font.PLAIN, 20));
-        String[] JournalTypes = {"Computer Science", "Software Engineering", "Artificial Intelligence"};
-        comboJnTypes = new JComboBox<>(JournalTypes);
+        journals = new LinkedList<Journal>(JournalController.getAllJournals());
+        comboJnTypes = new JComboBox<Journal>();
+        for (Journal journal : journals) {
+            comboJnTypes.addItem(journal);
+        }
+        //comboJnTypes.setSelectedIndex(0);
         comboJnTypes.addItemListener(this);
         comboJnTypes.setFont(new Font("Arial", Font.PLAIN, 16));
+
 
         //article title
         JLabel articleTitle = new JLabel("Title");
         articleTitle.setFont(new Font("Arial", Font.PLAIN, 20));
-        articleTitleField = new JTextField(15);
+        articleTitleField = new JTextField(20);
         articleTitleField.setFont(new Font("Arial", Font.PLAIN, 15));
 
 
         //article abstract
         JLabel atAbstract = new JLabel("Abstract");
         atAbstract.setFont(new Font("Arial", Font.PLAIN, 20));
-        atAbstractField = new JTextArea(5,20);
+        atAbstractField = new JTextArea(8,19);
         atAbstractField.setFont(new Font("Arial", Font.PLAIN, 15));
         JScrollPane abstractPane = new JScrollPane(atAbstractField);
         abstractPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 
         //add PDF button and display
-        addedPDF = new JTextArea(1,15);
+        addedPDF = new JTextArea(1,20);
         addedPDF.setText("Added PDF");
         addedPDF.setFont(new Font("Arial", Font.PLAIN, 15));
         addedPDF.setEditable (false); //set textArea non-editable
@@ -227,7 +243,6 @@ public class AuthorRegisterInterface extends JFrame implements ActionListener, I
         //back button
         back = new JButton("Back");
         back.addActionListener(this);
-        back.setFont(new Font("Tahoma", Font.PLAIN, 20));
 
 
         //layouts
@@ -272,6 +287,8 @@ public class AuthorRegisterInterface extends JFrame implements ActionListener, I
         userPanel.add(emailField, right);
         userPanel.add(password, left);
         userPanel.add(passwordField, right);
+        userPanel.add(cfPassword, left);
+        userPanel.add(cfPasswordField, right);
         userPanel.add(title, left);
         userPanel.add(comboTitleTypes, right);
         userPanel.add(forename, left);
@@ -294,7 +311,7 @@ public class AuthorRegisterInterface extends JFrame implements ActionListener, I
         articlePanel.add(pdfPane, right);
 
         //coAuthorsPanel
-        coAuthorsPanel.add(new JLabel("         "), left);
+        coAuthorsPanel.add(space, left);
         coAuthorsPanel.add(coAuthorFormTitle, right);
         coAuthorsPanel.add(coEmail, left);
         coAuthorsPanel.add(coEmailField, right);
@@ -328,10 +345,9 @@ public class AuthorRegisterInterface extends JFrame implements ActionListener, I
 
 
     public void itemStateChanged(ItemEvent e) {
-        String item = (String)e.getItem();
-        //System.out.println(e.getItem());
         //{"Prof", "Dr", "Mr","Mrs", "Ms", "Miss"};
-        if(e.getSource()== comboTitleTypes){
+        if (e.getSource() == comboTitleTypes) {
+            String item = (String) e.getItem();
             switch (item) {
                 case "Prof":
                     userTitle = "Prof";
@@ -354,29 +370,17 @@ public class AuthorRegisterInterface extends JFrame implements ActionListener, I
                 default:
                     throw new IllegalStateException("Unexpected value: " + item);
             }
-        } else if (e.getSource()==comboJnTypes){
-            switch (item) {
-                case "Computer Science":
-                    journal = "Journal of Computer Science";
-                    break;
-                case "Software Engineering":
-                    journal = "Journal of Software Engineering";
-                    break;
-                case "Artificial Intelligence":
-                    journal = "Journal of Artificial Intelligence";
-                    break;
-            }
+        } else if (e.getSource() == comboJnTypes) {
+            journalSelected = (Journal) comboJnTypes.getSelectedItem();
+          //  System.out.println(journalSelected.getTitle());
         }
-
-
-
     }
 
     public void actionPerformed(ActionEvent e) {
 
         if (e.getSource() == back) {
-            this.setVisible(false);
             new LoginInterface();
+            this.dispose();
         }
         //btnAddPdf actionEvent : get file path from JFileChooser than convert it into file object
         else if (e.getSource() == btnAddPdf) {
@@ -402,39 +406,43 @@ public class AuthorRegisterInterface extends JFrame implements ActionListener, I
             UserController.coAuthorsList.clear();
             addedCoAuthorArea.setText("");
         } else if (e.getSource() == register) {
-        	String email = emailField.getText();
+            String email = emailField.getText();
             String surname = snField.getText();
             String forename = fnField.getText();
             String university = uniField.getText();
+            String cfPw = String.valueOf(cfPasswordField.getPassword());
             String password = String.valueOf(passwordField.getPassword());
             String sharedPassword = String.valueOf(sharedPasswordField.getPassword());
             String articleTitle = articleTitleField.getText();
             String atAbstract = atAbstractField.getText();
-            int issn = 00000000;
-            
-        	if  (!email.trim().isEmpty() && !password.trim().isEmpty() && !forename.trim().isEmpty() &&
-            !surname.trim().isEmpty() && !university.trim().isEmpty()
-            && !sharedPassword.trim().isEmpty() &&  !articleTitle.trim().isEmpty() && UserController.isValidEmail(email)) {
-            try {
-                if (UserController.mainAuthorRegistration(email, userTitle, forename,
-                        surname, university, password, sharedPassword, articleTitle, atAbstract,
-                        pdf, issn)) {
-                    JOptionPane.showMessageDialog(null, "You have registered successfully!");
-                    dispose();
-                    new AuthorInterface(email);
+            int issn = journalSelected.getIssn();
+
+            if (!email.trim().isEmpty() && !password.trim().isEmpty() && !forename.trim().isEmpty() &&
+                    !surname.trim().isEmpty() && !university.trim().isEmpty()
+                    && !sharedPassword.trim().isEmpty() && !articleTitle.trim().isEmpty() && UserController.isValidEmail(email)) {
+                if (!cfPw.equals(password)) {
+                    JOptionPane.showMessageDialog(null, "Please check your password again.");
+                } else {
+                    try {
+                        if (UserController.mainAuthorRegistration(email, userTitle, forename,
+                                surname, university, password, sharedPassword, articleTitle, atAbstract,
+                                pdf, issn)) {
+                            JOptionPane.showMessageDialog(null, "You have registered successfully!");
+                            dispose();
+                            new AuthorInterface(email);
+                        }
+                    } catch (SQLException | FileNotFoundException ex) {
+                        ex.printStackTrace();
+                    }
                 }
-            } catch (SQLException | FileNotFoundException ex) {
-                ex.printStackTrace();
+            } else {
+                JOptionPane.showMessageDialog(null, "Please fill in all fields!");
             }
         }
-        	} else {
-        		JOptionPane.showMessageDialog(null, "Please fill in all fields!");
-        	}
-
     }
 
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws SQLException, FontFormatException {
         new AuthorRegisterInterface();
     }
 }
