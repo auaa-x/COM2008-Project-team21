@@ -73,8 +73,8 @@ public class ArticleController extends SqlController {
         PreparedStatement pstmt = null;
         FileInputStream inputStream= new FileInputStream(pdfFile);
         try {
-             pstmt = con.prepareStatement(" INSERT INTO `team021`.`submission` (`submissionID`, `linkedDraftPDF`, `reviewCount`, `status`) "
-                    + " VALUES (?, ?, 0, ?)");
+             pstmt = con.prepareStatement(" INSERT INTO `team021`.`submission` (`submissionID`, `linkedDraftPDF`) "
+                    + " VALUES (?, ?)");
              pstmt.setInt(1, submissionID);
              pstmt.setBlob(2, inputStream);
 
