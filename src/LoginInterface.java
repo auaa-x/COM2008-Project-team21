@@ -196,12 +196,13 @@ public class LoginInterface extends JFrame implements ActionListener, ItemListen
             }
         }
         else if (e.getSource() == btnNoLogin){
-            this.dispose();
             try {
                 new ReaderInterface();
             } catch (SQLException | IOException ex) {
                 ex.printStackTrace();
             }
+            this.dispose();
+
         }
         else if (e.getSource() == btnRegister){
             String[] options = {"Author", "Chief Editor","back"};
@@ -209,11 +210,15 @@ public class LoginInterface extends JFrame implements ActionListener, ItemListen
                     "Select your role",
                     JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, options[0]);
             if (x == 0){
-                this.setVisible(false);
-                new AuthorRegisterInterface();
+                try {
+                    new AuthorRegisterInterface();
+                } catch (SQLException | FontFormatException ex) {
+                    ex.printStackTrace();
+                }
+                this.dispose();
             } else if (x == 1){
-                this.setVisible(false);
                 new CfEditorRegInterface();
+                this.dispose();
             }
         }
     }

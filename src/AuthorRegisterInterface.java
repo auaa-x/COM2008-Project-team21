@@ -16,7 +16,6 @@ import java.sql.SQLException;
 import java.util.LinkedList;
 
 
-@SuppressWarnings("serial")
 public class AuthorRegisterInterface extends JFrame implements ActionListener, ItemListener {
     private static final long serialVersionUID = 1L;
     private JTextField emailField;
@@ -40,7 +39,6 @@ public class AuthorRegisterInterface extends JFrame implements ActionListener, I
     private Path path = null;
     private File pdf;
     private JProgressBar progressBar;
-    private int issn;
 
     private JButton resetCoAuthor;
     private JButton btnAddPdf;
@@ -94,7 +92,7 @@ public class AuthorRegisterInterface extends JFrame implements ActionListener, I
         passwordField = new JPasswordField(15);
         passwordField.setFont(new Font("Arial", Font.PLAIN, 15));
 
-        //password
+        //confirm password
         JLabel cfPassword = new JLabel("Confirm Password");
         cfPassword.setFont(new Font("Arial", Font.PLAIN, 20));
         cfPasswordField = new JPasswordField(15);
@@ -418,28 +416,46 @@ public class AuthorRegisterInterface extends JFrame implements ActionListener, I
             String atAbstract = atAbstractField.getText();
             int issn = journalSelected.getIssn();
 
+            //check if fields all have been filled
             if (!email.trim().isEmpty() && !password.trim().isEmpty() && !forename.trim().isEmpty() &&
                     !surname.trim().isEmpty() && !university.trim().isEmpty()
-                    && !sharedPassword.trim().isEmpty() && !articleTitle.trim().isEmpty() && UserController.isValidEmail(email)) {
-                if (!cfPw.equals(password)) {
-                    JOptionPane.showMessageDialog(null, "Please check your password again.");
+                    && !sharedPassword.trim().isEmpty() && !articleTitle.trim().isEmpty()) {
+                //email validation
+                if (!UserController.isValidEmail(email)) {
+                    JOptionPane.showMessageDialog(null, "Please input a valid email.");
                 } else {
-                    try {
-                            if (UserController.mainAuthorRegistration(email, userTitle, forename,
-                                    surname, university, password, sharedPassword, articleTitle, atAbstract,
-                                    pdf, issn )) {
-                                JOptionPane.showMessageDialog(null, "You have registered successfully!");
-                                dispose();
-                                new AuthorInterface(email);
+                    //double check password
+                    if (!cfPw.equals(password)) {
+                        JOptionPane.showMessageDialog(null, "Please check your password again.");
+                    } else {
+                        //check password strength
+                        if (!UserController.checkPasswordStrength(password)) {
+                            JOptionPane.showMessageDialog(null,
+                                    "Password is too weak! \nMust include lower and upper case, 8 characters at least.\nSpace is not allowed.");
+                        } else {
+                            //all conditions verified
+                            try {
+                                if (UserController.mainAuthorRegistration(email, userTitle, forename,
+                                        surname, university, password, sharedPassword, articleTitle, atAbstract,
+                                        pdf, issn)) {
+                                    JOptionPane.showMessageDialog(null, "You have registered successfully!");
+                                    dispose();
+                                    new AuthorInterface(email);
+                                }
+                            } catch (SQLException ex) {
+                                ex.printStackTrace();
+                            } catch (FileNotFoundException ex) {
+                                ex.printStackTrace();
                             }
-                    } catch (SQLException | FileNotFoundException ex) {
-                        ex.printStackTrace();
+                        }
                     }
                 }
-            } else {
+            } else{
                 JOptionPane.showMessageDialog(null, "Please fill in all fields!");
             }
         }
+
+
     }
 
 

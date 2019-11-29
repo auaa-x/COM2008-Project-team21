@@ -98,54 +98,28 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 		open.addActionListener(this);
 		open.setFont(new Font("Tahoma", Font.PLAIN, 15));
 
-
-
+		//create the tree panel
+		JPanel treePanel = new JPanel();
 		//create the root node
 		DefaultMutableTreeNode root = new DefaultMutableTreeNode("Journal Publish System");
-		//create the child nodes as root name
-		DefaultMutableTreeNode csJournal = new DefaultMutableTreeNode("Journal of Computer Science");
-		DefaultMutableTreeNode seJournal = new DefaultMutableTreeNode("Journal of Software Engineering");
-		DefaultMutableTreeNode aiJournal = new DefaultMutableTreeNode("Journal of Artificial Intelligence");
-		DefaultMutableTreeNode test = new DefaultMutableTreeNode("test");
+		LinkedList<Journal> journals = JournalController.getAllJournals();
 
-		//create other tree items as Journals
-		DefaultMutableTreeNode volumeNode = new DefaultMutableTreeNode("Volume");
-		DefaultMutableTreeNode volumeNode1 = new DefaultMutableTreeNode("Volume1");
-		DefaultMutableTreeNode volumeNode2 = new DefaultMutableTreeNode("Volume");
-		DefaultMutableTreeNode testFile = new DefaultMutableTreeNode("test file");
-
-		//add volumes to journal node
-		csJournal.add(volumeNode);
-		seJournal.add(volumeNode1);
-		aiJournal.add(volumeNode2);
-		test.add(testFile);
-
-		//create other tree items as Volumes
-		DefaultMutableTreeNode editionNode = new DefaultMutableTreeNode("Edition");
-		DefaultMutableTreeNode editionNode1 = new DefaultMutableTreeNode("Edition1");
-		//add Editions to Volume node
-		volumeNode.add(editionNode);
-		volumeNode.add(editionNode1);
-		//create other tree items as Editions
-		editionNode.add(new DefaultMutableTreeNode("Capsicum"));
-		editionNode.add(new DefaultMutableTreeNode("Carrot"));
-		editionNode.add(new DefaultMutableTreeNode("Tomato"));
-		editionNode.add(new DefaultMutableTreeNode("Potato"));
-
-		editionNode1.add(new DefaultMutableTreeNode("Banana"));
-		editionNode1.add(new DefaultMutableTreeNode("Mango"));
-		editionNode1.add(new DefaultMutableTreeNode("Apple"));
-		editionNode1.add(new DefaultMutableTreeNode("Grapes"));
-		editionNode1.add(new DefaultMutableTreeNode("Orange"));
-
-		testFile.add(new DefaultMutableTreeNode("Article"));
-
-		//add the child nodes to the root node
-		root.add(csJournal);
-		root.add(seJournal);
-		root.add(aiJournal);
-		root.add(test);
-
+		for (Journal journal : journals) {
+			DefaultMutableTreeNode journal1 = new DefaultMutableTreeNode(journal.getTitle());
+			root.add(journal1);
+			for (Volume volume : JournalController.getVolumes(journal.getIssn())) {
+				DefaultMutableTreeNode volume1 = new DefaultMutableTreeNode("vol. " + volume.getVolNum());
+				journal1.add(volume1);
+				for (Edition edition : JournalController.getEditions(volume.getIssn(), volume.getVolNum())) {
+					DefaultMutableTreeNode edition1 = new DefaultMutableTreeNode(edition.toString());
+					volume1.add(edition1);
+					for (Article article : JournalController.getPublishedArticles(journal.getIssn(), edition.getVolNum(), edition.getNoNum())) {
+						DefaultMutableTreeNode article1 = new DefaultMutableTreeNode(article.toString());
+						edition1.add(article1);
+					}
+				}
+			}
+		}
 		//create the tree by passing in the root node
 		tree = new JTree(root);
 
@@ -204,24 +178,25 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 		}
 
 		//register an editor
-		else if(e.getSource() == register) {
+		else if (e.getSource() == register) {
 			/*UserController.createTempUser();
 			UserController.createEditor();*/
 		}
 
 		//appoint an editor (add user type 1(editor) to an existed user )
-		else if(e.getSource() == appoint) {
+		else if (e.getSource() == appoint) {
+			String[] options = {"Yes", "Back"};
 			JComboBox journalSelection = new JComboBox(journals.toArray());
-			JOptionPane.showMessageDialog( null, journalSelection, "please select a journal", JOptionPane.QUESTION_MESSAGE);
+			JOptionPane.showMessageDialog(null, journalSelection, "please select a journal", JOptionPane.QUESTION_MESSAGE);
 
-			String appointed  = JOptionPane.showInputDialog("Please enter other editor's email address");
+			String appointed = JOptionPane.showInputDialog("Please enter other editor's email address");
 			try {
 				UserController.addRole(appointed, 1);
-				UserController.createEditor(appointed, (Integer)journalSelection.getSelectedItem());
-				if ( UserController.checkUsertype(appointed,1)) {
-					JOptionPane.showMessageDialog(null,"Editor added successfully!");
+				UserController.createEditor(appointed, (Integer) journalSelection.getSelectedItem());
+				if (UserController.checkUsertype(appointed, 1)) {
+					JOptionPane.showMessageDialog(null, "Editor added successfully!");
 				} else {
-					JOptionPane.showMessageDialog(null,"Please try again!");
+					JOptionPane.showMessageDialog(null, "Please try again!");
 				}
 			} catch (SQLException ex) {
 				ex.printStackTrace();
@@ -235,27 +210,46 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 		}
 
 		//retire
-		else if (e.getSource() == retire){
+		else if (e.getSource() == retire) {
+				/*String[] options = {"Yes", "No"};
+				String issn1 = String.valueOf(getSelectedButtonText(group));
+				int x = JOptionPane.showOptionDialog(null, "Are you sure you want to retire from "
+								+ issn1, "Retire", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,
+						null, options, options[0]);
+				if (x == 0){
+					try {
+						JournalController.editorRetire(username, Integer.parseInt(issn1));
+					} catch (SQLException ex) {
+						JOptionPane.showMessageDialog(null,"Cannot connect to the server, please try later.");
+						ex.printStackTrace();
+					}
+					try {
+						new EditorInterface(username);
+					} catch (SQLException ex) {
+						ex.printStackTrace();
+					}
+				}
+			}*/
 			JComboBox journalSelection = new JComboBox(journals.toArray());
-			JOptionPane.showMessageDialog( null, journalSelection, "please select a journal", JOptionPane.QUESTION_MESSAGE);
+			JOptionPane.showMessageDialog(null, journalSelection, "please select a journal", JOptionPane.QUESTION_MESSAGE);
 			try {
-				int issn = (Integer)journalSelection.getSelectedItem();
-				if (JournalController.chiefEditorRetire(username,issn)){
-					JOptionPane.showMessageDialog(null,"You have retire from " + issn + " successfully" );
+				int issn = (Integer) journalSelection.getSelectedItem();
+				if (JournalController.chiefEditorRetire(username, issn)) {
+					JOptionPane.showMessageDialog(null, "You have retire from " + issn + " successfully");
 				}
 			} catch (SQLException ex) {
 				ex.printStackTrace();
 			}
-		}
-		else if (e.getSource() == publish) {
+		} else if (e.getSource() == publish) {
 
 		}
 	}
 
+
 	public static void main(String[] args) {
 		SwingUtilities.invokeLater(() -> {
 			try {
-				new ChiefEditorInterface("Chief Editor");
+				new ChiefEditorInterface("harry.potter@warwick.ac.uk");
 			} catch (SQLException e) {
 				JOptionPane.showMessageDialog(null, "Can not connect to the  server, please try again.");
 				e.printStackTrace();

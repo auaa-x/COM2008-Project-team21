@@ -14,6 +14,7 @@ import java.sql.SQLException;
 public class CfEditorRegInterface extends JFrame implements ActionListener, ItemListener {
     private JTextField emailField;
     private JPasswordField passwordField;
+    private JPasswordField cfPasswordField;
     private JComboBox<String> comboTitleTypes;
     private JTextField fnField;
     private JTextField snField;
@@ -63,6 +64,12 @@ public class CfEditorRegInterface extends JFrame implements ActionListener, Item
         passwordField = new JPasswordField(15);
         passwordField.setFont(new Font("Arial", Font.PLAIN, 15));
 
+
+        //confirm password
+        JLabel cfPassword = new JLabel("Confirm Password");
+        cfPassword.setFont(new Font("Arial", Font.PLAIN, 20));
+        cfPasswordField = new JPasswordField(15);
+        cfPasswordField.setFont(new Font("Arial", Font.PLAIN, 15));
 
         //user title
         JLabel title = new JLabel("Title");
@@ -161,6 +168,8 @@ public class CfEditorRegInterface extends JFrame implements ActionListener, Item
         userPanel.add(emailField, right);
         userPanel.add(password, left);
         userPanel.add(passwordField, right);
+        userPanel.add(cfPassword, left);
+        userPanel.add(cfPasswordField, right);
         userPanel.add(title, left);
         userPanel.add(comboTitleTypes, right);
         userPanel.add(forename, left);
@@ -221,6 +230,7 @@ public class CfEditorRegInterface extends JFrame implements ActionListener, Item
     public void actionPerformed(ActionEvent e) {
         String email = emailField.getText();
         String password = String.valueOf(passwordField.getPassword());
+        String cfPw = String.valueOf(cfPasswordField.getPassword());
         String forename = fnField.getText();
         String surname = snField.getText();
         String university = uniField.getText();
@@ -229,30 +239,47 @@ public class CfEditorRegInterface extends JFrame implements ActionListener, Item
 
 
         if(e.getSource() == back){
-            this.setVisible(false);
             new LoginInterface();
+            this.dispose();
         }
         else {
-            if( !email.trim().isEmpty() && !password.trim().isEmpty() && !forename.trim().isEmpty() &&
+            //check if fields all have been filled
+            if(!email.trim().isEmpty() && !password.trim().isEmpty() && !forename.trim().isEmpty() &&
                     !surname.trim().isEmpty() && !university.trim().isEmpty()
-                    && !journalTitle.trim().isEmpty() && !(issn).trim().isEmpty() && UserController.isValidEmail(email)){
-                try {
-                    if(UserController.chiefEditorRegistration(email, userTitle, forename,
-                            surname,university,password,journalTitle, Integer.parseInt(issn))){
-                        this.dispose();
-                        JOptionPane.showMessageDialog(null, "You have registered successfully!");
-                        new CfEditorRegInterface();
+                    && !journalTitle.trim().isEmpty() && !(issn).trim().isEmpty()){
+                //email validation
+                if (!UserController.isValidEmail(email)) {
+                    JOptionPane.showMessageDialog(null, "Please input a valid email.");
+                } else {
+                    //double check password
+                    if (!cfPw.equals(password)) {
+                        JOptionPane.showMessageDialog(null, "Please check your password again.");
                     } else {
-                        JOptionPane.showMessageDialog(null, "Please check that you have completed the form correctly!");
+                        //check password strength
+                        if (!UserController.checkPasswordStrength(password)) {
+                            JOptionPane.showMessageDialog(null,
+                                    "Password is too weak! \nMust include lower and upper case, 8 characters at least.\nSpace is not allowed.");
+                        } else {
+                            //all conditions verified
+                            try {
+                                if (UserController.chiefEditorRegistration(email, userTitle, forename,
+                                        surname, university, password, journalTitle, Integer.parseInt(issn))) {
+                                    this.dispose();
+                                    JOptionPane.showMessageDialog(null, "You have registered successfully!");
+                                    new CfEditorRegInterface();
+                                } else {
+                                    JOptionPane.showMessageDialog(null, "Please check that you have completed the form correctly!");
+                                }
+                            } catch (SQLException ex) {
+                                ex.printStackTrace();
+                            }
+                        }
                     }
-                } catch (SQLException ex) {
-                    ex.printStackTrace();
                 }
             }
             else {
                 JOptionPane.showMessageDialog(null, "Please fill in all the fields!");
             }
-
         }
     }
 
