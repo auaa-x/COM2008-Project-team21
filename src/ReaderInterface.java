@@ -92,12 +92,19 @@ public class ReaderInterface extends JFrame implements ActionListener {
         //getVolumes(int issn);
 
         for (Journal journal : journals) {
-            DefaultMutableTreeNode journal1 = new DefaultMutableTreeNode(journal.getTitle());
+            DefaultMutableTreeNode journal1 = new DefaultMutableTreeNode(journal.toString());
             root.add(journal1);
             for (Volume volume : JournalController.getVolumes(journal.getIssn())) {
-                DefaultMutableTreeNode volume1 = new DefaultMutableTreeNode("vol. " + volume.getVolNum());
+                DefaultMutableTreeNode volume1 = new DefaultMutableTreeNode(volume.toString());
                 journal1.add(volume1);
-                //for (Edition edition : JournalController.getEditors())
+                for (Edition edition : JournalController.getEditions(volume.getIssn(), volume.getVolNum())) {
+                    DefaultMutableTreeNode edition1 = new DefaultMutableTreeNode(edition.toString());
+                    volume1.add(edition1);
+                    for (Article article : JournalController.getPublishedArticles(journal.getIssn(), edition.getVolNum(), edition.getNoNum())) {
+                        DefaultMutableTreeNode article1 = new DefaultMutableTreeNode(article.toString());
+                        edition1.add(article1);
+                    }
+                }
             }
         }
         DefaultMutableTreeNode test = new DefaultMutableTreeNode("test");
