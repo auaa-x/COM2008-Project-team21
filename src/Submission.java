@@ -1,4 +1,3 @@
-import java.io.File;
 
 /**
  * Class for Submissions object
