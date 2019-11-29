@@ -152,7 +152,7 @@ public class ChangePw extends JFrame implements ActionListener {
                     new AuthorInterface(username);
                     break;
                 case 3:
-                    //new ReviewerInterface(username);
+                    // new ReviewerInterface(username);
                     break;
             }
         } else {
@@ -181,7 +181,7 @@ public class ChangePw extends JFrame implements ActionListener {
                         JOptionPane.showMessageDialog(null, "Details incorrect!");
                     }
                 } else {
-                    JOptionPane.showMessageDialog(null, "Password is too weak! \nMust include lower and upper case, 8  characters at least. Space is not allowed.");
+                    JOptionPane.showMessageDialog(null, "Password is too weak! \nMust include lower and upper case, 8 characters at least. Space is not allowed.");
                 }
             } catch (SQLException ex) {
                 ex.printStackTrace();
