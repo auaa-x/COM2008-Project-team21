@@ -62,29 +62,21 @@ public class ArticleController extends SqlController {
 
     /**
      * Create a new submission linked to article by submissionID
+     * @param submissionID
      * @param pdfFile
      * @return result true if article is created successfully
      * @throws SQLException
      * @throws FileNotFoundException
      */
-    public static int createSubmission(File pdfFile) throws SQLException, FileNotFoundException {
+    public static int createSubmission(int submissionID, File pdfFile) throws SQLException, FileNotFoundException {
         openConnection();
         PreparedStatement pstmt = null;
-        Statement stmt = null;
         FileInputStream inputStream= new FileInputStream(pdfFile);
-        int submissionID = 0;
         try {
-             stmt = con.createStatement();
-             // get the id of article (last entry in the table)
-             ResultSet res = stmt.executeQuery("SELECT * FROM `article` ORDER BY `submissionID` DESC LIMIT 1");
-             res.next();
-             submissionID = res.getInt(1);
-
-             pstmt = con.prepareStatement(" INSERT INTO `team021`.`submission` (`submissionID`, `linkedDraftPDF`, `reviewCount`, `status`) "
-                    + " VALUES (?, ?, 0, ?)");
+             pstmt = con.prepareStatement(" INSERT INTO `team021`.`submission` (`submissionID`, `linkedDraftPDF`) "
+                    + " VALUES (?, ?)");
              pstmt.setInt(1, submissionID);
              pstmt.setBlob(2, inputStream);
-             pstmt.setString(3,"submitted");
 
              int count = pstmt.executeUpdate();
              System.out.println("Rows updated " + count);
@@ -92,7 +84,6 @@ public class ArticleController extends SqlController {
              ex.printStackTrace();
          } finally {
              if (pstmt != null) pstmt.close();
-             if (stmt != null) stmt.close();
              closeConnection();
          }
          return submissionID;

@@ -24,7 +24,7 @@ public class UserController extends SqlController {
         boolean result = false;
         PreparedStatement pstmt = null;
         try {
-            pstmt = con.prepareStatement("SELECT * FROM user WHERE email=?");
+            pstmt = con.prepareStatement("SELECT * FROM user WHERE email = ?");
             pstmt.setString(1, email);
             ResultSet res = pstmt.executeQuery();
 
@@ -530,6 +530,7 @@ public class UserController extends SqlController {
         if (createUser(email, title, forename, surname, university, password, 2) && addRole(email, 3)) {
             result = true;
             int submissionID = ArticleController.createArticle(articleTitle, description, pdfFile, ISSN, email);
+            ArticleController.createSubmission(submissionID, pdfFile);
             createAuthor(email, submissionID);
             if (!coAuthorsList.isEmpty()) addCoAuthors(sharedPassword, submissionID);
         }
@@ -614,7 +615,7 @@ public class UserController extends SqlController {
             pstmt = con.prepareStatement("DELETE FROM `team021`.`author` WHERE (`email` = ?) and (`submissionID` = ?)");
             pstmt.setString(1, email);
             pstmt.setInt(2, submissionID);
-            
+
             // REMOVE ROLE AS WELL HERE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
             int count = pstmt.executeUpdate();
@@ -720,7 +721,7 @@ public class UserController extends SqlController {
         }
         return result;
     }
-    
+
     /**
      * Update forename for current user
      * @param email
@@ -748,7 +749,7 @@ public class UserController extends SqlController {
             }
         return result;
     }
-    
+
     /**
      * Update surname for current user
      * @param email
@@ -776,7 +777,7 @@ public class UserController extends SqlController {
             }
         return result;
     }
-    
+
     /**
      * Update university for current user
      * @param email
@@ -804,7 +805,7 @@ public class UserController extends SqlController {
             }
         return result;
     }
-    
+
     /**
      * Update title for current user
      * @param email
@@ -860,9 +861,9 @@ public class UserController extends SqlController {
         }
         return result;
     }
-    
-    
-    
+
+
+
     public static void main (String[] args) {
 
         try {
