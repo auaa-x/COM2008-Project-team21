@@ -135,5 +135,18 @@ public class ArticleController extends SqlController {
         }
         return result;
     }
+    
+    public static void main (String[] args) throws IOException {
+    
+        try {
+
+            System.out.println(getArticlePDF(20));
+            
+            
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+
+    }
 
 }

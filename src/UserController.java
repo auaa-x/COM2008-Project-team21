@@ -714,6 +714,118 @@ public class UserController extends SqlController {
         }
         return result;
     }
+    
+    /**
+     * Update forename for current user
+     * @param email
+     * @param forename
+     * @return true if forename was changed successfully, false otherwise
+     * @throws SQLException
+     */
+    public static boolean updateForename(String email, String forename) throws SQLException {
+        boolean result = false;
+            openConnection();
+            PreparedStatement pstmt = null;
+            try {
+                pstmt = con.prepareStatement("UPDATE `team021`.`user` SET `forename` = ? WHERE (`email` = ?)");
+                pstmt.setString(1, forename);
+                pstmt.setString(2, email);
+
+                int count = pstmt.executeUpdate();
+                if (count != 0) result = true;
+                System.out.println("Title changed for user: " + forename);
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            } finally {
+                if (pstmt != null) pstmt.close();
+                closeConnection();
+            }
+        return result;
+    }
+    
+    /**
+     * Update surname for current user
+     * @param email
+     * @param surname
+     * @return true if surname was changed successfully, false otherwise
+     * @throws SQLException
+     */
+    public static boolean updateSurname(String email, String surname) throws SQLException {
+        boolean result = false;
+            openConnection();
+            PreparedStatement pstmt = null;
+            try {
+                pstmt = con.prepareStatement("UPDATE `team021`.`user` SET `surname` = ? WHERE (`email` = ?)");
+                pstmt.setString(1, surname);
+                pstmt.setString(2, email);
+
+                int count = pstmt.executeUpdate();
+                if (count != 0) result = true;
+                System.out.println("Title changed for user: " + surname);
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            } finally {
+                if (pstmt != null) pstmt.close();
+                closeConnection();
+            }
+        return result;
+    }
+    
+    /**
+     * Update university for current user
+     * @param email
+     * @param university
+     * @return true if university was changed successfully, false otherwise
+     * @throws SQLException
+     */
+    public static boolean updateUniversity(String email, String university) throws SQLException {
+        boolean result = false;
+            openConnection();
+            PreparedStatement pstmt = null;
+            try {
+                pstmt = con.prepareStatement("UPDATE `team021`.`user` SET `uniAffiliation` = ? WHERE (`email` = ?)");
+                pstmt.setString(1, university);
+                pstmt.setString(2, email);
+
+                int count = pstmt.executeUpdate();
+                if (count != 0) result = true;
+                System.out.println("Title changed for user: " + university);
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            } finally {
+                if (pstmt != null) pstmt.close();
+                closeConnection();
+            }
+        return result;
+    }
+    
+    /**
+     * Update title for current user
+     * @param email
+     * @param newTitle
+     * @return true if title was changed successfully, false otherwise
+     * @throws SQLException
+     */
+    public static boolean updateTitle(String email, String newTitle) throws SQLException {
+        boolean result = false;
+            openConnection();
+            PreparedStatement pstmt = null;
+            try {
+                pstmt = con.prepareStatement("UPDATE `team021`.`user` SET `title` = ? WHERE (`email` = ?)");
+                pstmt.setString(1, newTitle);
+                pstmt.setString(2, email);
+
+                int count = pstmt.executeUpdate();
+                if (count != 0) result = true;
+                System.out.println("Title changed for user: " + newTitle);
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            } finally {
+                if (pstmt != null) pstmt.close();
+                closeConnection();
+            }
+        return result;
+    }
 
 
     /**
@@ -753,7 +865,7 @@ public class UserController extends SqlController {
             // System.out.println(chiefEditorRegistration("james.potter@warwick.ac.uk", "Dr", "James", "Potter", "University of Warwick", "test_password", "Journal of Pottery", 65432345));
 
             // chief editor LOGIN test case true - all details correct
-            System.out.println(login("james.potter@warwick.ac.uk", "test_password", 1));
+            //System.out.println(login("james.potter@warwick.ac.uk", "test_password", 1));
 
             // test create journal
             //JournalController.createJournal("kate.bush@edinburgh.ac.uk", "Foundations of CompSci", 85491254);
@@ -769,7 +881,8 @@ public class UserController extends SqlController {
             // add them as users
             //System.out.println(addCoAuthors("hufflepuff", 123));
 
-            changePassword("james.potter@warwick.ac.uk", "test_password2", "test_password", "test_password");
+            //changePassword("james.potter@warwick.ac.uk", "test_password2", "test_password", "test_password");
+            updateTitle("james.potter@warwick.ac.uk","Ms");
 
 
         } catch (SQLException ex) {
