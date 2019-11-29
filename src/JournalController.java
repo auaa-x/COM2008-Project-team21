@@ -502,7 +502,6 @@ public class JournalController extends SqlController {
         }
         // retire the old chief editor
         if (result) {
-            editorRetire(oldChiefEmail, issn);
             System.out.println("Old chief editor " + oldChiefEmail + " retired");
         }
         return result;
