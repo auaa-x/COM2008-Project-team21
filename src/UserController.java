@@ -530,7 +530,7 @@ public class UserController extends SqlController {
         if (createUser(email, title, forename, surname, university, password, 2) && addRole(email, 3)) {
             result = true;
             int submissionID = ArticleController.createArticle(articleTitle, description, pdfFile, ISSN, email);
-            addCoAuthors(sharedPassword, submissionID);
+            if (!coAuthorsList.isEmpty()) addCoAuthors(sharedPassword, submissionID);
         }
         return result;
     }

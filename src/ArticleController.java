@@ -42,7 +42,7 @@ public class ArticleController extends SqlController {
                 pstmt.setInt(4, ISSN);
                 pstmt.setString(5, email);
 
-                ResultSet res = pstmt.executeQuery("SELECT * FROM `article` ORDER BY `submissionID` DESC LIMIT 1");
+                ResultSet res = pstmt.executeQuery("SELECT COUNT(*) FROM `article`");
                 res.next();
                 submissionID = res.getInt(1) + 1;
 

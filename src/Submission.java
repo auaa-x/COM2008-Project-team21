@@ -1,5 +1,3 @@
-import java.io.File;
-
 /**
  * Class for Submissions object
  * @author Julia Derebecka
