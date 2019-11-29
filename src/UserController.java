@@ -537,6 +537,39 @@ public class UserController extends SqlController {
 
 
     /**
+     * Register co-authors of the article with temporary password
+     * Make an entry for each one in the author table and add author and reviewer permission
+     * @param sharedPassword
+     * @param submissionID
+     * @return true if registration of at least one author is successful
+     * @throws SQLException
+     */
+    public static boolean addCoAuthors(String sharedPassword, int submissionID) throws SQLException {
+        boolean result = false;
+        ListIterator<String> iterator = coAuthorsList.listIterator();
+        // create user account for each co-author on the list
+        while(iterator.hasNext()) {
+            String email = iterator.next().toString();
+            createTempUser(email, sharedPassword, 2);
+            addRole(email, 2); // author role
+            createAuthor(email, submissionID);
+            addRole(email, 3); // author role
+            result = true;
+        }
+        return result;
+    }
+
+
+    /**
+     * Add co-author email to the co-authors' list
+     * @param email
+     */
+    public static void addCoAuthor(String email) {
+        coAuthorsList.add(email);
+    }
+
+
+    /**
      * Create an author
      * @param email
      * @param submissionID
@@ -580,6 +613,8 @@ public class UserController extends SqlController {
             pstmt = con.prepareStatement("DELETE FROM `team021`.`author` WHERE (`email` = ?) and (`submissionID` = ?)");
             pstmt.setString(1, email);
             pstmt.setInt(2, submissionID);
+            
+            // REMOVE ROLE AS WELL HERE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
             int count = pstmt.executeUpdate();
             if (count != 0) result = true;
@@ -649,36 +684,6 @@ public class UserController extends SqlController {
             closeConnection();
         }
         return result;
-    }
-
-
-    /**
-     * Register co-authors of the article with temporary password
-     * @param sharedPassword
-     * @param submissionID
-     * @return true if registration of at least one author is successful
-     * @throws SQLException
-     */
-    public static boolean addCoAuthors(String sharedPassword, int submissionID) throws SQLException {
-        boolean result = false;
-        ListIterator<String> iterator = coAuthorsList.listIterator();
-        // create user account for each co-author on the list
-        while(iterator.hasNext()) {
-            String email = iterator.next().toString();
-            createTempUser(email, sharedPassword, 2);
-            addRole(email, 3);
-            result = true;
-        }
-        return result;
-    }
-
-
-    /**
-     * Add co-author email to the co-authors' list
-     * @param email
-     */
-    public static void addCoAuthor(String email) {
-        coAuthorsList.add(email);
     }
 
 
