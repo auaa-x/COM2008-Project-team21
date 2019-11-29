@@ -205,7 +205,8 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 
 		//register an editor
 		else if(e.getSource() == register) {
-
+			/*UserController.createTempUser();
+			UserController.createEditor();*/
 		}
 
 		//appoint an editor (add user type 1(editor) to an existed user )
@@ -235,7 +236,16 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 
 		//retire
 		else if (e.getSource() == retire){
-
+			JComboBox journalSelection = new JComboBox(journals.toArray());
+			JOptionPane.showMessageDialog( null, journalSelection, "please select a journal", JOptionPane.QUESTION_MESSAGE);
+			try {
+				int issn = (Integer)journalSelection.getSelectedItem();
+				if (JournalController.chiefEditorRetire(username,issn)){
+					JOptionPane.showMessageDialog(null,"You have retire from " + issn + " successfully" );
+				}
+			} catch (SQLException ex) {
+				ex.printStackTrace();
+			}
 		}
 		else if (e.getSource() == publish) {
 
