@@ -36,7 +36,7 @@ public class AuthorRegisterInterface extends JFrame implements ActionListener, I
     private JTextArea addedPDF;
     private JTextField coEmailField;
     private JTextArea addedCoAuthorArea;
-    private String userTitle;
+    private String userTitle = "Mrs";
     private Path path = null;
     private File pdf;
     private JProgressBar progressBar;
@@ -87,7 +87,6 @@ public class AuthorRegisterInterface extends JFrame implements ActionListener, I
         email.setFont(new Font("Arial", Font.PLAIN, 20));
         emailField = new JTextField(15);
         emailField.setFont(new Font("Arial", Font.PLAIN, 15));
-
 
         //password
         JLabel password = new JLabel("Password");
@@ -399,9 +398,11 @@ public class AuthorRegisterInterface extends JFrame implements ActionListener, I
         } else if (e.getSource() == addCoAuthor) {
             //add co-author email to the emails list
             String emails = coEmailField.getText();
-            UserController.addCoAuthor(emails);
-            addedCoAuthorArea.append(emails + "\n");
-            coEmailField.setText("");
+            if (!emails.trim().isEmpty()) {
+                UserController.addCoAuthor(emails);
+                addedCoAuthorArea.append(emails + "\n");
+                coEmailField.setText("");
+            }
         } else if (e.getSource() == resetCoAuthor) {
             UserController.coAuthorsList.clear();
             addedCoAuthorArea.setText("");
@@ -424,13 +425,13 @@ public class AuthorRegisterInterface extends JFrame implements ActionListener, I
                     JOptionPane.showMessageDialog(null, "Please check your password again.");
                 } else {
                     try {
-                        if (UserController.mainAuthorRegistration(email, userTitle, forename,
-                                surname, university, password, sharedPassword, articleTitle, atAbstract,
-                                pdf, issn)) {
-                            JOptionPane.showMessageDialog(null, "You have registered successfully!");
-                            dispose();
-                            new AuthorInterface(email);
-                        }
+                            if (UserController.mainAuthorRegistration(email, userTitle, forename,
+                                    surname, university, password, sharedPassword, articleTitle, atAbstract,
+                                    pdf, issn )) {
+                                JOptionPane.showMessageDialog(null, "You have registered successfully!");
+                                dispose();
+                                new AuthorInterface(email);
+                            }
                     } catch (SQLException | FileNotFoundException ex) {
                         ex.printStackTrace();
                     }
