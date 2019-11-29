@@ -108,7 +108,7 @@ public class JournalController extends SqlController {
      */
     public static boolean createVolume(int issn) throws SQLException {
         boolean result = false;
-        int volNum = 2;
+        int volNum = 0;
         int pubYear = Calendar.getInstance().get(Calendar.YEAR);
         openConnection();  ;
         PreparedStatement pstmt1 = null;
@@ -125,11 +125,11 @@ public class JournalController extends SqlController {
                 if (res1.next()) return false;
                 
                 // find out what's the volNum of the new volume
-                pstmt2 = con.prepareStatement("SELECT * FROM `team021`.`volume` WHERE (`ISSN` = ?)");
+                pstmt2 = con.prepareStatement("SELECT COUNT(*) FROM `team021`.`volume` WHERE (`ISSN` = ?)");
                 pstmt2.setInt(1, issn);
                 ResultSet res2 = pstmt2.executeQuery();
-                while (res2.next()) {
-                    volNum++;
+                if (res2.next()) {
+                    volNum = res2.getInt(1) + 1;
                 }
                 
                 // update database
@@ -139,8 +139,10 @@ public class JournalController extends SqlController {
                 pstmt3.setInt(3, issn);
 
                 int count = pstmt3.executeUpdate();
-                if (count != 0) result = true;
-                System.out.println("Volume " + volNum + " " + issn + " added");
+                if (count != 0) {
+                    result = true;
+                    System.out.println("Volume " + volNum + " " + issn + " added");
+                }
 
             } catch (SQLException ex) {
                 ex.printStackTrace();
@@ -148,6 +150,52 @@ public class JournalController extends SqlController {
                 if (pstmt1 != null) pstmt1.close();
                 if (pstmt2 != null) pstmt2.close();
                 if (pstmt3 != null) pstmt3.close();
+                closeConnection();
+            }
+        return result;
+    }
+    
+    
+    /**
+     * Create a new edition for a given journal volume
+     * @param ISSN
+     * @return result true if edition is created successfully
+     * @throws SQLException
+     */
+    public static boolean createEdition(int issn, int volNum) throws SQLException {
+        boolean result = false;
+        int noNum = 0;
+        openConnection();  ;
+        PreparedStatement pstmt1 = null;
+        PreparedStatement pstmt2 = null;
+            try {
+
+                // find what's the noNum of the new edition
+                pstmt1 = con.prepareStatement("SELECT COUNT(*) FROM `team021`.`edition` WHERE (`ISSN` = ?) and (`volNum` = ?)");
+                pstmt1.setInt(1, issn);
+                pstmt1.setInt(2, volNum);
+                ResultSet res = pstmt1.executeQuery();
+                if (res.next()) {
+                    noNum = res.getInt(1) + 1;
+                }
+                
+                // update database
+                pstmt2 = con.prepareStatement("INSERT INTO `team021`.`edition` (`noNum`, `volNum`, `ISSN`) VALUES (?, ?, ?)");
+                pstmt2.setInt(1, noNum);
+                pstmt2.setInt(2, volNum);
+                pstmt2.setInt(3, issn);
+
+                int count = pstmt2.executeUpdate();
+                if (count != 0) {
+                    result = true;
+                    System.out.println("Edition number: " + noNum + " volume: " + volNum + " journal: " + issn + " added");
+                }
+                
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            } finally {
+                if (pstmt1 != null) pstmt1.close();
+                if (pstmt2 != null) pstmt2.close();
                 closeConnection();
             }
         return result;
@@ -523,7 +571,8 @@ public class JournalController extends SqlController {
            // System.out.println(createVolume(87645312)); // false
            // System.out.println(createVolume(65432345)); // true
            // System.out.println(getAllArticles());
-            System.out.println(getPublishedArticles(12345678, 1, 1));
+           // System.out.println(getPublishedArticles(12345678, 1, 1));
+            System.out.println(createEdition(12345678, 1));
             
             
         } catch (SQLException ex) {
