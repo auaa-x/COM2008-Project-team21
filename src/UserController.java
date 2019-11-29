@@ -532,6 +532,8 @@ public class UserController extends SqlController {
             int submissionID = ArticleController.createArticle(articleTitle, description, pdfFile, ISSN, email);
             ArticleController.createSubmission(submissionID, pdfFile);
             addCoAuthors(sharedPassword, submissionID);
+            createAuthor(email, submissionID);
+            if (!coAuthorsList.isEmpty()) addCoAuthors(sharedPassword, submissionID);
         }
         return result;
     }
@@ -554,7 +556,7 @@ public class UserController extends SqlController {
             createTempUser(email, sharedPassword, 2);
             addRole(email, 2); // author role
             createAuthor(email, submissionID);
-            addRole(email, 3); // author role
+            addRole(email, 3); // reviewer role
             result = true;
         }
         return result;
@@ -614,7 +616,7 @@ public class UserController extends SqlController {
             pstmt = con.prepareStatement("DELETE FROM `team021`.`author` WHERE (`email` = ?) and (`submissionID` = ?)");
             pstmt.setString(1, email);
             pstmt.setInt(2, submissionID);
-            
+
             // REMOVE ROLE AS WELL HERE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
             int count = pstmt.executeUpdate();
@@ -720,7 +722,7 @@ public class UserController extends SqlController {
         }
         return result;
     }
-    
+
     /**
      * Update forename for current user
      * @param email
@@ -748,7 +750,7 @@ public class UserController extends SqlController {
             }
         return result;
     }
-    
+
     /**
      * Update surname for current user
      * @param email
@@ -776,7 +778,7 @@ public class UserController extends SqlController {
             }
         return result;
     }
-    
+
     /**
      * Update university for current user
      * @param email
@@ -804,7 +806,7 @@ public class UserController extends SqlController {
             }
         return result;
     }
-    
+
     /**
      * Update title for current user
      * @param email
@@ -860,9 +862,9 @@ public class UserController extends SqlController {
         }
         return result;
     }
-    
-    
-    
+
+
+
     public static void main (String[] args) {
 
         try {

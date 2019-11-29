@@ -1,5 +1,3 @@
-import java.io.File;
-
 /**
  * Class for Article object
  * @author Urszula Talalaj
