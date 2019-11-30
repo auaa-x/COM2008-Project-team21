@@ -415,11 +415,11 @@ public class AuthorRegisterInterface extends JFrame implements ActionListener, I
             String articleTitle = articleTitleField.getText();
             String atAbstract = atAbstractField.getText();
             int issn = journalSelected.getIssn();
-
             //check if fields all have been filled
+            //!sharedPassword.trim().isEmpty()
             if (!email.trim().isEmpty() && !password.trim().isEmpty() && !forename.trim().isEmpty() &&
                     !surname.trim().isEmpty() && !university.trim().isEmpty()
-                    && !sharedPassword.trim().isEmpty() && !articleTitle.trim().isEmpty()) {
+                     && !articleTitle.trim().isEmpty()) {
                 //email validation
                 if (!UserController.isValidEmail(email)) {
                     JOptionPane.showMessageDialog(null, "Please input a valid email.");
@@ -442,9 +442,7 @@ public class AuthorRegisterInterface extends JFrame implements ActionListener, I
                                     dispose();
                                     new AuthorInterface(email);
                                 }
-                            } catch (SQLException ex) {
-                                ex.printStackTrace();
-                            } catch (FileNotFoundException ex) {
+                            } catch (SQLException | FileNotFoundException ex) {
                                 ex.printStackTrace();
                             }
                         }
