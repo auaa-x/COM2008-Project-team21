@@ -30,7 +30,7 @@ public class ArticleController extends SqlController {
     public static int createArticle(String title, String description, File pdfFile, int ISSN, String email) throws SQLException, FileNotFoundException {
         openConnection();
         PreparedStatement pstmt = null;
-        Statement stmt = null;
+        Statement stmt = con.createStatement();
         int submissionID = 0;
         try {
             FileInputStream inputStream = new FileInputStream(pdfFile);

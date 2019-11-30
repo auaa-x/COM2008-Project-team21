@@ -558,6 +558,7 @@ public class UserController extends SqlController {
             addRole(email, 3); // reviewer role
             result = true;
         }
+        coAuthorsList.clear();
         return result;
     }
 
