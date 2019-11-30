@@ -18,8 +18,7 @@ import java.util.LinkedList;
 
 public class ChiefEditorInterface extends JFrame implements ActionListener {
 	private JMenuBar menuBar;
-	private JMenu staff, journal, journalSelection;
-	private JRadioButtonMenuItem journalItem, journalItem1;
+	private JMenu staff, journal;
 	private ButtonGroup group;
 	private JMenuItem register, appoint, passChiefEditor, retire, publish, delay, logOut;
 	private File article = new File("./article.pdf");
@@ -35,8 +34,8 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 	private JButton open;
 	private String username;
 	private LinkedList<Integer> journalsISSN;
+	private LinkedList<Integer> chiefJournalsISSN;
 	private LinkedList<Journal> journals;
-	private int issn;
 
 
 	ChiefEditorInterface(String username) throws SQLException {
@@ -49,7 +48,25 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 
 		this.username = username;
 		journalsISSN = JournalController.getEditorJournals(username);
+		chiefJournalsISSN = new LinkedList<Integer>();
+		for (int issn : journalsISSN) {
+			if (UserController.isChiefEditor(username, issn)){
+				chiefJournalsISSN.add(issn);
+			}
+		}
 		journals = new LinkedList<Journal>();
+		for (int issn : chiefJournalsISSN) {
+			Journal journal = JournalController.getJournal(issn);
+			journals.add(journal);
+/*			journalItem = new JRadioButtonMenuItem(journal.getTitle());
+			journals.add(journal);
+			journalItem.addActionListener(this);
+			group.add(journalItem);
+			if (j == 0) {
+				journalItem.setSelected(true);
+			}
+			journalSelection.add(journalItem);*/
+		}
 
 
 		//set up panels
@@ -58,10 +75,10 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 
 		//create the menu
 		menuBar = new JMenuBar();
+		group = new ButtonGroup();
 /*		//journal selection
 		//menu.addSeparator();
 		journalSelection = new JMenu("Select Journal");
-		group = new ButtonGroup();
 		for (int j = 0; j < journalsISSN.size(); ++j) {
 			issn = journalsISSN.get(j);
 			Journal journal = JournalController.getJournal(issn);
@@ -123,7 +140,6 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 		JPanel treePanel = new JPanel();
 		//create the root node
 		DefaultMutableTreeNode root = new DefaultMutableTreeNode("Journal Publish System");
-		LinkedList<Journal> journals = JournalController.getAllJournals();
 
 		for (Journal journal : journals) {
 			DefaultMutableTreeNode journal1 = new DefaultMutableTreeNode(journal.getTitle());
@@ -213,9 +229,9 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 		//appoint an editor (add user type 1(editor) to an existed user )
 		else if (e.getSource() == appoint) {
 			String[] options = {"Yes", "Back"};
-			JComboBox journalSelection = new JComboBox(journals.toArray());
+			JComboBox<Object> journalSelection = new JComboBox<>(journals.toArray());
 			JOptionPane.showMessageDialog(null, journalSelection, "please select a journal", JOptionPane.QUESTION_MESSAGE);
-
+			Journal selectedJournal = (Journal) journalSelection.getItemAt(journalSelection.getSelectedIndex());
 			String appointed = JOptionPane.showInputDialog("Please enter other editor's email address");
 			try {
 				if (!UserController.checkEmail(appointed)) {
@@ -223,7 +239,7 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 							"please go to 'register an editor'. ");
 				} else {
 						UserController.addRole(appointed, 1);
-						UserController.createEditor(appointed, (Integer) journalSelection.getSelectedItem());
+						UserController.createEditor(appointed,selectedJournal.getIssn());
 						if (UserController.checkUsertype(appointed, 1)) {
 							JOptionPane.showMessageDialog(null, "Editor added successfully!");
 						} else {
@@ -243,31 +259,13 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 
 		//retire
 		else if (e.getSource() == retire) {
-			/*String[] options = {"Yes", "No"};
-			String issn1 = String.valueOf(getSelectedButtonText(group));
-			int x = JOptionPane.showOptionDialog(null, "Are you sure you want to retire from "
-							+ issn1, "Retire", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,
-					null, options, options[0]);
-			if (x == 0) {
-				try {
-					JournalController.editorRetire(username, Integer.parseInt(issn1));
-				} catch (SQLException ex) {
-					JOptionPane.showMessageDialog(null, "Cannot connect to the server, please try later.");
-					ex.printStackTrace();
-				}
-				try {
-					new EditorInterface(username);
-				} catch (SQLException ex) {
-					ex.printStackTrace();
-				}
-			}
-		}*/
-			JComboBox journalSelection = new JComboBox(journals.toArray());
+			JComboBox<Object> journalSelection = new JComboBox<>(journals.toArray());
 			JOptionPane.showMessageDialog(null, journalSelection, "please select a journal", JOptionPane.QUESTION_MESSAGE);
 			try {
-				String title = (String) journalSelection.getSelectedItem();
-				System.out.println(title);
-				int issn = (Integer)journalSelection.getSelectedItem();
+				Journal selectedJournal = (Journal) journalSelection.getItemAt(journalSelection.getSelectedIndex());
+				//System.out.println(title);
+				String title = selectedJournal.getTitle();
+				int issn = (Integer)selectedJournal.getIssn();
 				System.out.println(issn);
 				LinkedList<String> editors = JournalController.getEditors(issn);
 				System.out.println(editors);
