@@ -31,17 +31,17 @@ public class ArticleController extends SqlController {
         openConnection();
         PreparedStatement pstmt = null;
         Statement stmt = con.createStatement();
-        int submissionID = 0;
+        int submissionId = 0;
         try {
             FileInputStream inputStream = new FileInputStream(pdfFile);
             try {
                 ResultSet res = stmt.executeQuery("SELECT COUNT(*) FROM `article`");
                 res.next();
-                submissionID = res.getInt(1) + 1;
+                submissionId = res.getInt(1) + 1;
                 
                 pstmt = con.prepareStatement(" INSERT INTO `team021`.`article` (`submissionID`, `title`, `abstract`, `linkedFinalPDF`, `ISSN`, `mAuthorEmail`)"
                         + " VALUES (?, ?, ?, ?, ?, ?)");
-                pstmt.setInt(1, submissionID);
+                pstmt.setInt(1, submissionId);
                 pstmt.setString(2, title);
                 pstmt.setString(3, description);
                 pstmt.setBlob(4,inputStream);
@@ -60,25 +60,54 @@ public class ArticleController extends SqlController {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-        return submissionID;
+        return submissionId;
     }
+    
+    
+    /**
+     * Check if an article with give submissionID exists in the database
+     * @param submissionId
+     * @return true if article exists, otherwise false
+     * @throws SQLException
+     * @throws IOException
+     */
+    public static boolean checkArticle(int submissionId) throws SQLException {
+        openConnection();
+        PreparedStatement pstmt = null;
+        boolean result = false;
+        try {
+
+            pstmt = con.prepareStatement("SELECT * FROM article WHERE submissionID = ?");
+            pstmt.setInt(1, submissionId);
+            ResultSet res = pstmt.executeQuery();
+            if (res.next()) result = true;
+
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        return result;
+    }
+    
 
     /**
      * Create a new submission linked to article by submissionID
-     * @param submissionID
+     * @param submissionId
      * @param pdfFile
      * @return result true if article is created successfully
      * @throws SQLException
      * @throws FileNotFoundException
      */
-    public static int createSubmission(int submissionID, File pdfFile) throws SQLException, FileNotFoundException {
+    public static int createSubmission(int submissionId, File pdfFile) throws SQLException, FileNotFoundException {
         openConnection();
         PreparedStatement pstmt = null;
         FileInputStream inputStream= new FileInputStream(pdfFile);
         try {
              pstmt = con.prepareStatement(" INSERT INTO `team021`.`submission` (`submissionID`, `linkedDraftPDF`) "
                     + " VALUES (?, ?)");
-             pstmt.setInt(1, submissionID);
+             pstmt.setInt(1, submissionId);
              pstmt.setBlob(2, inputStream);
 
              int count = pstmt.executeUpdate();
@@ -89,12 +118,12 @@ public class ArticleController extends SqlController {
              if (pstmt != null) pstmt.close();
              closeConnection();
          }
-         return submissionID;
+         return submissionId;
      }
 
     /**
      * Get an article with all parameters by submissionID
-     * @param submissionID
+     * @param submissionId
      * @return selected article
      * @throws SQLException
      * @throws IOException
@@ -184,7 +213,71 @@ public class ArticleController extends SqlController {
             while (res.next()) {
                 int submissionID = res.getInt("submissionID");
                 int reviewCount = res.getInt("reviewCount");
-                String status = res.getString("status");
+                Status status = Status.valueOf(res.getString("status"));
+                
+                Submission submission = new Submission(submissionID, reviewCount, status);
+                submissions.add(submission);
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        return submissions;
+    }
+    
+    
+    /**
+     * Update status of the submission
+     * @param submissionId
+     * @param status
+     * @return true if update successful, otherwise false
+     * @throws SQLException
+     */
+    public static boolean updateStatus(int submissionId, Status status) throws SQLException {
+        boolean result = false;
+        if (checkArticle(submissionId)) {
+            openConnection();
+            PreparedStatement pstmt = null;
+            try {
+                // use status name to insert into database the exact status name of enum (easier to read status later)
+                String statusName = status.name();
+                pstmt = con.prepareStatement("UPDATE `team021`.`submission` SET `status` = ? WHERE (`submissionId` = ?)");
+                pstmt.setString(1, statusName);
+                pstmt.setInt(2, submissionId);
+
+                int count = pstmt.executeUpdate();
+                if (count != 0) result = true;
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            } finally {
+                if (pstmt != null) pstmt.close();
+                closeConnection();
+            }
+        }
+        return result;
+    }
+    
+    
+    /**
+     * Get all submissions with given status
+     * @return list of author's submissions
+     * @throws SQLException
+     */
+    public static LinkedList<Submission> getSubmissionByStatus(Status status) throws SQLException {
+        LinkedList<Submission> submissions = new LinkedList<Submission>();
+        openConnection();
+        PreparedStatement pstmt = null;
+        try {
+            String statusName = status.name();
+            pstmt = con.prepareStatement("SELECT * FROM submission WHERE (status = ?)");
+            pstmt.setString(1, statusName); 
+            ResultSet res = pstmt.executeQuery();
+            
+            while (res.next()) {
+                int submissionID = res.getInt("submissionID");
+                int reviewCount = res.getInt("reviewCount");
                 
                 Submission submission = new Submission(submissionID, reviewCount, status);
                 submissions.add(submission);

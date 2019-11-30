@@ -5,9 +5,9 @@
 public class Submission {
 	private int submissionID;
     private int reviewCount;
-    private String status;
+    private Status status;
 
-    Submission(int submissionID, int reviewCount, String status) {
+    Submission(int submissionID, int reviewCount, Status status) {
         this.submissionID = submissionID;
         this.reviewCount = reviewCount;
         this.status = status;
@@ -21,7 +21,7 @@ public class Submission {
         return reviewCount;
     }
 
-    public String getStatus() {
+    public Status getStatus() {
         return status;
     }
 
