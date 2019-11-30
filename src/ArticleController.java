@@ -262,7 +262,8 @@ public class ArticleController extends SqlController {
     
     /**
      * Get all submissions with given status
-     * @return list of author's submissions
+     * @param status
+     * @return list of submissions
      * @throws SQLException
      */
     public static LinkedList<Submission> getSubmissionByStatus(Status status) throws SQLException {
@@ -296,8 +297,7 @@ public class ArticleController extends SqlController {
     
         try {
 
-            System.out.println(getSubmissions("severus.snape@hogwarts.co.uk"));
-            System.out.println(getSubmissions("john.barker@dheffff11.ac.uk"));
+            System.out.println(getSubmissionByStatus(Status.SUBMITTED));
             
         } catch (SQLException ex) {
             ex.printStackTrace();

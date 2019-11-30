@@ -200,6 +200,80 @@ public class JournalController extends SqlController {
             }
         return result;
     }
+    
+    
+    /**
+     * Publish the next edition of a given journal
+     * @param ISSN
+     * @return result true if edition is published successfully
+     * @throws SQLException
+     */
+    public static boolean publishNextEdition(int issn, int volNum, int noNum) throws SQLException {
+        boolean result = false;
+        int artCount = getArtCount(issn, volNum, noNum);
+        // check if the number of articles in edition is allowed
+        if (artCount >= 3 && artCount <= 8) {
+            openConnection();  ;
+            PreparedStatement pstmt = null;
+                try {
+                    int pubMonth = Calendar.getInstance().get(Calendar.MONTH) + 1;
+                    System.out.println(pubMonth);
+                    // update database 
+                    pstmt = con.prepareStatement("UPDATE `team021`.`edition` SET `pubMonth` = ?, `isPublished` = '1' WHERE (`ISSN` = ?) and (`volNum` = ?) and (`noNum` = ?)");
+                    pstmt.setInt(1, pubMonth);
+                    pstmt.setInt(2, issn);
+                    pstmt.setInt(3, volNum);
+                    pstmt.setInt(4, noNum);
+
+                    int count = pstmt.executeUpdate();
+                    if (count != 0) {
+                        result = true;
+                        System.out.println("Edition number: " + noNum + ", volume: " + volNum + ", journal: " + issn + " published");
+                    }
+                    
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                } finally {
+                    if (pstmt != null) pstmt.close();
+                    closeConnection();
+                }
+        }
+        
+        return result;
+    }
+    
+    /**
+     * Get article counter of a given edition of a journal
+     * @param issn
+     * @param volNum
+     * @param noNum
+     * @return number of articles in the edition
+     * @throws SQLException
+     */
+    public static int getArtCount(int issn, int volNum, int noNum) throws SQLException {
+        int artCount = 0;
+        openConnection();  ;
+        PreparedStatement pstmt = null;
+            try {
+
+                // find what's the noNum of the new edition
+                pstmt = con.prepareStatement("SELECT * FROM `team021`.`edition` WHERE (`ISSN` = ?) and (`volNum` = ?) and (`noNum` = ?)");
+                pstmt.setInt(1, issn);
+                pstmt.setInt(2, volNum);
+                pstmt.setInt(3, noNum);
+                ResultSet res = pstmt.executeQuery();
+                if (res.next()) {
+                    artCount = res.getInt("artCount");
+                }
+                
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            } finally {
+                if (pstmt != null) pstmt.close();
+                closeConnection();
+            }
+        return artCount;
+    }
 
 
     /**
@@ -554,6 +628,7 @@ public class JournalController extends SqlController {
     	//File pdfFile = new File("./Systems Design Project.pdf");
         try {
             System.out.println(getVolumes(77777777));
+            publishNextEdition(30000008, 1, 1);
             
         } catch (SQLException ex) {
             ex.printStackTrace();
