@@ -224,32 +224,44 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 		}
 		//register an editor
 		else if (e.getSource() == register) {
-
+			String[] options = {"Yes", "Back"};
+			JComboBox<Object> journalSelection = new JComboBox<>(journals.toArray());
+			String windowTitle = "Please select a journal";
+			int x = JOptionPane.showOptionDialog(null, journalSelection, windowTitle,
+					JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, options[0]);
+			if (x == 0) {
+				int issn = ((Journal) journalSelection.getItemAt(journalSelection.getSelectedIndex())).getIssn();
+				new EditorRegister(username, issn);
+				this.dispose();
+			}
 		}
 		//appoint an editor (add user type 1(editor) to an existed user )
 		else if (e.getSource() == appoint) {
 			String[] options = {"Yes", "Back"};
 			JComboBox<Object> journalSelection = new JComboBox<>(journals.toArray());
-			JOptionPane.showMessageDialog(null, journalSelection, "please select a journal", JOptionPane.QUESTION_MESSAGE);
-			Journal selectedJournal = (Journal) journalSelection.getItemAt(journalSelection.getSelectedIndex());
-			String appointed = JOptionPane.showInputDialog("Please enter other editor's email address");
-			try {
-				if (!UserController.checkEmail(appointed)) {
-					JOptionPane.showMessageDialog(null, "Sorry, this email address has not been registered yet,\n" +
-							"please go to 'register an editor'. ");
-				} else {
+			String windowTitle = "Please select a journal";
+			int x = JOptionPane.showOptionDialog(null, journalSelection, windowTitle,
+					JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, options[0]);
+			if (x == 0) {
+				Journal selectedJournal = (Journal) journalSelection.getItemAt(journalSelection.getSelectedIndex());
+				String appointed = JOptionPane.showInputDialog("Please enter other editor's email address");
+				try {
+					if (!UserController.checkEmail(appointed)) {
+						JOptionPane.showMessageDialog(null, "Sorry, this email address has not been registered yet,\n" +
+								"please go to 'register an editor'. ");
+					} else {
 						UserController.addRole(appointed, 1);
-						UserController.createEditor(appointed,selectedJournal.getIssn());
+						UserController.createEditor(appointed, selectedJournal.getIssn());
 						if (UserController.checkUsertype(appointed, 1)) {
 							JOptionPane.showMessageDialog(null, "Editor added successfully!");
 						} else {
 							JOptionPane.showMessageDialog(null, "Please try again!");
 						}
+					}
+				} catch (SQLException ex) {
+					ex.printStackTrace();
 				}
-			} catch (SQLException ex) {
-				ex.printStackTrace();
 			}
-			//System.out.printf("The user's name is '%s'.\n", name);
 		}
 
 		//pass the chief editor to other editor
@@ -259,33 +271,42 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 
 		//retire
 		else if (e.getSource() == retire) {
+			String[] options = {"Yes", "Back"};
 			JComboBox<Object> journalSelection = new JComboBox<>(journals.toArray());
-			JOptionPane.showMessageDialog(null, journalSelection, "please select a journal", JOptionPane.QUESTION_MESSAGE);
-			try {
-				Journal selectedJournal = (Journal) journalSelection.getItemAt(journalSelection.getSelectedIndex());
-				//System.out.println(title);
-				String title = selectedJournal.getTitle();
-				int issn = (Integer)selectedJournal.getIssn();
-				System.out.println(issn);
-				LinkedList<String> editors = JournalController.getEditors(issn);
-				System.out.println(editors);
-				if (editors.size() < 2) {
-					JOptionPane.showMessageDialog(null, "You can not retire from journal " + title + ".\n Because there is only 1 editor.");
-				} else {
-					if (JournalController.chiefEditorRetire(username, issn)) {
-						JOptionPane.showMessageDialog(null, "You have retire from journal " + title + " successfully");
-						this.dispose();
-						new EditorInterface(username);
+			String windowTitle = "Please select a journal";
+			int x = JOptionPane.showOptionDialog(null, journalSelection, windowTitle,
+					JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, options[0]);
+			//if editor click yes
+			if (x == 0) {
+				try {
+					Journal selectedJournal = (Journal) journalSelection.getItemAt(journalSelection.getSelectedIndex());
+					//System.out.println(title);
+					String title = selectedJournal.getTitle();
+					int issn = selectedJournal.getIssn();
+					System.out.println(issn);
+					LinkedList<String> editors = JournalController.getEditors(issn);
+					System.out.println(editors);
+					if (editors.size() < 2) {
+						JOptionPane.showMessageDialog(null, "You can not retire from journal " + title + ".\n Because there is only 1 editor.");
+					} else {
+						if (JournalController.chiefEditorRetire(username, issn)) {
+							JOptionPane.showMessageDialog(null, "You have retire from journal " + title + " successfully");
+							this.dispose();
+							//System.out.println(username + "retired from" + issn);
+							new EditorInterface(username);
+						}
 					}
+				} catch (SQLException ex) {
+					ex.printStackTrace();
 				}
-			} catch (SQLException ex) {
-				ex.printStackTrace();
 			}
-		}
-		    else if (e.getSource() == publish) {
+
+
+			else if (e.getSource() == publish) {
 
 			}
 		}
+	}
 
 
 
