@@ -230,7 +230,7 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 		else if (e.getSource() == appoint) {
 			String[] options = {"Yes", "Back"};
 			JComboBox<Object> journalSelection = new JComboBox<>(journals.toArray());
-			JOptionPane.showMessageDialog(null, journalSelection, "please select a journal", JOptionPane.QUESTION_MESSAGE,);
+			JOptionPane.showMessageDialog(null, journalSelection, "please select a journal", JOptionPane.QUESTION_MESSAGE);
 			Journal selectedJournal = (Journal) journalSelection.getItemAt(journalSelection.getSelectedIndex());
 			String appointed = JOptionPane.showInputDialog("Please enter other editor's email address");
 			try {
