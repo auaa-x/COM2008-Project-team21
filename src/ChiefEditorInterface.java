@@ -276,6 +276,8 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 				} else {
 					if (JournalController.chiefEditorRetire(username, issn)) {
 						JOptionPane.showMessageDialog(null, "You have retire from journal " + title + " successfully");
+						this.dispose();
+						new EditorInterface(username);
 					}
 				}
 			} catch (SQLException ex) {
