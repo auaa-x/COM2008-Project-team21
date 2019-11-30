@@ -30,21 +30,23 @@ public class ArticleController extends SqlController {
     public static int createArticle(String title, String description, File pdfFile, int ISSN, String email) throws SQLException, FileNotFoundException {
         openConnection();
         PreparedStatement pstmt = null;
+        Statement stmt = null;
         int submissionID = 0;
         try {
             FileInputStream inputStream = new FileInputStream(pdfFile);
             try {
-                pstmt = con.prepareStatement(" INSERT INTO `team021`.`article` (`title`, `abstract`, `linkedFinalPDF`, `isPublished`, `ISSN`, `mAuthorEmail`)"
-                        + " VALUES (?, ?, ?, 0, ?, ?)");
-                pstmt.setString(1, title);
-                pstmt.setString(2, description);
-                pstmt.setBlob(3,inputStream);
-                pstmt.setInt(4, ISSN);
-                pstmt.setString(5, email);
-
-                ResultSet res = pstmt.executeQuery("SELECT COUNT(*) FROM `article`");
+                ResultSet res = stmt.executeQuery("SELECT COUNT(*) FROM `article`");
                 res.next();
                 submissionID = res.getInt(1) + 1;
+                
+                pstmt = con.prepareStatement(" INSERT INTO `team021`.`article` (`submissionID`, `title`, `abstract`, `linkedFinalPDF`, `ISSN`, `mAuthorEmail`)"
+                        + " VALUES (?, ?, ?, ?, ?, ?)");
+                pstmt.setInt(1, submissionID);
+                pstmt.setString(2, title);
+                pstmt.setString(3, description);
+                pstmt.setBlob(4,inputStream);
+                pstmt.setInt(5, ISSN);
+                pstmt.setString(6, email);
 
                 int count = pstmt.executeUpdate();
                 System.out.println("Rows updated " + count);
@@ -52,6 +54,7 @@ public class ArticleController extends SqlController {
                 ex.printStackTrace();
             } finally {
                 if (pstmt != null) pstmt.close();
+                if (stmt != null) stmt.close();
                 closeConnection();
             }
         } catch (FileNotFoundException e) {
