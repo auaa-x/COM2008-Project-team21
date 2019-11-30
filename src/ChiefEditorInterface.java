@@ -12,12 +12,15 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Enumeration;
 import java.util.LinkedList;
 
 
 public class ChiefEditorInterface extends JFrame implements ActionListener {
 	private JMenuBar menuBar;
-	private JMenu staff, journal;
+	private JMenu staff, journal, journalSelection;
+	private JRadioButtonMenuItem journalItem, journalItem1;
+	private ButtonGroup group;
 	private JMenuItem register, appoint, passChiefEditor, retire, publish, delay, logOut;
 	private File article = new File("./article.pdf");
 	private Desktop desktop = Desktop.getDesktop();
@@ -31,7 +34,9 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 	private JLabel infoTitle;
 	private JButton open;
 	private String username;
-	private LinkedList<Integer> journals;
+	private LinkedList<Integer> journalsISSN;
+	private LinkedList<Journal> journals;
+	private int issn;
 
 
 	ChiefEditorInterface(String username) throws SQLException {
@@ -43,9 +48,8 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 
 
 		this.username = username;
-		journals = new LinkedList<Integer>();
-		journals = JournalController.getEditorJournals(username);
-
+		journalsISSN = JournalController.getEditorJournals(username);
+		journals = new LinkedList<Journal>();
 
 
 		//set up panels
@@ -54,7 +58,24 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 
 		//create the menu
 		menuBar = new JMenuBar();
-		staff = new JMenu("Staff Management" );
+/*		//journal selection
+		//menu.addSeparator();
+		journalSelection = new JMenu("Select Journal");
+		group = new ButtonGroup();
+		for (int j = 0; j < journalsISSN.size(); ++j) {
+			issn = journalsISSN.get(j);
+			Journal journal = JournalController.getJournal(issn);
+			journalItem = new JRadioButtonMenuItem(journal.getTitle());
+			journals.add(journal);
+			journalItem.addActionListener(this);
+			group.add(journalItem);
+			if (j == 0) {
+				journalItem.setSelected(true);
+			}
+			journalSelection.add(journalItem);
+		}
+		menuBar.add(journalSelection);*/
+		staff = new JMenu("Staff Management");
 		journal = new JMenu("Journal Management");
 		logOut = new JMenuItem("Log out");
 		logOut.addActionListener(this);
@@ -134,12 +155,12 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 		tree.getSelectionModel().addTreeSelectionListener(e -> {
 			DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
 			selectedLabel.setText(selectedNode.getUserObject().toString());
-			if (selectedNode.getUserObject().toString().equals("Article")){
+			if (selectedNode.getUserObject().toString().equals("Article")) {
 				//first check if Desktop is supported by Platform or not
-				if(!Desktop.isDesktopSupported()){
+				if (!Desktop.isDesktopSupported()) {
 					JOptionPane.showMessageDialog(null, "Desktop does not support this function");
 					return;
-				} else if (article.exists()){
+				} else if (article.exists()) {
 					try {
 						desktop.open(article);
 					} catch (IOException ex) {
@@ -153,17 +174,26 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 		infoPanel.add(infoTitle);
 
 
-
 		//add panels functions
 		this.add(treePanel, BorderLayout.WEST);
 		this.add(infoPanel, BorderLayout.EAST);
 		this.setJMenuBar(menuBar);
 
 
-
-
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		this.setVisible(true);
+	}
+
+	//get selected radio box text
+	public String getSelectedButtonText(ButtonGroup buttonGroup) {
+		for (Enumeration<AbstractButton> buttons = buttonGroup.getElements(); buttons.hasMoreElements(); ) {
+			AbstractButton button = buttons.nextElement();
+
+			if (button.isSelected()) {
+				return button.getText();
+			}
+		}
+		return null;
 	}
 
 
@@ -176,13 +206,10 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 			JOptionPane.showMessageDialog(null, "You have logged out successfully!");
 			new LoginInterface();
 		}
-
 		//register an editor
 		else if (e.getSource() == register) {
-			/*UserController.createTempUser();
-			UserController.createEditor();*/
-		}
 
+		}
 		//appoint an editor (add user type 1(editor) to an existed user )
 		else if (e.getSource() == appoint) {
 			String[] options = {"Yes", "Back"};
@@ -191,12 +218,17 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 
 			String appointed = JOptionPane.showInputDialog("Please enter other editor's email address");
 			try {
-				UserController.addRole(appointed, 1);
-				UserController.createEditor(appointed, (Integer) journalSelection.getSelectedItem());
-				if (UserController.checkUsertype(appointed, 1)) {
-					JOptionPane.showMessageDialog(null, "Editor added successfully!");
+				if (!UserController.checkEmail(appointed)) {
+					JOptionPane.showMessageDialog(null, "Sorry, this email address has not been registered yet,\n" +
+							"please go to 'register an editor'. ");
 				} else {
-					JOptionPane.showMessageDialog(null, "Please try again!");
+						UserController.addRole(appointed, 1);
+						UserController.createEditor(appointed, (Integer) journalSelection.getSelectedItem());
+						if (UserController.checkUsertype(appointed, 1)) {
+							JOptionPane.showMessageDialog(null, "Editor added successfully!");
+						} else {
+							JOptionPane.showMessageDialog(null, "Please try again!");
+						}
 				}
 			} catch (SQLException ex) {
 				ex.printStackTrace();
@@ -211,45 +243,56 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 
 		//retire
 		else if (e.getSource() == retire) {
-				/*String[] options = {"Yes", "No"};
-				String issn1 = String.valueOf(getSelectedButtonText(group));
-				int x = JOptionPane.showOptionDialog(null, "Are you sure you want to retire from "
-								+ issn1, "Retire", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,
-						null, options, options[0]);
-				if (x == 0){
-					try {
-						JournalController.editorRetire(username, Integer.parseInt(issn1));
-					} catch (SQLException ex) {
-						JOptionPane.showMessageDialog(null,"Cannot connect to the server, please try later.");
-						ex.printStackTrace();
-					}
-					try {
-						new EditorInterface(username);
-					} catch (SQLException ex) {
-						ex.printStackTrace();
-					}
+			/*String[] options = {"Yes", "No"};
+			String issn1 = String.valueOf(getSelectedButtonText(group));
+			int x = JOptionPane.showOptionDialog(null, "Are you sure you want to retire from "
+							+ issn1, "Retire", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,
+					null, options, options[0]);
+			if (x == 0) {
+				try {
+					JournalController.editorRetire(username, Integer.parseInt(issn1));
+				} catch (SQLException ex) {
+					JOptionPane.showMessageDialog(null, "Cannot connect to the server, please try later.");
+					ex.printStackTrace();
 				}
-			}*/
+				try {
+					new EditorInterface(username);
+				} catch (SQLException ex) {
+					ex.printStackTrace();
+				}
+			}
+		}*/
 			JComboBox journalSelection = new JComboBox(journals.toArray());
 			JOptionPane.showMessageDialog(null, journalSelection, "please select a journal", JOptionPane.QUESTION_MESSAGE);
 			try {
-				int issn = (Integer) journalSelection.getSelectedItem();
-				if (JournalController.chiefEditorRetire(username, issn)) {
-					JOptionPane.showMessageDialog(null, "You have retire from " + issn + " successfully");
+				String title = (String) journalSelection.getSelectedItem();
+				System.out.println(title);
+				int issn = (Integer)journalSelection.getSelectedItem();
+				System.out.println(issn);
+				LinkedList<String> editors = JournalController.getEditors(issn);
+				System.out.println(editors);
+				if (editors.size() < 2) {
+					JOptionPane.showMessageDialog(null, "You can not retire from journal " + title + ".\n Because there is only 1 editor.");
+				} else {
+					if (JournalController.chiefEditorRetire(username, issn)) {
+						JOptionPane.showMessageDialog(null, "You have retire from journal " + title + " successfully");
+					}
 				}
 			} catch (SQLException ex) {
 				ex.printStackTrace();
 			}
-		} else if (e.getSource() == publish) {
-
 		}
-	}
+		    else if (e.getSource() == publish) {
+
+			}
+		}
 
 
-	public static void main(String[] args) {
+
+			public static void main(String[] args) {
 		SwingUtilities.invokeLater(() -> {
 			try {
-				new ChiefEditorInterface("harry.potter@warwick.ac.uk");
+				new ChiefEditorInterface("hermiona.granger@hogwarts.ac.uk");
 			} catch (SQLException e) {
 				JOptionPane.showMessageDialog(null, "Can not connect to the  server, please try again.");
 				e.printStackTrace();
