@@ -82,8 +82,15 @@ public class ReviewController extends SqlController {
         // get all submissions with SUBMITTED status
         submissions = ArticleController.getSubmissionByStatus(Status.SUBMITTED);
         
-        // remove the ones for which a conflict exists
+        // remove the ones that already have 3 started reviews
         Iterator<Submission> iterator = submissions.iterator();
+        while(iterator.hasNext()) {
+            Submission s = iterator.next();
+            if (s.getReviewCount() >= 3) iterator.remove();
+        }
+        
+        // remove the ones for which a conflict exists
+       iterator = submissions.iterator();
         while(iterator.hasNext()) {
             Submission s = iterator.next();
             if (checkReviewerConflict(reviewerEmail, s.getSubmissionID())) iterator.remove();

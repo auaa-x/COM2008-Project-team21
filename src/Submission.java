@@ -17,7 +17,7 @@ public class Submission {
         return submissionID;
     }
 
-    public int getIssn() {
+    public int getReviewCount() {
         return reviewCount;
     }
 
