@@ -339,10 +339,32 @@ public class ReviewController extends SqlController {
     }
     
     
-    public static boolean submitReview(int submissionId, String anonId, String summary, String typos) throws SQLException {
+    public static boolean submitReview(int submissionId, String anonId, String summary, String typos, Verdict verdict) throws SQLException {
         boolean result = false;
         if (addSummaryToReview(submissionId, anonId, summary) && addTyposToReview(submissionId, anonId, typos) &&
-                addAllQuestions(submissionId, anonId)) result = true;     
+                addAllQuestions(submissionId, anonId) && addVerdict(submissionId, verdict, anonId)) {
+            result = true;
+            
+            // update the isSubmitted field
+            openConnection();
+            PreparedStatement pstmt = null;
+            try {
+
+                pstmt = con.prepareStatement("UPDATE `team021`.`review` SET `isSubmitted` = ? WHERE (`submissionID` = ?) and (`anonID` = ?)");
+                pstmt.setInt(1, 1);
+                pstmt.setInt(2, submissionId); 
+                pstmt.setString(3, anonId);
+                pstmt.executeUpdate();
+            
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            } finally {
+                if (pstmt != null) pstmt.close();
+                closeConnection();
+            }
+            
+        }
+        
         return result;
     }
     
@@ -373,9 +395,7 @@ public class ReviewController extends SqlController {
                 pstmt.setString(4, anonId);
                 int res = pstmt.executeUpdate();
                 noNum++;
-                if (res == 0) {
-                    result = false;
-                }
+                if (res == 0) result = false;
             }
         
         } catch (SQLException ex) {
@@ -403,8 +423,27 @@ public class ReviewController extends SqlController {
      * Add a verdict to a given submission
      * @param verdict
      */
-    public static void addVerdict(String verdict) {
-        
+    public static boolean addVerdict(int submissionId, Verdict verdict, String anonId) throws SQLException {
+        boolean result = false;
+        openConnection();
+        PreparedStatement pstmt = null;
+        try {
+            String verdictName = verdict.name();
+            pstmt = con.prepareStatement("INSERT INTO `team021`.`verdict` (`submissionID`, `value`, `anonID`) VALUES (?, ?, ?);");
+            pstmt.setInt(1, submissionId);
+            pstmt.setString(2, verdictName); 
+            pstmt.setString(3, anonId);
+            
+            int res = pstmt.executeUpdate();
+            if (res != 0) result = true;
+
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        return result;
     }
     
     /**
@@ -498,15 +537,8 @@ public class ReviewController extends SqlController {
     public static void main (String[] args) throws IOException {
 
         try {
-            System.out.println(selectToReview("chaddock@illinois.ac.uk", 1));
-            // System.out.println(getReviewingSubmissions("chaddock@illinois.ac.uk"));
-            // System.out.println(getSubmissionsToReview("chaddock@illinois.ac.uk"));
-            
-            // addQuestion("question1");
-            // addQuestion("question2");
-            // addQuestion("question3");
-            // addQuestion("question4");
-            // System.out.println(addAllQuestions(1, "reviewer1"));
+            System.out.println(getReviewingSubmissions("chaddock@illinois.ac.uk"));
+            System.out.println(getSubmissionsToReview("chaddock@illinois.ac.uk"));
             
             addAnswer("answer1");
             addAnswer("answer2");
