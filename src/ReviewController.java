@@ -3,6 +3,7 @@
  * @author Urszula Talalaj
  */
 
+import java.io.File;
 import java.io.IOException;
 import java.sql.*;
 import java.util.Iterator;
@@ -451,12 +452,13 @@ public class ReviewController extends SqlController {
      * Make an entry for each one in the response table
      * @param submissionId
      * @param anonId
+     * @param pdfFile
      * @return true if addition of all the responses is successful, otherwise false
      * @throws SQLException
      */
-    public static boolean submitResponse(int submissionId, String anonId) throws SQLException {
+    public static boolean submitResponse(int submissionId, String anonId,  File pdfFile) throws SQLException {
         boolean result = false;
-        if (addAllAnswers(submissionId, anonId)) {
+        if (addAllAnswers(submissionId, anonId) && ArticleController.updatePDFFile(submissionId, pdfFile)) {
 	        	openConnection();
 	        PreparedStatement pstmt = null;
 	        try {
@@ -535,7 +537,7 @@ public class ReviewController extends SqlController {
     
     
     public static void main (String[] args) throws IOException {
-
+    	File pdfFile = new File("./Systems Design Project.pdf");
         try {
             System.out.println(getReviewingSubmissions("chaddock@illinois.ac.uk"));
             System.out.println(getSubmissionsToReview("chaddock@illinois.ac.uk"));
@@ -545,7 +547,7 @@ public class ReviewController extends SqlController {
             addAnswer("answer3");
             addAnswer("answer4");
             System.out.println(addAllAnswers(1, "reviewer1"));
-            System.out.println(submitResponse(1, "reviewer1"));
+            System.out.println(submitResponse(1, "reviewer1", pdfFile));
             
         } catch (SQLException e) {
             e.printStackTrace();
