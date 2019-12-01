@@ -11,10 +11,10 @@ import java.util.LinkedList;
 import java.util.ListIterator;
 
 public class ReviewController extends SqlController {
-    
+
     protected static LinkedList<String> questionList = new LinkedList<String>();
     protected static LinkedList<String> answerList = new LinkedList<String>();
-    
+
     /**
      * Checks if there exists a conflict between a reviewer and a submission
      * @param reviewerEmail
@@ -29,39 +29,39 @@ public class ReviewController extends SqlController {
         openConnection();
         PreparedStatement pstmt = null;
         try {
-            
+
             // get uni affiliation of the reviewer
             pstmt = con.prepareStatement("SELECT * FROM `user` WHERE `email` = ?");
             pstmt.setString(1, reviewerEmail);
             ResultSet res = pstmt.executeQuery();
-            
+
             String editorUni;
             if (res.next()) {
                 editorUni = res.getString("uniAffiliation");
             } else return result;
-            
-            
+
+
             // get uni affiliations of authors
             for (String e : authors) {
                 pstmt.clearParameters();
                 pstmt.setString(1, e);
                 res = pstmt.executeQuery();
-                
+
                 String authorUni;
                 if (res.next()) {
                     authorUni = res.getString("uniAffiliation");
                     authorsUnis.add(authorUni);
                 } else return result;
             }
-            
+
             // check if there is a conflict
             for (String u : authorsUnis) {
                 if (u != null && u.equals(editorUni)) return result;
             }
-            
+
             // if no return earlier then there is no conflict
             result = false;
-            
+
         } catch (SQLException ex) {
             ex.printStackTrace();
         } finally {
@@ -70,8 +70,8 @@ public class ReviewController extends SqlController {
         }
         return result;
     }
-    
-    
+
+
     /**
      * Get a list of submissions available to review by a given reviewer
      * @param reviewerEmail
@@ -80,27 +80,27 @@ public class ReviewController extends SqlController {
      */
     public static LinkedList<Submission> getSubmissionsToReview(String reviewerEmail) throws SQLException {
         LinkedList<Submission> submissions = new LinkedList<Submission>();
-        
+
         // return empty list if user is not a reviewer
         if (!UserController.checkUsertype(reviewerEmail, 3)) return submissions;
-        
+
         // get all submissions with SUBMITTED status
         submissions = ArticleController.getSubmissionByStatus(Status.SUBMITTED);
-        
+
         // remove the ones that already have 3 started reviews
         Iterator<Submission> iterator = submissions.iterator();
         while(iterator.hasNext()) {
             Submission s = iterator.next();
             if (s.getReviewCount() >= 3) iterator.remove();
         }
-        
+
         // remove the ones for which a conflict exists
        iterator = submissions.iterator();
         while(iterator.hasNext()) {
             Submission s = iterator.next();
             if (checkReviewerConflict(reviewerEmail, s.getSubmissionID())) iterator.remove();
         }
-        
+
         // remove the ones that had been already taken by this reviewer
         LinkedList<Integer> taken = getReviewingSubmissions(reviewerEmail);
         Iterator<Submission> subItertor = submissions.iterator();
@@ -112,10 +112,10 @@ public class ReviewController extends SqlController {
                 if (s.getSubmissionID() == id) subItertor.remove();
             }
         }
-        return submissions;       
+        return submissions;
     }
-    
-    
+
+
     /**
      * Select an article to review as a reviewer
      * @param reviewerEmail
@@ -126,14 +126,14 @@ public class ReviewController extends SqlController {
     public static boolean selectToReview(String reviewerEmail, int submissionId) throws SQLException {
         boolean result = false;
         String anonId = "reviewer" + Integer.toString(getReviewCount(submissionId) + 1);
-        
+
         // update the review count, create a reviewer, create a review
-        if (updateReviewCount(submissionId) && UserController.createReviewer(anonId, reviewerEmail, submissionId) 
+        if (updateReviewCount(submissionId) && UserController.createReviewer(anonId, reviewerEmail, submissionId)
                 && createReview(submissionId, anonId)) result = true;
         return result;
     }
-    
-    
+
+
     /**
      * Get a review counter for a given submission (reviews started)
      * @param submissionId
@@ -145,16 +145,16 @@ public class ReviewController extends SqlController {
         openConnection();
         PreparedStatement pstmt = null;
         try {
-            
+
             // get the current reviewCount of the submission
             pstmt = con.prepareStatement("SELECT * FROM `submission` WHERE `submissionID` = ?");
-            pstmt.setInt(1, submissionId);  
+            pstmt.setInt(1, submissionId);
             ResultSet res = pstmt.executeQuery();
-            
+
             if (res.next()) {
                 count = res.getInt("reviewCount");
             }
-        
+
         } catch (SQLException ex) {
             ex.printStackTrace();
         } finally {
@@ -163,8 +163,8 @@ public class ReviewController extends SqlController {
         }
         return count;
     }
-    
-    
+
+
     /**
      * Get a list of submissionIDs of submissions which are being reviewed by a given reviewer
      * @param reviewerEmail
@@ -176,17 +176,17 @@ public class ReviewController extends SqlController {
         openConnection();
         PreparedStatement pstmt = null;
         try {
-            
+
             // get the current reviewCount of the submission
             pstmt = con.prepareStatement("SELECT * FROM `reviewer` WHERE `email` = ?");
-            pstmt.setString(1, reviewerEmail);  
+            pstmt.setString(1, reviewerEmail);
             ResultSet res = pstmt.executeQuery();
-            
+
             while (res.next()) {
                 int id = res.getInt("submissionID");
                 submissions.add(Integer.valueOf(id));
             }
-        
+
         } catch (SQLException ex) {
             ex.printStackTrace();
         } finally {
@@ -195,8 +195,8 @@ public class ReviewController extends SqlController {
         }
         return submissions;
     }
-    
-    
+
+
     /**
      * Update review counter for a given submission
      * @param submissionId
@@ -205,28 +205,28 @@ public class ReviewController extends SqlController {
      */
     public static boolean updateReviewCount(int submissionId) throws SQLException {
         boolean result = false;
-        
+
         // get current review count
         int count = getReviewCount(submissionId);
-        
+
         // return false if there are too many reviews already
         if (count >= 3) return result;
-        
+
         openConnection();
         PreparedStatement pstmt = null;
         try {
-            
+
             // update review counter
             count++;
             pstmt = con.prepareStatement("UPDATE `team021`.`submission` SET `reviewCount` = ? WHERE (`submissionID` = ?)");
-            pstmt.setInt(1, count);  
-            pstmt.setInt(2, submissionId); 
+            pstmt.setInt(1, count);
+            pstmt.setInt(2, submissionId);
             int res = pstmt.executeUpdate();
-            
+
             if (res != 0) {
                 result = true;
             }
-        
+
         } catch (SQLException ex) {
             ex.printStackTrace();
         } finally {
@@ -235,8 +235,8 @@ public class ReviewController extends SqlController {
         }
         return result;
     }
-    
-    
+
+
     /**
      * Create a review for a given submission and anonID
      * @param submissionId
@@ -252,14 +252,14 @@ public class ReviewController extends SqlController {
         try {
 
             pstmt = con.prepareStatement("INSERT INTO `team021`.`review` (`submissionID`, `anonID`) VALUES (?, ?)");
-            pstmt.setInt(1, submissionId);  
-            pstmt.setString(2, anonId); 
+            pstmt.setInt(1, submissionId);
+            pstmt.setString(2, anonId);
             int res = pstmt.executeUpdate();
-            
+
             if (res != 0) {
                 result = true;
             }
-        
+
         } catch (SQLException ex) {
             ex.printStackTrace();
         } finally {
@@ -268,8 +268,8 @@ public class ReviewController extends SqlController {
         }
         return result;
     }
-    
-    
+
+
     /**
      * Add a summary of a review for a given submissionID and anonID
      * @param submissionId
@@ -286,15 +286,15 @@ public class ReviewController extends SqlController {
         try {
 
             pstmt = con.prepareStatement("UPDATE `team021`.`review` SET `summary` = ? WHERE (`submissionID` = ?) and (`anonID` = ?)");
-            pstmt.setString(1, summary);  
-            pstmt.setInt(2, submissionId); 
+            pstmt.setString(1, summary);
+            pstmt.setInt(2, submissionId);
             pstmt.setString(3, anonId);
             int res = pstmt.executeUpdate();
-            
+
             if (res != 0) {
                 result = true;
             }
-        
+
         } catch (SQLException ex) {
             ex.printStackTrace();
         } finally {
@@ -303,7 +303,7 @@ public class ReviewController extends SqlController {
         }
         return result;
     }
-    
+
 
     /**
      * Add typos to a review for a given submissionID and anonID
@@ -321,15 +321,15 @@ public class ReviewController extends SqlController {
         try {
 
             pstmt = con.prepareStatement("UPDATE `team021`.`review` SET `typoErrors` = ? WHERE (`submissionID` = ?) and (`anonID` = ?)");
-            pstmt.setString(1, typoErrors);  
-            pstmt.setInt(2, submissionId); 
+            pstmt.setString(1, typoErrors);
+            pstmt.setInt(2, submissionId);
             pstmt.setString(3, anonId);
             int res = pstmt.executeUpdate();
-            
+
             if (res != 0) {
                 result = true;
             }
-        
+
         } catch (SQLException ex) {
             ex.printStackTrace();
         } finally {
@@ -338,14 +338,14 @@ public class ReviewController extends SqlController {
         }
         return result;
     }
-    
-    
+
+
     public static boolean submitReview(int submissionId, String anonId, String summary, String typos, Verdict verdict) throws SQLException {
         boolean result = false;
         if (addSummaryToReview(submissionId, anonId, summary) && addTyposToReview(submissionId, anonId, typos) &&
                 addAllQuestions(submissionId, anonId) && addVerdict(submissionId, verdict, anonId)) {
             result = true;
-            
+
             // update the isSubmitted field
             openConnection();
             PreparedStatement pstmt = null;
@@ -353,23 +353,23 @@ public class ReviewController extends SqlController {
 
                 pstmt = con.prepareStatement("UPDATE `team021`.`review` SET `isSubmitted` = ? WHERE (`submissionID` = ?) and (`anonID` = ?)");
                 pstmt.setInt(1, 1);
-                pstmt.setInt(2, submissionId); 
+                pstmt.setInt(2, submissionId);
                 pstmt.setString(3, anonId);
                 pstmt.executeUpdate();
-            
+
             } catch (SQLException ex) {
                 ex.printStackTrace();
             } finally {
                 if (pstmt != null) pstmt.close();
                 closeConnection();
             }
-            
+
         }
-        
+
         return result;
     }
-    
-    
+
+
     /**
      * Add all the questions to the review
      * Make an entry for each one in the question table
@@ -381,7 +381,7 @@ public class ReviewController extends SqlController {
     public static boolean addAllQuestions(int submissionId, String anonId) throws SQLException {
         boolean result = true;
         ListIterator<String> iterator = questionList.listIterator();
-        
+
         openConnection();
         PreparedStatement pstmt = null;
         try {
@@ -392,25 +392,25 @@ public class ReviewController extends SqlController {
                 pstmt = con.prepareStatement("INSERT INTO `team021`.`question` (`submissionID`, `noNum`, `value`, `anonID`) VALUES (?, ?, ?, ?)");
                 pstmt.setInt(1, submissionId);
                 pstmt.setInt(2, noNum);
-                pstmt.setString(3, question); 
+                pstmt.setString(3, question);
                 pstmt.setString(4, anonId);
                 int res = pstmt.executeUpdate();
                 noNum++;
                 if (res == 0) result = false;
             }
-        
+
         } catch (SQLException ex) {
             ex.printStackTrace();
         } finally {
             if (pstmt != null) pstmt.close();
             closeConnection();
         }
-        
+
         questionList.clear();
         return result;
     }
-    
-    
+
+
     /**
      * Add a question to the question list
      * @param question
@@ -418,8 +418,8 @@ public class ReviewController extends SqlController {
     public static void addQuestion(String question) {
         questionList.add(question);
     }
-    
-    
+
+
     /**
      * Add a verdict to a given submission
      * @param verdict
@@ -432,9 +432,9 @@ public class ReviewController extends SqlController {
             String verdictName = verdict.name();
             pstmt = con.prepareStatement("INSERT INTO `team021`.`verdict` (`submissionID`, `value`, `anonID`) VALUES (?, ?, ?);");
             pstmt.setInt(1, submissionId);
-            pstmt.setString(2, verdictName); 
+            pstmt.setString(2, verdictName);
             pstmt.setString(3, anonId);
-            
+
             int res = pstmt.executeUpdate();
             if (res != 0) result = true;
 
@@ -446,7 +446,7 @@ public class ReviewController extends SqlController {
         }
         return result;
     }
-    
+
     /**
      * Submits response
      * Make an entry for each one in the response table
@@ -462,16 +462,16 @@ public class ReviewController extends SqlController {
 	        	openConnection();
 	        PreparedStatement pstmt = null;
 	        try {
-	
-	            pstmt = con.prepareStatement("INSERT INTO `team021`.`response` (`submissionID`, `anonID`) VALUES (?, ?)"); 
-	            pstmt.setInt(1, submissionId); 
+
+	            pstmt = con.prepareStatement("INSERT INTO `team021`.`response` (`submissionID`, `anonID`) VALUES (?, ?)");
+	            pstmt.setInt(1, submissionId);
 	            pstmt.setString(2, anonId);
 	            int res = pstmt.executeUpdate();
-	            
+
 	            if (res != 0) {
 	                result = true;
 	            }
-	        
+
 	        } catch (SQLException ex) {
 	            ex.printStackTrace();
 	        } finally {
@@ -481,8 +481,8 @@ public class ReviewController extends SqlController {
         }
         return result;
     }
-    
-    
+
+
     /**
      * Add all the answers to the review
      * Make an entry for each one in the answers table
@@ -494,7 +494,7 @@ public class ReviewController extends SqlController {
     public static boolean addAllAnswers(int submissionId, String anonId) throws SQLException {
         boolean result = true;
         ListIterator<String> iterator = answerList.listIterator();
-        
+
         openConnection();
         PreparedStatement pstmt = null;
         try {
@@ -505,7 +505,7 @@ public class ReviewController extends SqlController {
                 pstmt = con.prepareStatement("INSERT INTO `team021`.`answer` (`submissionID`, `noNum`, `value`, `anonID`) VALUES (?, ?, ?, ?)");
                 pstmt.setInt(1, submissionId);
                 pstmt.setInt(2, noNum);
-                pstmt.setString(3, question); 
+                pstmt.setString(3, question);
                 pstmt.setString(4, anonId);
                 int res = pstmt.executeUpdate();
                 noNum++;
@@ -513,19 +513,19 @@ public class ReviewController extends SqlController {
                     result = false;
                 }
             }
-        
+
         } catch (SQLException ex) {
             ex.printStackTrace();
         } finally {
             if (pstmt != null) pstmt.close();
             closeConnection();
         }
-        
+
         answerList.clear();
         return result;
     }
-    
-    
+
+
     /**
      * Add an answer to the answer list
      * @param answer
@@ -533,22 +533,15 @@ public class ReviewController extends SqlController {
     public static void addAnswer(String answer) {
         questionList.add(answer);
     }
-    
-    
-    
+
+
+
     public static void main (String[] args) throws IOException {
     	File pdfFile = new File("./Systems Design Project.pdf");
         try {
             System.out.println(getReviewingSubmissions("chaddock@illinois.ac.uk"));
             System.out.println(getSubmissionsToReview("chaddock@illinois.ac.uk"));
-            
-            addAnswer("answer1");
-            addAnswer("answer2");
-            addAnswer("answer3");
-            addAnswer("answer4");
-            System.out.println(addAllAnswers(1, "reviewer1"));
-            System.out.println(submitResponse(1, "reviewer1", pdfFile));
-            
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
