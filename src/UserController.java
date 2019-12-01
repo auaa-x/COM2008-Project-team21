@@ -864,6 +864,114 @@ public class UserController extends SqlController {
         }
         return result;
     }
+    
+    /**
+     * Get user's title by email
+     * @param email
+     * @return title
+     * @throws SQLException
+     */
+    public static String getUsersTitle(String email) throws SQLException {
+        openConnection();
+        PreparedStatement pstmt = null;
+        String title = null;
+        try {
+            pstmt = con.prepareStatement("SELECT * FROM `user` WHERE email = ?");
+            pstmt.setString(1, email);
+            ResultSet res = pstmt.executeQuery();      
+                       
+            if (res.next()) {
+                title = res.getString("title"); 
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        return title;
+    }
+    
+    /**
+     * Get user's surname by email
+     * @param email
+     * @return surname
+     * @throws SQLException
+     */
+    public static String getUsersSurname(String email) throws SQLException {
+        openConnection();
+        PreparedStatement pstmt = null;
+        String surname = null;
+        try {
+            pstmt = con.prepareStatement("SELECT * FROM `user` WHERE email = ?");
+            pstmt.setString(1, email);
+            ResultSet res = pstmt.executeQuery();      
+                       
+            if (res.next()) {
+            	surname = res.getString("surname"); 
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        return surname;
+    }
+    
+    /**
+     * Get user's surname by email
+     * @param email
+     * @return forename
+     * @throws SQLException
+     */
+    public static String getUsersForename(String email) throws SQLException {
+        openConnection();
+        PreparedStatement pstmt = null;
+        String forename = null;
+        try {
+            pstmt = con.prepareStatement("SELECT * FROM `user` WHERE email = ?");
+            pstmt.setString(1, email);
+            ResultSet res = pstmt.executeQuery();      
+                       
+            if (res.next()) {
+            	forename = res.getString("forename"); 
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        return forename;
+    }
+    
+    /**
+     * Get user's surname by email
+     * @param email
+     * @return university
+     * @throws SQLException
+     */
+    public static String getUsersUniversity(String email) throws SQLException {
+        openConnection();
+        PreparedStatement pstmt = null;
+        String university = null;
+        try {
+            pstmt = con.prepareStatement("SELECT * FROM `user` WHERE email = ?");
+            pstmt.setString(1, email);
+            ResultSet res = pstmt.executeQuery();      
+                       
+            if (res.next()) {
+            	university = res.getString("uniAffiliation"); 
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        return university;
+    }
 
 
 
@@ -892,7 +1000,11 @@ public class UserController extends SqlController {
             //System.out.println(addCoAuthors("hufflepuff", 123));
 
             //changePassword("james.potter@warwick.ac.uk", "test_password2", "test_password", "test_password");
-            updateTitle("james.potter@warwick.ac.uk","Ms");
+            //updateTitle("james.potter@warwick.ac.uk","Ms");
+            System.out.println(getUsersTitle("hermiona.granger@hogwarts.ac.uk"));
+            System.out.println(getUsersForename("hermiona.granger@hogwarts.ac.uk"));
+            System.out.println(getUsersSurname("hermiona.granger@hogwarts.ac.uk"));
+            System.out.println(getUsersUniversity("hermiona.granger@hogwarts.ac.uk"));
 
 
         } catch (SQLException ex) {
