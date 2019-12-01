@@ -144,7 +144,7 @@ public class ReviewController extends SqlController {
     /**
      * Update review counter for a given submission
      * @param submissionId
-     * @return number of started reviews
+     * @return true if update successful, otherwise false
      * @throws SQLException
      */
     public static boolean updateReviewCount(int submissionId) throws SQLException {
@@ -184,7 +184,8 @@ public class ReviewController extends SqlController {
     /**
      * Create a review for a given submission and anonID
      * @param submissionId
-     * @return number of started reviews
+     * @param anonID
+     * @return true if update successful, otherwise false
      * @throws SQLException
      */
     public static boolean createReview(int submissionId, String anonId) throws SQLException {
