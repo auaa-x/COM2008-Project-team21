@@ -20,7 +20,7 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 	private JMenuBar menuBar;
 	private JMenu staff, journal;
 	private ButtonGroup group;
-	private JMenuItem register, appoint, passChiefEditor, retire, publish, delay, logOut;
+	private JMenuItem register, appoint, passChiefEditor, retire, publish, delay, toEditor, logOut;
 	private File article = new File("./article.pdf");
 	private Desktop desktop = Desktop.getDesktop();
 
@@ -58,14 +58,6 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 		for (int issn : chiefJournalsISSN) {
 			Journal journal = JournalController.getJournal(issn);
 			journals.add(journal);
-/*			journalItem = new JRadioButtonMenuItem(journal.getTitle());
-			journals.add(journal);
-			journalItem.addActionListener(this);
-			group.add(journalItem);
-			if (j == 0) {
-				journalItem.setSelected(true);
-			}
-			journalSelection.add(journalItem);*/
 		}
 
 
@@ -76,29 +68,20 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 		//create the menu
 		menuBar = new JMenuBar();
 		group = new ButtonGroup();
-/*		//journal selection
-		//menu.addSeparator();
-		journalSelection = new JMenu("Select Journal");
-		for (int j = 0; j < journalsISSN.size(); ++j) {
-			issn = journalsISSN.get(j);
-			Journal journal = JournalController.getJournal(issn);
-			journalItem = new JRadioButtonMenuItem(journal.getTitle());
-			journals.add(journal);
-			journalItem.addActionListener(this);
-			group.add(journalItem);
-			if (j == 0) {
-				journalItem.setSelected(true);
-			}
-			journalSelection.add(journalItem);
-		}
-		menuBar.add(journalSelection);*/
 		staff = new JMenu("Staff Management");
 		journal = new JMenu("Journal Management");
+		toEditor = new JMenuItem( "To Editor Options");
+		toEditor.setPreferredSize(new Dimension(20,10));
 		logOut = new JMenuItem("Log out");
+		toEditor.addActionListener(this);
 		logOut.addActionListener(this);
+
 		menuBar.add(staff);
 		menuBar.add(journal);
+		menuBar.add(toEditor);
 		menuBar.add(logOut);
+
+
 
 
 		register = new JMenuItem("Register an editor");
@@ -110,9 +93,13 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 		register.addActionListener(this);
 		appoint.addActionListener(this);
 		passChiefEditor.addActionListener(this);
+		passChiefEditor.setEnabled(false);
 		retire.addActionListener(this);
 		publish.addActionListener(this);
+		publish.setEnabled(false);
 		delay.addActionListener(this);
+		delay.setEnabled(false);
+
 
 		staff.add(register);
 		staff.add(appoint);
@@ -221,6 +208,15 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 			this.dispose();
 			JOptionPane.showMessageDialog(null, "You have logged out successfully!");
 			new LoginInterface();
+		}
+		//to editor options
+		if (e.getSource() == toEditor) {
+			try {
+				new EditorInterface(username);
+			} catch (SQLException ex) {
+				ex.printStackTrace();
+			}
+			this.dispose();
 		}
 		//register an editor
 		else if (e.getSource() == register) {

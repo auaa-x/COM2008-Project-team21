@@ -3,36 +3,29 @@
  * @author Ting Guo
  */
 
-
-
-import java.awt.*;
 import javax.swing.*;
 import java.awt.event.*;
 
 public class AuthorInterface extends JFrame implements ActionListener{
 
-    /**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
-	public static boolean authorPwChanged = false;
     private JMenuBar menubar;
     // JMenu
     private JMenu file;
-    private JMenu create;
+    private JMenu create, settings;
     private JTable articlesTable;
     private String username;
 
 
     // Menu items
-    private JMenuItem articles, submissions, createSub,changePw, logOut ;
+    private JMenuItem articles, submissions, createSub,changePw,updatePf,logOut;
 
     //Articles display panel
 
 
     public AuthorInterface(String username){
     	this.username = username;
-        this.setTitle("Author");
+        this.setTitle("Submission");
         this.setSize(1000, 600);
         this.setLocationRelativeTo(null);
         this.setResizable(false);
@@ -43,30 +36,33 @@ public class AuthorInterface extends JFrame implements ActionListener{
         file = new JMenu("File");
         articles = new JMenuItem("Articles");
         submissions = new JMenuItem("Submissions");
-        changePw = new JMenuItem("Change Password");
-        logOut = new JMenuItem("Log out");
-        //if (authorPwChanged){ changePw.setEnabled(false);} else {changePw.setEnabled(true);}
-
-
         articles.addActionListener(this);
         submissions.addActionListener(this);
-        changePw.addActionListener(this);
-        logOut.addActionListener(this);
-
-
         file.add(articles);
         file.add(submissions);
-        file.add(changePw);
-
+        menubar.add(file);
 
         create = new JMenu("Create");
         createSub = new JMenuItem("Submission");
         create.add(createSub);
-
-        menubar.add(file);
         menubar.add(create);
+
+        settings = new JMenu("Settings");
+        changePw = new JMenuItem("Change Password");
+        updatePf = new JMenuItem("Update Profile");
+        changePw.addActionListener(this);
+        updatePf.addActionListener(this);
+        settings.add(changePw);
+        settings.add(updatePf);
+        menubar.add(settings);
+
+        logOut = new JMenuItem("Log out");
+        logOut.addActionListener(this);
         menubar.add(logOut);
+        //if (authorPwChanged){ changePw.setEnabled(false);} else {changePw.setEnabled(true);}
+
         this.setJMenuBar(menubar);
+
 
         //Articles information display table
         String[][] data = {
@@ -98,20 +94,22 @@ public class AuthorInterface extends JFrame implements ActionListener{
         else if(e.getSource()==submissions){
             System.out.println("Menu B clicked"); }
         else if(e.getSource()==changePw){
-            this.setVisible(false);
             new ChangePw(username, 2);
+            this.dispose();
+        }
+        else if(e.getSource()==updatePf){
+            new UpdateProfileInterface(username, 2);
+            this.dispose();
         }
         else if (e.getSource()==logOut) {
         	this.dispose();
         	JOptionPane.showMessageDialog(null, "You have logged out successfully!");
             new LoginInterface();
             }
-
         }
 
     public static void main(String[] args) {
+
         new AuthorInterface("test");
     }
-
-
 }

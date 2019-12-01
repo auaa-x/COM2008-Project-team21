@@ -22,7 +22,7 @@ public class EditorInterface extends JFrame implements ActionListener {
     private JMenu journalSelection;
     private ButtonGroup group;
     private JMenu settings;
-    private JMenuItem retire, changePw, toChiefEditor, logOut;
+    private JMenuItem retire, changePw,updatePf, toChiefEditor, logOut;
     private File article = new File("./article.pdf");
     private Desktop desktop = Desktop.getDesktop();
 
@@ -82,18 +82,21 @@ public class EditorInterface extends JFrame implements ActionListener {
 
         //settings:
         settings = new JMenu("Settings");
+        updatePf = new JMenuItem("Update Profile");
         changePw = new JMenuItem("Change Password");
         toChiefEditor = new JMenuItem("Chief Editor Option");
         retire = new JMenuItem("Retire");
 
         changePw.addActionListener(this);
         toChiefEditor.addActionListener(this);
+        updatePf.addActionListener(this);
         //if ( !UserController.isChiefEditor(username, issn )){ toChiefEditor.setEnabled(false);} else {toChiefEditor.setEnabled(true);}
         retire.addActionListener(this);
         settings.add(changePw);
-        settings.add(toChiefEditor);
+        settings.add(updatePf);
         settings.add(retire);
         menuBar.add(settings);
+        menuBar.add(toChiefEditor);
 
         logOut = new JMenuItem("Log out");
         logOut.addActionListener(this);
@@ -111,24 +114,17 @@ public class EditorInterface extends JFrame implements ActionListener {
         for (Journal journal : journals) {
             DefaultMutableTreeNode journal1 = new DefaultMutableTreeNode(journal.getTitle());
             root.add(journal1);
-
             for (Volume volume : JournalController.getVolumes(journal.getIssn())) {
                 DefaultMutableTreeNode volume1 = new DefaultMutableTreeNode("vol. " + volume.getVolNum());
                 journal1.add(volume1);
-                /*for (int e=0; e<department.getSections().size(); ++k)
-                {
-                    Section section = department.getSections().get(k);
-                    DefaultMutableTreeNode section1 = new DefaultMutableTreeNode(section.getName());
-                    department1.add(section1);
-                    for (int m=0; m<section.getProducts().size(); ++m)
-                    {
-                        Product product = section.getProducts().get(m);
-                        DefaultMutableTreeNode product1 = new DefaultMutableTreeNode(product.getId());
-                        section1.add(product1);
-                        DefaultMutableTreeNode product1_amount = new DefaultMutableTreeNode(product.getAmount());
-                        product1.add(product1_amount);
+                for (Edition edition : JournalController.getEditions(volume.getIssn(), volume.getVolNum())) {
+                    DefaultMutableTreeNode edition1 = new DefaultMutableTreeNode(edition.toString());
+                    volume1.add(edition1);
+                    for (Article article : JournalController.getPublishedArticles(journal.getIssn(), edition.getVolNum(), edition.getNoNum())) {
+                        DefaultMutableTreeNode article1 = new DefaultMutableTreeNode(article.toString());
+                        edition1.add(article1);
                     }
-                }*/
+                }
             }
         }
 
@@ -212,12 +208,16 @@ public class EditorInterface extends JFrame implements ActionListener {
             new LoginInterface();
         }
         else if (e.getSource() == toChiefEditor) {
-            dispose();
             try {
                 new ChiefEditorInterface(username);
             } catch (SQLException ex) {
                 ex.printStackTrace();
             }
+            this.dispose();
+        }
+        else if(e.getSource()==updatePf){
+            new UpdateProfileInterface(username, 1);
+            this.dispose();
         }
         //retire
         else if (e.getSource() == retire){
@@ -255,15 +255,15 @@ public class EditorInterface extends JFrame implements ActionListener {
             }*/
         }
         else if (e.getSource() == changePw) {
-            this.dispose();
             new ChangePw(username, 1);
+            this.dispose();
         }
     }
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             try {
-                new EditorInterface("Editor");
+                new EditorInterface("hermiona.granger@hogwarts.ac.uk");
             } catch (SQLException e) {
                 JOptionPane.showMessageDialog(null, "Can not connect to the  server, please try again.");
                 e.printStackTrace();

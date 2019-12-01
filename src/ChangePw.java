@@ -138,15 +138,16 @@ public class ChangePw extends JFrame implements ActionListener {
     public void actionPerformed(ActionEvent e) {
 
         if (e.getSource() == back) {
-            dispose();
+            this.dispose();
             switch (userType) {
                 case 1:
                     try {
                         new EditorInterface(username);
-                        System.out.println("Editor back");
+                        System.out.println("Editor" + username +" back");
                     } catch (SQLException ex) {
                         ex.printStackTrace();
                     }
+
                     break;
                 case 2:
                     new AuthorInterface(username);
@@ -164,19 +165,20 @@ public class ChangePw extends JFrame implements ActionListener {
                     if (UserController.changePassword(username, oldPassword, newPassword, cfPassword)) {
                         JOptionPane.showMessageDialog(null, "Password changed successfully!");
                         //AuthorInterface.authorPwChanged = true;
-                        dispose();
                         switch (userType) {
                             case 1:
                                 new EditorInterface(username);
+                                dispose();
                                 break;
                             case 2:
                                 new AuthorInterface(username);
+                                dispose();
                                 break;
                             case 3:
                                 //new ReviewerInterface(username);
+                                dispose();
                                 break;
                         }
-                        new AuthorInterface(username);
                     } else {
                         JOptionPane.showMessageDialog(null, "Details incorrect!");
                     }

@@ -253,7 +253,8 @@ public class CfEditorRegInterface extends JFrame implements ActionListener, Item
                 } else {
                     //double check password
                     if (!cfPw.equals(password)) {
-                        JOptionPane.showMessageDialog(null, "Please check your password again.");
+                        JOptionPane.showMessageDialog(null, "Please enter the same password \n" +
+                                "in the confirm password field.");
                     } else {
                         //check password strength
                         if (!UserController.checkPasswordStrength(password)) {
