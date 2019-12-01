@@ -2,6 +2,7 @@
  * Class for author to update profile information
  * @author Ting Guo
  */
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -13,7 +14,7 @@ import java.sql.SQLException;
 public class UpdateProfileInterface extends JFrame implements ActionListener {
     public static void main(String[] args) {
         //launching code goes in here
-        new UpdateProfileInterface ("james.potter@warwick.ac.uk", 1);
+        new UpdateProfileInterface ("harry.potter@warwick.ac.uk", 1);
     }
 
     // Needed for serialisation
@@ -45,17 +46,15 @@ public class UpdateProfileInterface extends JFrame implements ActionListener {
         displayInfoPanel();
     }
 
-    public void UpdateInfoPanel() {
-        this.setTitle("Change Password");
-        this.setSize(1000, 600);
-        this.setLocationRelativeTo(null);
-        this.setResizable(false);
-
-
+    public void UpdateInfoPanel(String currentFn, String currentSn, String currentUni) {
         //button panel
         JPanel noticePanel = new JPanel();
         JPanel buttonPane = new JPanel();
         JPanel fieldsPanel = new JPanel();
+
+        this.currentFn = currentFn;
+        this.currentSn = currentSn;
+        this.currentUni = currentUni;
 
         //Welcome banner
         JLabel banner = new JLabel("Update personal details");
@@ -151,8 +150,6 @@ public class UpdateProfileInterface extends JFrame implements ActionListener {
         this.add(buttonPane);
 
         //extra settings
-
-        this.setSize(1000, 600);
         this.setLocationRelativeTo(null);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setVisible(true);
@@ -166,10 +163,14 @@ public class UpdateProfileInterface extends JFrame implements ActionListener {
         JPanel buttonPane = new JPanel();
         JPanel fieldsPanel = new JPanel();
 
-        currentTitle = "Title";
-        currentFn = "Forename";
-        currentSn = "Surname";
-        currentUni = "University";
+        try {
+            currentTitle = UserController.getUsersTitle(username);
+            currentFn = UserController.getUsersForename(username);
+            currentSn = UserController.getUsersSurname(username);
+            currentUni = UserController.getUsersUniversity(username);
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
 
         //Welcome banner
         JLabel banner = new JLabel("Update personal details");
@@ -267,8 +268,6 @@ public class UpdateProfileInterface extends JFrame implements ActionListener {
         this.add(buttonPane);
 
         //extra settings
-
-        this.setSize(1000, 600);
         this.setLocationRelativeTo(null);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setVisible(true);
@@ -334,7 +333,7 @@ public class UpdateProfileInterface extends JFrame implements ActionListener {
                 try {
                     if (UserController.checkPassword(username, password)) {
                         this.dispose();
-                        UpdateInfoPanel();
+                        UpdateInfoPanel(currentFn,currentSn,currentUni);
                     } else {
                         JOptionPane.showMessageDialog(null, "Sorry, your password is wrong,\n" +
                                 "please try again!");

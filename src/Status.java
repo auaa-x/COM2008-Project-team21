@@ -2,6 +2,7 @@
  * Enum for submission status
  * @author Urszula Talalaj
  */
+
 public enum Status {
     
     SUBMITTED("SUBMITTED"),
