@@ -7,8 +7,11 @@ import java.io.IOException;
 import java.sql.*;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.ListIterator;
 
 public class ReviewController extends SqlController {
+    
+    protected static LinkedList<String> questionList = new LinkedList<String>();
     
     /**
      * Checks if there exists a conflict between a reviewer and a submission
@@ -335,13 +338,89 @@ public class ReviewController extends SqlController {
     }
     
     
+    public static boolean submitReview(int submissionId, String anonId, String summary, String typos) throws SQLException {
+        boolean result = false;
+        if (addSummaryToReview(submissionId, anonId, summary) && addTyposToReview(submissionId, anonId, typos) &&
+                addAllQuestions(submissionId, anonId)) result = true;     
+        return result;
+    }
+    
+    
+    /**
+     * Add all the questions to the review
+     * Make an entry for each one in the question table
+     * @param sharedPassword
+     * @param submissionID
+     * @return true if addition of all the questions is successful, otherwise false
+     * @throws SQLException
+     */
+    public static boolean addAllQuestions(int submissionId, String anonId) throws SQLException {
+        boolean result = true;
+        ListIterator<String> iterator = questionList.listIterator();
+        
+        openConnection();
+        PreparedStatement pstmt = null;
+        try {
+            int noNum = 1;
+            // create a question for each item in the list
+            while(iterator.hasNext()) {
+                String question = iterator.next();
+                pstmt = con.prepareStatement("INSERT INTO `team021`.`question` (`submissionID`, `noNum`, `value`, `anonID`) VALUES (?, ?, ?, ?)");
+                pstmt.setInt(1, submissionId);
+                pstmt.setInt(2, noNum);
+                pstmt.setString(3, question); 
+                pstmt.setString(4, anonId);
+                int res = pstmt.executeUpdate();
+                noNum++;
+                if (res == 0) {
+                    result = false;
+                }
+            }
+        
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        
+        questionList.clear();
+        return result;
+    }
+    
+    
+    /**
+     * Add a question to the question list
+     * @param question
+     */
+    public static void addQuestion(String question) {
+        questionList.add(question);
+    }
+    
+    
+    /**
+     * Add a verdict to a given submission
+     * @param verdict
+     */
+    public static void addVerdict(String verdict) {
+        
+    }
+    
+    
     
     public static void main (String[] args) throws IOException {
 
         try {
-            //System.out.println(selectToReview("chaddock@illinois.ac.uk", 1));
-            System.out.println(getReviewingSubmissions("chaddock@illinois.ac.uk"));
-            System.out.println(getSubmissionsToReview("chaddock@illinois.ac.uk"));
+            System.out.println(selectToReview("chaddock@illinois.ac.uk", 1));
+            // System.out.println(getReviewingSubmissions("chaddock@illinois.ac.uk"));
+            // System.out.println(getSubmissionsToReview("chaddock@illinois.ac.uk"));
+            
+            // addQuestion("question1");
+            // addQuestion("question2");
+            // addQuestion("question3");
+            // addQuestion("question4");
+            // System.out.println(addAllQuestions(1, "reviewer1"));
+            
         } catch (SQLException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
