@@ -540,13 +540,6 @@ public class ReviewController extends SqlController {
             System.out.println(getReviewingSubmissions("chaddock@illinois.ac.uk"));
             System.out.println(getSubmissionsToReview("chaddock@illinois.ac.uk"));
             
-            addAnswer("answer1");
-            addAnswer("answer2");
-            addAnswer("answer3");
-            addAnswer("answer4");
-            System.out.println(addAllAnswers(1, "reviewer1"));
-            System.out.println(submitResponse(1, "reviewer1"));
-            
         } catch (SQLException e) {
             e.printStackTrace();
         }
