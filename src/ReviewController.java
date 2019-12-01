@@ -12,6 +12,7 @@ import java.util.ListIterator;
 public class ReviewController extends SqlController {
     
     protected static LinkedList<String> questionList = new LinkedList<String>();
+    protected static LinkedList<String> answerList = new LinkedList<String>();
     
     /**
      * Checks if there exists a conflict between a reviewer and a submission
@@ -406,6 +407,92 @@ public class ReviewController extends SqlController {
         
     }
     
+    /**
+     * Submits response
+     * Make an entry for each one in the response table
+     * @param submissionId
+     * @param anonId
+     * @return true if addition of all the responses is successful, otherwise false
+     * @throws SQLException
+     */
+    public static boolean submitResponse(int submissionId, String anonId) throws SQLException {
+        boolean result = false;
+        if (addAllAnswers(submissionId, anonId)) {
+	        	openConnection();
+	        PreparedStatement pstmt = null;
+	        try {
+	
+	            pstmt = con.prepareStatement("INSERT INTO `team021`.`response` (`submissionID`, `anonID`) VALUES (?, ?)"); 
+	            pstmt.setInt(1, submissionId); 
+	            pstmt.setString(2, anonId);
+	            int res = pstmt.executeUpdate();
+	            
+	            if (res != 0) {
+	                result = true;
+	            }
+	        
+	        } catch (SQLException ex) {
+	            ex.printStackTrace();
+	        } finally {
+	            if (pstmt != null) pstmt.close();
+	            closeConnection();
+	        }
+        }
+        return result;
+    }
+    
+    
+    /**
+     * Add all the answers to the review
+     * Make an entry for each one in the answers table
+     * @param sharedPassword
+     * @param submissionID
+     * @return true if addition of all the answers is successful, otherwise false
+     * @throws SQLException
+     */
+    public static boolean addAllAnswers(int submissionId, String anonId) throws SQLException {
+        boolean result = true;
+        ListIterator<String> iterator = answerList.listIterator();
+        
+        openConnection();
+        PreparedStatement pstmt = null;
+        try {
+            int noNum = 1;
+            // create an answer for each item in the list
+            while(iterator.hasNext()) {
+                String question = iterator.next();
+                pstmt = con.prepareStatement("INSERT INTO `team021`.`answer` (`submissionID`, `noNum`, `value`, `anonID`) VALUES (?, ?, ?, ?)");
+                pstmt.setInt(1, submissionId);
+                pstmt.setInt(2, noNum);
+                pstmt.setString(3, question); 
+                pstmt.setString(4, anonId);
+                int res = pstmt.executeUpdate();
+                noNum++;
+                if (res == 0) {
+                    result = false;
+                }
+            }
+        
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        
+        answerList.clear();
+        return result;
+    }
+    
+    
+    /**
+     * Add an answer to the answer list
+     * @param answer
+     */
+    public static void addAnswer(String answer) {
+        questionList.add(answer);
+    }
+    
     
     
     public static void main (String[] args) throws IOException {
@@ -421,8 +508,14 @@ public class ReviewController extends SqlController {
             // addQuestion("question4");
             // System.out.println(addAllQuestions(1, "reviewer1"));
             
+            addAnswer("answer1");
+            addAnswer("answer2");
+            addAnswer("answer3");
+            addAnswer("answer4");
+            System.out.println(addAllAnswers(1, "reviewer1"));
+            System.out.println(submitResponse(1, "reviewer1"));
+            
         } catch (SQLException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
 

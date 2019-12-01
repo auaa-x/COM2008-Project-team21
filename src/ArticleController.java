@@ -63,7 +63,6 @@ public class ArticleController extends SqlController {
         return submissionId;
     }
     
-    //update pdfFile
     /**
      * Update pdfFile of article
      * @param submissionId
