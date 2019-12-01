@@ -371,7 +371,7 @@ public class ArticleController extends SqlController {
         try {
 
             //System.out.println(getSubmissionByStatus(Status.SUBMITTED));
-            //System.out.println(getAuthors(4));
+            System.out.println(getAuthors(4));
           
         } catch (SQLException ex) {
             ex.printStackTrace();
