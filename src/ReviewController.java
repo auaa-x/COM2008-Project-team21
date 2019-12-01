@@ -11,8 +11,8 @@ import java.util.LinkedList;
 public class ReviewController extends SqlController {
     
     /**
-     * Checks if there exists a conflict between an editor and a submission
-     * @param email - editor's email
+     * Checks if there exists a conflict between a reviewer and a submission
+     * @param reviewerEmail
      * @param submissionId
      * @return true if there is a conflict, false otherwise
      * @throws SQLException
@@ -66,9 +66,10 @@ public class ReviewController extends SqlController {
         return result;
     }
     
+    
     /**
      * Get a list of submissions available to review by a given reviewer
-     * @param email - reviewer email
+     * @param reviewerEmail
      * @return list of submissions available to review
      * @throws SQLException
      */
@@ -87,9 +88,131 @@ public class ReviewController extends SqlController {
             Submission s = iterator.next();
             if (checkReviewerConflict(reviewerEmail, s.getSubmissionID())) iterator.remove();
         }
-        return submissions;
-        
+        return submissions;       
     }
+    
+    
+    /**
+     * Select an article to review as a reviewer
+     * @param reviewerEmail
+     * @param submissionId
+     * @return true if selection successful, otherwise false
+     * @throws SQLException
+     */
+    public static boolean selectToReview(String reviewerEmail, int submissionId) throws SQLException {
+        boolean result = false;
+        String anonId = "reviewer" + Integer.toString(getReviewCount(submissionId)) + 1;
+        
+        // update the review count, create a reviewer, create a review
+        if (updateReviewCount(submissionId) && UserController.createReviewer(anonId, reviewerEmail) 
+                && createReview(submissionId, anonId)) result = true;
+        return result;
+    }
+    
+    
+    /**
+     * Get a review counter for a given submission (reviews started)
+     * @param submissionId
+     * @return number of started reviews
+     * @throws SQLException
+     */
+    public static int getReviewCount(int submissionId) throws SQLException {
+        int count = 0;
+        openConnection();
+        PreparedStatement pstmt = null;
+        try {
+            
+            // get the current reviewCount of the submission
+            pstmt = con.prepareStatement("SELECT * FROM `submission` WHERE `submissionID` = ?");
+            pstmt.setInt(1, submissionId);  
+            ResultSet res = pstmt.executeQuery();
+            
+            if (res.next()) {
+                count = res.getInt("reviewCount");
+            }
+        
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        return count;
+    }
+    
+    
+    /**
+     * Update review counter for a given submission
+     * @param submissionId
+     * @return number of started reviews
+     * @throws SQLException
+     */
+    public static boolean updateReviewCount(int submissionId) throws SQLException {
+        boolean result = false;
+        
+        // get current review count
+        int count = getReviewCount(submissionId);
+        
+        // return false if there are too many reviews already
+        if (count >= 3) return result;
+        
+        openConnection();
+        PreparedStatement pstmt = null;
+        try {
+            
+            // update review counter
+            count++;
+            pstmt = con.prepareStatement("UPDATE `team021`.`submission` SET `reviewCount` = ? WHERE (`submissionID` = ?)");
+            pstmt.setInt(1, count);  
+            pstmt.setInt(2, submissionId); 
+            int res = pstmt.executeUpdate();
+            
+            if (res != 0) {
+                result = true;
+            }
+        
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        return result;
+    }
+    
+    
+    /**
+     * Create a review for a given submission and anonID
+     * @param submissionId
+     * @return number of started reviews
+     * @throws SQLException
+     */
+    public static boolean createReview(int submissionId, String anonId) throws SQLException {
+        boolean result = false;
+
+        openConnection();
+        PreparedStatement pstmt = null;
+        try {
+
+            pstmt = con.prepareStatement("INSERT INTO `team021`.`review` (`submissionID`, `anonID`) VALUES (?, ?)");
+            pstmt.setInt(1, submissionId);  
+            pstmt.setString(2, anonId); 
+            int res = pstmt.executeUpdate();
+            
+            if (res != 0) {
+                result = true;
+            }
+        
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        return result;
+    }
+    
+    
     
     public static void main (String[] args) throws IOException {
 
