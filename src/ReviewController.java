@@ -265,6 +265,76 @@ public class ReviewController extends SqlController {
     }
     
     
+    /**
+     * Add a summary of a review for a given submissionID and anonID
+     * @param submissionId
+     * @param anonID
+     * @param summary
+     * @return true if update successful, otherwise false
+     * @throws SQLException
+     */
+    public static boolean addSummaryToReview(int submissionId, String anonId, String summary) throws SQLException {
+        boolean result = false;
+
+        openConnection();
+        PreparedStatement pstmt = null;
+        try {
+
+            pstmt = con.prepareStatement("UPDATE `team021`.`review` SET `summary` = ? WHERE (`submissionID` = ?) and (`anonID` = ?)");
+            pstmt.setString(1, summary);  
+            pstmt.setInt(2, submissionId); 
+            pstmt.setString(3, anonId);
+            int res = pstmt.executeUpdate();
+            
+            if (res != 0) {
+                result = true;
+            }
+        
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        return result;
+    }
+    
+
+    /**
+     * Add typos to a review for a given submissionID and anonID
+     * @param submissionId
+     * @param anonID
+     * @param typoErrors
+     * @return true if update successful, otherwise false
+     * @throws SQLException
+     */
+    public static boolean addTyposToReview(int submissionId, String anonId, String typoErrors) throws SQLException {
+        boolean result = false;
+
+        openConnection();
+        PreparedStatement pstmt = null;
+        try {
+
+            pstmt = con.prepareStatement("UPDATE `team021`.`review` SET `typoErrors` = ? WHERE (`submissionID` = ?) and (`anonID` = ?)");
+            pstmt.setString(1, typoErrors);  
+            pstmt.setInt(2, submissionId); 
+            pstmt.setString(3, anonId);
+            int res = pstmt.executeUpdate();
+            
+            if (res != 0) {
+                result = true;
+            }
+        
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        return result;
+    }
+    
+    
     
     public static void main (String[] args) throws IOException {
 
