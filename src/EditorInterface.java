@@ -84,7 +84,7 @@ public class EditorInterface extends JFrame implements ActionListener {
         settings = new JMenu("Settings");
         updatePf = new JMenuItem("Update Profile");
         changePw = new JMenuItem("Change Password");
-        toChiefEditor = new JMenuItem("Chief Editor Option");
+        toChiefEditor = new JMenuItem("Chief Editor Options");
         retire = new JMenuItem("Retire");
 
         changePw.addActionListener(this);
@@ -265,7 +265,7 @@ public class EditorInterface extends JFrame implements ActionListener {
             try {
                 new EditorInterface("hermiona.granger@hogwarts.ac.uk");
             } catch (SQLException e) {
-                JOptionPane.showMessageDialog(null, "Can not connect to the  server, please try again.");
+                JOptionPane.showMessageDialog(null, "Could not connect to the  server, please try again.");
                 e.printStackTrace();
             }
         });

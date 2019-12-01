@@ -3,6 +3,7 @@
  * @author Urszula Talalaj
  * @author Julia Derebecka
  */
+
 import java.sql.*;
 import java.util.Calendar;
 import java.util.LinkedList;
@@ -389,8 +390,11 @@ public class JournalController extends SqlController {
             	int noNum = res.getInt("noNum");
                 int pubMonth = res.getInt("pubMonth");
                 int artCount = res.getInt("artCount");
+                int published = res.getInt("isPublished");
+                boolean isPublished = false;
+                if (published == 1) isPublished = true;
             	
-                Edition edition = new Edition(issn, volNum, noNum, pubMonth, artCount);
+                Edition edition = new Edition(issn, volNum, noNum, pubMonth, artCount, isPublished);
                 editions.add(edition);
             }
         } catch (SQLException ex) {
@@ -622,13 +626,72 @@ public class JournalController extends SqlController {
         return result;
         
     }
+    
+    
+    /**
+     * Checks if there exists a conflict between an editor and a submission
+     * @param email - editor's email
+     * @param submissionId
+     * @return true if there is a conflict, false otherwise
+     * @throws SQLException
+     */
+    public static boolean checkEditorConflict(String editorEmail, int submissionId) throws SQLException {
+        boolean result = true;
+        LinkedList<String> authors = ArticleController.getAuthors(submissionId);
+        LinkedList<String> authorsUnis = new LinkedList<String>();
+        openConnection();
+        PreparedStatement pstmt = null;
+        try {
+            
+            // get uni affiliation of the editor
+            pstmt = con.prepareStatement("SELECT * FROM `user` WHERE `email` = ?");
+            pstmt.setString(1, editorEmail);
+            ResultSet res = pstmt.executeQuery();
+            
+            String editorUni;
+            if (res.next()) {
+                editorUni = res.getString("uniAffiliation");
+            } else return result;
+            
+            
+            // get uni affiliations of authors
+            for (String e : authors) {
+                pstmt.clearParameters();
+                pstmt.setString(1, e);
+                res = pstmt.executeQuery();
+                
+                String authorUni;
+                if (res.next()) {
+                    authorUni = res.getString("uniAffiliation");
+                    authorsUnis.add(authorUni);
+                } else return result;
+            }
+            
+            // check if there is a conflict
+            for (String u : authorsUnis) {
+                if (u != null && u.equals(editorUni)) return result;
+            }
+            
+            // if no return up to this point then there is no conflict
+            result = false;
+            
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        return result;
+    }
 
 
     public static void main (String[] args) throws IOException {
     	//File pdfFile = new File("./Systems Design Project.pdf");
         try {
             System.out.println(getVolumes(77777777));
-            publishNextEdition(30000008, 1, 1);
+            System.out.println(checkEditorConflict("harry.potter@warwick.ac.uk", 1)); // conflict
+            System.out.println(checkEditorConflict("harry.potter@warwick.ac.uk", 2)); // no conflict (but one uni null)
+            
             
         } catch (SQLException ex) {
             ex.printStackTrace();

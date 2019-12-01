@@ -122,7 +122,7 @@ public class ArticleController extends SqlController {
      }
 
     /**
-     * Get an article with all parameters by submissionID
+     * Get a PDF of an article by submissionID
      * @param submissionId
      * @return selected article
      * @throws SQLException
@@ -160,18 +160,59 @@ public class ArticleController extends SqlController {
         return result;
     }
     
+    
+    /**
+     * Get a PDF of a submission by submissionID
+     * @param submissionId
+     * @return selected article
+     * @throws SQLException
+     * @throws IOException
+     */
+    public static boolean getSubmissionPDF(int submissionId) throws SQLException, IOException {
+        openConnection();
+        PreparedStatement pstmt = null;
+        boolean result = false;
+        InputStream input = null;
+        FileOutputStream output = null;
+        try {
+
+            pstmt = con.prepareStatement("SELECT * FROM submission WHERE submissionID = ?");
+            pstmt.setInt(1, submissionId);
+            ResultSet res = pstmt.executeQuery();
+            File articlePDF = new File("article.pdf");
+            output = new FileOutputStream(articlePDF);
+            if (res.next()) {
+                result = true;
+                input = res.getBinaryStream("linkedFinalPDF");
+                byte[] buffer = new byte [1024];
+                while (input.read(buffer) > 0) {
+                    output.write(buffer);
+                }
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            if (input != null) input.close();
+            if (output != null) output.close();
+            closeConnection();
+        }
+        return result;
+    }
+    
+    
     /**
      * Get all published articles by author
      * @return list of author's articles
      * @throws SQLException
      */
-    public static LinkedList<Article> getAuthorsArticles(String email) throws SQLException {
+    public static LinkedList<Article> getPublishedArticles(String email) throws SQLException {
         LinkedList<Article> articles = new LinkedList<Article>();
         openConnection();
         PreparedStatement pstmt = null;
         try {
             
-            pstmt = con.prepareStatement("SELECT * FROM article a, author p WHERE (a.submissionID = p.submissionID) and (p.email = ?) and (isPublished = 0)");
+            pstmt = con.prepareStatement("SELECT * FROM article a, author p WHERE (a.submissionID = p.submissionID) and (p.email = ?) and (isPublished = 1)");
             pstmt.setString(1, email); 
             ResultSet res = pstmt.executeQuery();
             
@@ -225,6 +266,37 @@ public class ArticleController extends SqlController {
             closeConnection();
         }
         return submissions;
+    }
+    
+    
+    /**
+     * Get all authors of the submission
+     * @param submissionId
+     * @return list of submission's authors
+     * @throws SQLException
+     */
+    public static LinkedList<String> getAuthors(int submissionId) throws SQLException {
+        LinkedList<String> authors = new LinkedList<String>();
+        openConnection();
+        PreparedStatement pstmt = null;
+        try {
+            
+            pstmt = con.prepareStatement("SELECT * FROM author WHERE (submissionID = ?)");
+            pstmt.setInt(1, submissionId); 
+            ResultSet res = pstmt.executeQuery();
+            
+            while (res.next()) {
+                String email = res.getString("email");
+                
+                authors.add(email);
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        return authors;
     }
     
     
@@ -293,12 +365,14 @@ public class ArticleController extends SqlController {
     }
     
     
+    
     public static void main (String[] args) throws IOException {
     
         try {
 
-            System.out.println(getSubmissionByStatus(Status.SUBMITTED));
-            
+            //System.out.println(getSubmissionByStatus(Status.SUBMITTED));
+            //System.out.println(getAuthors(4));
+          
         } catch (SQLException ex) {
             ex.printStackTrace();
         }

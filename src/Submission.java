@@ -17,12 +17,17 @@ public class Submission {
         return submissionID;
     }
 
-    public int getIssn() {
+    public int getReviewCount() {
         return reviewCount;
     }
 
     public Status getStatus() {
         return status;
+    }
+    
+    @Override
+    public String toString() {
+        return ("SubmissionID: " + Integer.toString(submissionID));
     }
 
 }
