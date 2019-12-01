@@ -636,17 +636,19 @@ public class UserController extends SqlController {
      * Create a reviewer
      * @param anonID
      * @param email
+     * @param submissionId
      * @return true if registration is successful, false otherwise
      * @throws SQLException
      */
-    public static boolean createReviewer(String anonID, String email) throws SQLException {
+    public static boolean createReviewer(String anonID, String email, int submissionId) throws SQLException {
         boolean result = false;
         openConnection();
         PreparedStatement pstmt = null;
         try {
-            pstmt = con.prepareStatement("INSERT INTO `team021`.`reviewer` (`anonID`, `email`) VALUES (?, ?)");
+            pstmt = con.prepareStatement("INSERT INTO `team021`.`reviewer` (`anonID`, `email`, `submissionID`) VALUES (?, ?, ?)");
             pstmt.setString(1, anonID);
             pstmt.setString(2, email);
+            pstmt.setInt(3, submissionId);
 
             int count = pstmt.executeUpdate();
             if (count != 0) result = true;
@@ -668,14 +670,14 @@ public class UserController extends SqlController {
      * @return true if deletion is successful, false otherwise
      * @throws SQLException
      */
-    public static boolean deleteReviewer(String anonID, String email) throws SQLException {
+    public static boolean deleteReviewer(String email, int submissionId) throws SQLException {
         boolean result = false;
         openConnection();
         PreparedStatement pstmt = null;
         try {
-            pstmt = con.prepareStatement("DELETE FROM `team021`.`reviewer` WHERE (`anonID` = ?) and (`email` = ?)");
-            pstmt.setString(1, anonID);
-            pstmt.setString(2, email);
+            pstmt = con.prepareStatement("DELETE FROM `team021`.`reviewer` WHERE (`email` = ?) and (`submissionID` = ?)");
+            pstmt.setString(1, email);
+            pstmt.setInt(2, submissionId);
 
             int count = pstmt.executeUpdate();
             if (count != 0) result = true;

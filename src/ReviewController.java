@@ -82,11 +82,30 @@ public class ReviewController extends SqlController {
         // get all submissions with SUBMITTED status
         submissions = ArticleController.getSubmissionByStatus(Status.SUBMITTED);
         
-        // remove the ones for which a conflict exists
+        // remove the ones that already have 3 started reviews
         Iterator<Submission> iterator = submissions.iterator();
         while(iterator.hasNext()) {
             Submission s = iterator.next();
+            if (s.getReviewCount() >= 3) iterator.remove();
+        }
+        
+        // remove the ones for which a conflict exists
+       iterator = submissions.iterator();
+        while(iterator.hasNext()) {
+            Submission s = iterator.next();
             if (checkReviewerConflict(reviewerEmail, s.getSubmissionID())) iterator.remove();
+        }
+        
+        // remove the ones that had been already taken by this reviewer
+        LinkedList<Integer> taken = getReviewingSubmissions(reviewerEmail);
+        Iterator<Submission> subItertor = submissions.iterator();
+        Iterator<Integer> takenItertor = taken.iterator();
+        while(subItertor.hasNext()) {
+            Submission s = subItertor.next();
+            while(takenItertor.hasNext()) {
+                int id = takenItertor.next().intValue();
+                if (s.getSubmissionID() == id) subItertor.remove();
+            }
         }
         return submissions;       
     }
@@ -101,10 +120,10 @@ public class ReviewController extends SqlController {
      */
     public static boolean selectToReview(String reviewerEmail, int submissionId) throws SQLException {
         boolean result = false;
-        String anonId = "reviewer" + Integer.toString(getReviewCount(submissionId)) + 1;
+        String anonId = "reviewer" + Integer.toString(getReviewCount(submissionId) + 1);
         
         // update the review count, create a reviewer, create a review
-        if (updateReviewCount(submissionId) && UserController.createReviewer(anonId, reviewerEmail) 
+        if (updateReviewCount(submissionId) && UserController.createReviewer(anonId, reviewerEmail, submissionId) 
                 && createReview(submissionId, anonId)) result = true;
         return result;
     }
@@ -138,6 +157,38 @@ public class ReviewController extends SqlController {
             closeConnection();
         }
         return count;
+    }
+    
+    
+    /**
+     * Get a list of submissionIDs of submissions which are being reviewed by a given reviewer
+     * @param reviewerEmail
+     * @return list of submissions
+     * @throws SQLException
+     */
+    public static LinkedList<Integer> getReviewingSubmissions(String reviewerEmail) throws SQLException {
+        LinkedList<Integer> submissions = new LinkedList<Integer>();
+        openConnection();
+        PreparedStatement pstmt = null;
+        try {
+            
+            // get the current reviewCount of the submission
+            pstmt = con.prepareStatement("SELECT * FROM `reviewer` WHERE `email` = ?");
+            pstmt.setString(1, reviewerEmail);  
+            ResultSet res = pstmt.executeQuery();
+            
+            while (res.next()) {
+                int id = res.getInt("submissionID");
+                submissions.add(Integer.valueOf(id));
+            }
+        
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        return submissions;
     }
     
     
@@ -218,6 +269,8 @@ public class ReviewController extends SqlController {
     public static void main (String[] args) throws IOException {
 
         try {
+            //System.out.println(selectToReview("chaddock@illinois.ac.uk", 1));
+            System.out.println(getReviewingSubmissions("chaddock@illinois.ac.uk"));
             System.out.println(getSubmissionsToReview("chaddock@illinois.ac.uk"));
         } catch (SQLException e) {
             // TODO Auto-generated catch block
