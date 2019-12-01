@@ -63,6 +63,40 @@ public class ArticleController extends SqlController {
         return submissionId;
     }
     
+    //update pdfFile
+    /**
+     * Update pdfFile of article
+     * @param submissionId
+     * @param pdfFile
+     * @return true if update successful, otherwise false
+     * @throws SQLException
+     */
+    public static boolean updatePDFFile(int submissionId, File pdfFile) throws SQLException {
+        boolean result = false;
+        if (checkArticle(submissionId)) {
+            openConnection();
+            PreparedStatement pstmt = null;
+            try {
+            	FileInputStream inputStream = new FileInputStream(pdfFile);
+            	try {
+                    pstmt = con.prepareStatement("UPDATE `team021`.`article` SET `linkedFinalPDF` = ? WHERE (`submissionId` = ?)");
+                    pstmt.setBlob(1, inputStream);
+                    pstmt.setInt(2, submissionId);
+
+                    int count = pstmt.executeUpdate();
+                    if (count != 0) result = true;
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                } finally {
+                    if (pstmt != null) pstmt.close();
+                    closeConnection();
+	            }
+	        } catch (FileNotFoundException e) {
+	            e.printStackTrace();
+	        }
+    	}
+        return result;
+    }
     
     /**
      * Check if an article with give submissionID exists in the database
@@ -367,12 +401,13 @@ public class ArticleController extends SqlController {
     
     
     public static void main (String[] args) throws IOException {
-    
+    	File pdfFile = new File("./Systems Design Project.pdf");
         try {
 
             //System.out.println(getSubmissionByStatus(Status.SUBMITTED));
-            System.out.println(getAuthors(4));
-          
+            //System.out.println(getAuthors(4));
+            //System.out.println(updatePDFFile(4, pdfFile));
+            System.out.println(getArticlePDF(4));
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
