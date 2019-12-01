@@ -3,6 +3,7 @@
  * @author Urszula Talalaj
  * @author Julia Derebecka
  */
+
 import java.sql.*;
 import java.util.Calendar;
 import java.util.LinkedList;
@@ -634,7 +635,7 @@ public class JournalController extends SqlController {
      * @return true if there is a conflict, false otherwise
      * @throws SQLException
      */
-    public static boolean checkConflict(String editorEmail, int submissionId) throws SQLException {
+    public static boolean checkEditorConflict(String editorEmail, int submissionId) throws SQLException {
         boolean result = true;
         LinkedList<String> authors = ArticleController.getAuthors(submissionId);
         LinkedList<String> authorsUnis = new LinkedList<String>();
@@ -688,8 +689,8 @@ public class JournalController extends SqlController {
     	//File pdfFile = new File("./Systems Design Project.pdf");
         try {
             System.out.println(getVolumes(77777777));
-            System.out.println(checkConflict("harry.potter@warwick.ac.uk", 1)); // conflict
-            System.out.println(checkConflict("harry.potter@warwick.ac.uk", 2)); // no conflict (but one uni null)
+            System.out.println(checkEditorConflict("harry.potter@warwick.ac.uk", 1)); // conflict
+            System.out.println(checkEditorConflict("harry.potter@warwick.ac.uk", 2)); // no conflict (but one uni null)
             
             
         } catch (SQLException ex) {

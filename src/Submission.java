@@ -24,5 +24,10 @@ public class Submission {
     public Status getStatus() {
         return status;
     }
+    
+    @Override
+    public String toString() {
+        return ("SubmissionID: " + Integer.toString(submissionID));
+    }
 
 }
