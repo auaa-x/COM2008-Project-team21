@@ -501,11 +501,11 @@ public class ReviewController extends SqlController {
             int noNum = 1;
             // create an answer for each item in the list
             while(iterator.hasNext()) {
-                String question = iterator.next();
+                String answer = iterator.next();
                 pstmt = con.prepareStatement("INSERT INTO `team021`.`answer` (`submissionID`, `noNum`, `value`, `anonID`) VALUES (?, ?, ?, ?)");
                 pstmt.setInt(1, submissionId);
                 pstmt.setInt(2, noNum);
-                pstmt.setString(3, question);
+                pstmt.setString(3, answer);
                 pstmt.setString(4, anonId);
                 int res = pstmt.executeUpdate();
                 noNum++;
@@ -531,16 +531,23 @@ public class ReviewController extends SqlController {
      * @param answer
      */
     public static void addAnswer(String answer) {
-        questionList.add(answer);
+        answerList.add(answer);
     }
 
 
 
     public static void main (String[] args) throws IOException {
+    	//plzzz dont delete
     	File pdfFile = new File("./Systems Design Project.pdf");
         try {
             System.out.println(getReviewingSubmissions("chaddock@illinois.ac.uk"));
-            System.out.println(getSubmissionsToReview("chaddock@illinois.ac.uk"));
+            addAnswer("answer1");
+            addAnswer("answer2");
+            addAnswer("answer3");
+            addAnswer("answer4");
+            System.out.println(answerList);
+            System.out.println(submitResponse(1,"reviewer1",pdfFile));
+            
 
         } catch (SQLException e) {
             e.printStackTrace();
