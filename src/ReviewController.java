@@ -15,6 +15,24 @@ public class ReviewController extends SqlController {
 
     protected static LinkedList<String> questionList = new LinkedList<String>();
     protected static LinkedList<String> answerList = new LinkedList<String>();
+    
+    /**
+     * Get question list
+     * @return current list of questions
+     */
+    public LinkedList<String> getQuestionList() {
+        return questionList;
+    }
+    
+    
+    /**
+     * Get answer list
+     * @return current list of questions
+     */
+    public LinkedList<String> getAnswerList() {
+        return answerList;
+    }
+
 
     /**
      * Checks if there exists a conflict between a reviewer and a submission
@@ -126,11 +144,26 @@ public class ReviewController extends SqlController {
      */
     public static boolean selectToReview(String reviewerEmail, int submissionId) throws SQLException {
         boolean result = false;
+        
+        // create anonymous reviewer ID
         String anonId = "reviewer" + Integer.toString(getReviewCount(submissionId) + 1);
 
         // update the review count, create a reviewer, create a review
         if (updateReviewCount(submissionId) && UserController.createReviewer(anonId, reviewerEmail, submissionId)
                 && createReview(submissionId, anonId)) result = true;
+        
+        // get all submissions of the reviewer
+        LinkedList<Submission> authorSubmissions = ArticleController.getSubmissions(reviewerEmail);
+        
+        // update the cost covered counter of one of them
+        boolean found = false;
+        for(Submission s : authorSubmissions) {
+            if (!found && s.getReviewCount() <= 2) {
+                updateCostCovered(s.getSubmissionID());
+                found = true;
+            }
+        }
+        
         return result;
     }
 
@@ -163,6 +196,61 @@ public class ReviewController extends SqlController {
             closeConnection();
         }
         return count;
+    }
+    
+    
+    /**
+     * Get a cost covered counter for a given submission (reviews started to cover the cost of publication)
+     * @param submissionId
+     * @return number of started reviews
+     * @throws SQLException
+     */
+    public static int getCostCovered(int submissionId) throws SQLException {
+        int cost = 0;
+        openConnection();
+        PreparedStatement pstmt = null;
+        try {
+
+            // get the current costCovered of the submission
+            pstmt = con.prepareStatement("SELECT * FROM `submission` WHERE `submissionID` = ?");
+            pstmt.setInt(1, submissionId);
+            ResultSet res = pstmt.executeQuery();
+
+            if (res.next()) {
+                cost = res.getInt("costCovered");
+            }
+
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        return cost;
+    }
+    
+    
+    /**
+     * Get remaining review counter for a given reviewer
+     * @param reviewerEmail
+     * @return number of remaining reviews
+     * @throws SQLException
+     */
+    public static int remainingCostToCover(String reviewerEmail) throws SQLException {
+        
+        // get all submissions done by this author
+        LinkedList<Submission> submissions = ArticleController.getSubmissions(reviewerEmail);
+        
+        // count all reviews that he is allowed to make
+        int remaining = 3 * submissions.size();
+        
+        for(Submission s : submissions) {
+            // subtract the submissions that had been already started
+            int started = getCostCovered(s.getSubmissionID());
+            System.out.println("Started reviews for sumbissionID " + s.getSubmissionID() + ": " + started);
+            remaining -= started;
+        }
+        return remaining;
     }
 
 
@@ -220,6 +308,46 @@ public class ReviewController extends SqlController {
             // update review counter
             count++;
             pstmt = con.prepareStatement("UPDATE `team021`.`submission` SET `reviewCount` = ? WHERE (`submissionID` = ?)");
+            pstmt.setInt(1, count);
+            pstmt.setInt(2, submissionId);
+            int res = pstmt.executeUpdate();
+
+            if (res != 0) {
+                result = true;
+            }
+
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        return result;
+    }
+    
+    
+    /**
+     * Update cost covered for a given submission
+     * @param submissionId
+     * @return true if update successful, otherwise false
+     * @throws SQLException
+     */
+    public static boolean updateCostCovered(int submissionId) throws SQLException {
+        boolean result = false;
+
+        // get current review count
+        int count = getCostCovered(submissionId);
+
+        // return false if there are too many reviews already
+        if (count >= 3) return result;
+
+        openConnection();
+        PreparedStatement pstmt = null;
+        try {
+
+            // update review counter
+            count++;
+            pstmt = con.prepareStatement("UPDATE `team021`.`submission` SET `costCovered` = ? WHERE (`submissionID` = ?)");
             pstmt.setInt(1, count);
             pstmt.setInt(2, submissionId);
             int res = pstmt.executeUpdate();
@@ -423,15 +551,6 @@ public class ReviewController extends SqlController {
 
 
     /**
-     * Add a question to the question list
-     * @param question
-     */
-    public static void addQuestion(String question) {
-        questionList.add(question);
-    }
-
-
-    /**
      * Add a verdict to a given submission
      * @param verdict
      */
@@ -545,6 +664,15 @@ public class ReviewController extends SqlController {
     public static void addAnswer(String answer) {
         answerList.add(answer);
     }
+    
+    
+    /**
+     * Add a question to the question list
+     * @param question
+     */
+    public static void addQuestion(String question) {
+        answerList.add(question);
+    }
 
 
 
@@ -552,14 +680,16 @@ public class ReviewController extends SqlController {
     	//plzzz dont delete
     	File pdfFile = new File("./Systems Design Project.pdf");
         try {
-            System.out.println(getReviewingSubmissions("chaddock@illinois.ac.uk"));
-            addAnswer("answer1");
-            addAnswer("answer2");
-            addAnswer("answer3");
-            addAnswer("answer4");
-            System.out.println(answerList);
-            System.out.println(submitResponse(1,"reviewer1",pdfFile));
-            
+            /*
+            System.out.println("Remaining review count: " + remainingCostToCover("chaddock@illinois.ac.uk"));
+            System.out.println("Submissions to review: " + getSubmissionsToReview("chaddock@illinois.ac.uk"));
+            System.out.println(selectToReview("chaddock@illinois.ac.uk", 1));
+            System.out.println("Selected submission 1 to review.");
+            System.out.println("Remaining review count: " + remainingCostToCover("chaddock@illinois.ac.uk"));
+            System.out.println("Submissions to review: " + getSubmissionsToReview("chaddock@illinois.ac.uk"));
+            System.out.println("Reviewing submission: " + getReviewingSubmissions("chaddock@illinois.ac.uk"));
+            */
+            System.out.println("Reviewing submission: " + getReviewingSubmissions("chaddock@illinois.ac.uk"));
 
         } catch (SQLException e) {
             e.printStackTrace();

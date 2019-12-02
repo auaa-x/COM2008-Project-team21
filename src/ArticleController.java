@@ -63,6 +63,7 @@ public class ArticleController extends SqlController {
         return submissionId;
     }
     
+    
     /**
      * Update pdfFile of article
      * @param submissionId
@@ -193,6 +194,7 @@ public class ArticleController extends SqlController {
         }
         return result;
     }
+    
     
     /**
      * Get a title of an article by submissionID
