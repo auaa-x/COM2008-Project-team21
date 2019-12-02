@@ -576,6 +576,95 @@ public class ReviewController extends SqlController {
         }
         return result;
     }
+    
+    /**
+     * Update verdict to a given submission
+     * @param verdict
+     */
+    public static boolean updateVerdict(int submissionId, Verdict verdict, String anonId) throws SQLException {
+        boolean result = false;
+        openConnection();
+        PreparedStatement pstmt = null;
+        try {
+            String verdictName = verdict.name();
+            pstmt = con.prepareStatement("UPDATE `team021`.`verdict` SET `value` = ? WHERE (`submissionID` = ?) and (`anonID` = ?)");
+            pstmt.setString(1, verdictName);
+            pstmt.setInt(2, submissionId);
+            pstmt.setString(3, anonId);
+
+            int res = pstmt.executeUpdate();
+            if (res != 0) result = true;
+
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        return result;
+    }
+    
+    /**
+     * Get a list of all questions for this review
+     * @param submissionID
+     * @param anonID
+     * @return list of questions
+     * @throws SQLException
+     */
+    public static LinkedList<Question> getQuestions(int submissionID, String anonID) throws SQLException {
+        LinkedList<Question> questions = new LinkedList<Question>();
+        openConnection();
+        PreparedStatement pstmt = null;
+        try {
+        	pstmt = con.prepareStatement("SELECT * FROM `question` WHERE (`submissionID` = ?) and (`anonID` = ?) ");
+            pstmt.setInt(1, submissionID);
+            pstmt.setString(2, anonID);
+            ResultSet res = pstmt.executeQuery();
+            while (res.next()) { 
+            	int noNum = res.getInt("noNum");
+                String value = res.getString("value");
+                Question question = new Question(submissionID, noNum, value, anonID);
+                questions.add(question);
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        return questions;
+    }
+    
+    /**
+     * Get a list of all answers for this review
+     * @param submissionID
+     * @param anonID
+     * @return list of questions
+     * @throws SQLException
+     */
+    public static LinkedList<Answer> getAnswers(int submissionID, String anonID) throws SQLException {
+        LinkedList<Answer> answers = new LinkedList<Answer>();
+        openConnection();
+        PreparedStatement pstmt = null;
+        try {
+        	pstmt = con.prepareStatement("SELECT * FROM `answer` WHERE (`submissionID` = ?) and (`anonID` = ?) ");
+            pstmt.setInt(1, submissionID);
+            pstmt.setString(2, anonID);
+            ResultSet res = pstmt.executeQuery();
+            while (res.next()) { 
+            	int noNum = res.getInt("noNum");
+                String value = res.getString("value");
+                Answer answer = new Answer(submissionID, noNum, value, anonID);
+                answers.add(answer);
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        return answers;
+    }
 
     
     /**
@@ -678,7 +767,7 @@ public class ReviewController extends SqlController {
 
     public static void main (String[] args) throws IOException {
     	//plzzz dont delete
-    	File pdfFile = new File("./Systems Design Project.pdf");
+    	//File pdfFile = new File("./Systems Design Project.pdf");
         try {
             /*
             System.out.println("Remaining review count: " + remainingCostToCover("chaddock@illinois.ac.uk"));
@@ -689,7 +778,10 @@ public class ReviewController extends SqlController {
             System.out.println("Submissions to review: " + getSubmissionsToReview("chaddock@illinois.ac.uk"));
             System.out.println("Reviewing submission: " + getReviewingSubmissions("chaddock@illinois.ac.uk"));
             */
-            System.out.println("Reviewing submission: " + getReviewingSubmissions("chaddock@illinois.ac.uk"));
+            //System.out.println("Reviewing submission: " + getReviewingSubmissions("chaddock@illinois.ac.uk"));
+            //System.out.println(getQuestions(1,"reviewer1"));
+            //System.out.println(getAnswers(1,"reviewer1"));
+            System.out.println(updateVerdict(1 , Verdict.STRONG_ACCEPT, "reviewer1"));
 
         } catch (SQLException e) {
             e.printStackTrace();
