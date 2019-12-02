@@ -79,7 +79,7 @@ public class JournalController extends SqlController {
     /**
      * Check if ISSN exist in the database
      * @param issn
-     * @return result true if email exists, false otherwise
+     * @return result true if issn exists, false otherwise
      */
     public static boolean checkIssn(int issn) throws SQLException {
         openConnection();
@@ -160,6 +160,7 @@ public class JournalController extends SqlController {
     /**
      * Create a new edition for a given journal volume
      * @param ISSN
+     * @param volNum
      * @return result true if edition is created successfully
      * @throws SQLException
      */
@@ -205,7 +206,9 @@ public class JournalController extends SqlController {
     
     /**
      * Publish the next edition of a given journal
-     * @param ISSN
+     * @param issn
+     * @param volNum
+     * @param noNum
      * @return result true if edition is published successfully
      * @throws SQLException
      */
@@ -239,7 +242,6 @@ public class JournalController extends SqlController {
                     closeConnection();
                 }
         }
-        
         return result;
     }
     
@@ -343,6 +345,7 @@ public class JournalController extends SqlController {
     
     /**
      * Get a journal by issn
+     * @param issn
      * @return a journal object
      * @throws SQLException
      */
@@ -368,10 +371,44 @@ public class JournalController extends SqlController {
         }
         return journal;
     }
+    
+    /**
+     * Get journal by article's submissionID
+     * @param submissionId
+     * @return journal 
+     * @throws SQLException
+     * @throws IOException
+     */
+    public static Journal getJournalByArticle(int submissionId) throws SQLException, IOException {
+        openConnection();
+        PreparedStatement pstmt = null;
+        int issn = 0;
+        Journal journal = null;
+        try {
+            
+            pstmt = con.prepareStatement("SELECT * FROM article WHERE (submissionID = ?) ");
+            pstmt.setInt(1, submissionId); 
+            ResultSet res = pstmt.executeQuery();
+            
+            while (res.next()) {
+                issn = res.getInt("ISSN");
+            }
+            journal = getJournal(issn);
+            
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        return journal;
+    }
 
     
     /**
      * Get a list of all editions by issn and volume number
+     * @param issn
+     * @param volNum
      * @return list of editions
      * @throws SQLException
      */
@@ -409,6 +446,9 @@ public class JournalController extends SqlController {
     
     /**
      * Get all published articles by journal, volume and edition
+     * @param issn
+     * @param volNum
+     * @param noNum
      * @return list of editions
      * @throws SQLException
      */
@@ -447,6 +487,7 @@ public class JournalController extends SqlController {
     
     /**
      * Get a list of a given editor journals
+     * @param email
      * @return list of journals
      * @throws SQLException
      */
@@ -688,10 +729,10 @@ public class JournalController extends SqlController {
     public static void main (String[] args) throws IOException {
     	//File pdfFile = new File("./Systems Design Project.pdf");
         try {
-            System.out.println(getVolumes(77777777));
-            System.out.println(checkEditorConflict("harry.potter@warwick.ac.uk", 1)); // conflict
-            System.out.println(checkEditorConflict("harry.potter@warwick.ac.uk", 2)); // no conflict (but one uni null)
-            
+            //System.out.println(getVolumes(77777777));
+            //System.out.println(checkEditorConflict("harry.potter@warwick.ac.uk", 1)); // conflict
+            //System.out.println(checkEditorConflict("harry.potter@warwick.ac.uk", 2)); // no conflict (but one uni null)
+            System.out.println(getJournalByArticle(1));
             
         } catch (SQLException ex) {
             ex.printStackTrace();
