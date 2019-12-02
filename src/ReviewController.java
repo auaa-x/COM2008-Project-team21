@@ -121,16 +121,49 @@ public class ReviewController extends SqlController {
         }
 
         // remove the ones that had been already taken by this reviewer
-        LinkedList<Integer> taken = getReviewingSubmissions(reviewerEmail);
+        LinkedList<Submission> taken = getReviewingSubmissions(reviewerEmail);
         Iterator<Submission> subItertor = submissions.iterator();
-        Iterator<Integer> takenItertor = taken.iterator();
+        Iterator<Submission> takenIterator = taken.iterator();
         while(subItertor.hasNext()) {
             Submission s = subItertor.next();
-            while(takenItertor.hasNext()) {
-                int id = takenItertor.next().intValue();
+            while(takenIterator.hasNext()) {
+                int id = takenIterator.next().getSubmissionID();
                 if (s.getSubmissionID() == id) subItertor.remove();
             }
         }
+        return submissions;
+    }
+    
+    
+    /**
+     * Get a list of submissions selected by a reviewer to review but not yet submitted
+     * @param reviewerEmail
+     * @param anonId
+     * @return submissions selected by a reviewer but not yet submitted
+     * @throws SQLException
+     */
+    public static LinkedList<Submission> getSubmissionsSelected(String reviewerEmail, String anonId) throws SQLException {
+        LinkedList<Submission> submissions = new LinkedList<Submission>();
+        
+        // return empty list if user is not a reviewer
+        if (!UserController.checkUsertype(reviewerEmail, 3)) return submissions;
+
+        // get all submissions which the reviewer is reviewing
+        submissions = getReviewingSubmissions(reviewerEmail);
+
+        // remove the ones that have status different to SUBMITTED
+        Iterator<Submission> iterator = submissions.iterator();
+        while(iterator.hasNext()) {
+            Submission s = iterator.next();
+            if (!s.getStatus().equals(Status.SUBMITTED)) {
+                System.out.println("NOT EQUAL");
+                iterator.remove();
+            }
+        }
+        
+        // REMOVE THE ONES THAT ARE ALREADY SUBMITTED use isSubmitted(reviewerEmail, anonId)
+        // ------------ code goes here -------------
+        
         return submissions;
     }
 
@@ -255,25 +288,30 @@ public class ReviewController extends SqlController {
 
 
     /**
-     * Get a list of submissionIDs of submissions which are being reviewed by a given reviewer
+     * Get a list of all submissions which are being reviewed by a given reviewer
      * @param reviewerEmail
      * @return list of submissions
      * @throws SQLException
      */
-    public static LinkedList<Integer> getReviewingSubmissions(String reviewerEmail) throws SQLException {
-        LinkedList<Integer> submissions = new LinkedList<Integer>();
+    public static LinkedList<Submission> getReviewingSubmissions(String reviewerEmail) throws SQLException {
+        LinkedList<Submission> submissions = new LinkedList<Submission>();
         openConnection();
         PreparedStatement pstmt = null;
         try {
 
-            // get the current reviewCount of the submission
-            pstmt = con.prepareStatement("SELECT * FROM `reviewer` WHERE `email` = ?");
+            pstmt = con.prepareStatement("SELECT * FROM reviewer r, submission s WHERE (s.submissionID = r.submissionID) and (r.email = ?)");
             pstmt.setString(1, reviewerEmail);
             ResultSet res = pstmt.executeQuery();
 
             while (res.next()) {
-                int id = res.getInt("submissionID");
-                submissions.add(Integer.valueOf(id));
+                int submissionID = res.getInt("submissionID");
+                int reviewCount = res.getInt("reviewCount");
+                String stringStatus = res.getString("status").replaceAll(" ", "_");
+                Status status = Status.valueOf(stringStatus);
+                int costCovered = res.getInt("costCovered");
+                Submission submission = new Submission(submissionID, reviewCount, status, costCovered);
+                
+                submissions.add(submission);
             }
 
         } catch (SQLException ex) {
@@ -507,6 +545,9 @@ public class ReviewController extends SqlController {
 
         return result;
     }
+    
+    
+    
 
 
     /**
@@ -690,6 +731,7 @@ public class ReviewController extends SqlController {
             System.out.println("Reviewing submission: " + getReviewingSubmissions("chaddock@illinois.ac.uk"));
             */
             System.out.println("Reviewing submission: " + getReviewingSubmissions("chaddock@illinois.ac.uk"));
+            System.out.println(getSubmissionsSelected("chaddock@illinois.ac.uk"));
 
         } catch (SQLException e) {
             e.printStackTrace();

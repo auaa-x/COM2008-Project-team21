@@ -321,8 +321,9 @@ public class ArticleController extends SqlController {
                 int submissionID = res.getInt("submissionID");
                 int reviewCount = res.getInt("reviewCount");
                 Status status = Status.valueOf(res.getString("status"));
+                int costCovered = res.getInt("costCovered");
                 
-                Submission submission = new Submission(submissionID, reviewCount, status);
+                Submission submission = new Submission(submissionID, reviewCount, status, costCovered);
                 submissions.add(submission);
             }
         } catch (SQLException ex) {
@@ -417,8 +418,9 @@ public class ArticleController extends SqlController {
             while (res.next()) {
                 int submissionID = res.getInt("submissionID");
                 int reviewCount = res.getInt("reviewCount");
+                int costCovered = res.getInt("costCovered");
                 
-                Submission submission = new Submission(submissionID, reviewCount, status);
+                Submission submission = new Submission(submissionID, reviewCount, status, costCovered);
                 submissions.add(submission);
             }
         } catch (SQLException ex) {
