@@ -193,6 +193,36 @@ public class ArticleController extends SqlController {
         return result;
     }
     
+    /**
+     * Get a title of an article by submissionID
+     * @param submissionId
+     * @return 
+     * @return article's title
+     * @throws SQLException
+     * @throws IOException
+     */
+    public static String getArticleTitle(int submissionId) throws SQLException, IOException {
+        openConnection();
+        PreparedStatement pstmt = null;
+        String title = null;
+        try {
+            
+            pstmt = con.prepareStatement("SELECT * FROM article WHERE (submissionID = ?) ");
+            pstmt.setInt(1, submissionId); 
+            ResultSet res = pstmt.executeQuery();
+            
+            while (res.next()) {
+                title = res.getString("title");
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        return title;
+    }
+    
     
     /**
      * Get a PDF of a submission by submissionID

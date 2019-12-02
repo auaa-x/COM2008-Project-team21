@@ -1,6 +1,7 @@
 /**
  * Class for review data manipulation in MySQL database
  * @author Urszula Talalaj
+ * @author Julia Derebecka
  */
 
 import java.io.File;
