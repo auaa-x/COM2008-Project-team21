@@ -820,7 +820,7 @@ public class ReviewController extends SqlController {
             System.out.println("Reviewing submission: " + getReviewingSubmissions("chaddock@illinois.ac.uk"));
             */
             System.out.println("Reviewing submission: " + getReviewingSubmissions("chaddock@illinois.ac.uk"));
-            System.out.println(getSubmissionsSelected("chaddock@illinois.ac.uk"),"reviewer1");
+            System.out.println(getSubmissionsSelected("chaddock@illinois.ac.uk","reviewer1"));
 
         } catch (SQLException e) {
             e.printStackTrace();
