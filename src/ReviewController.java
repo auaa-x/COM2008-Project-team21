@@ -340,6 +340,16 @@ public class ReviewController extends SqlController {
     }
 
 
+    /**
+     * Submit a review with summary, typos, and a verdict
+     * @param submissionId
+     * @param anonID
+     * @param summary
+     * @param typos
+     * @param verdict
+     * @return true if submission successful, otherwise false
+     * @throws SQLException
+     */
     public static boolean submitReview(int submissionId, String anonId, String summary, String typos, Verdict verdict) throws SQLException {
         boolean result = false;
         if (addSummaryToReview(submissionId, anonId, summary) && addTyposToReview(submissionId, anonId, typos) &&
@@ -447,6 +457,7 @@ public class ReviewController extends SqlController {
         return result;
     }
 
+    
     /**
      * Submits response
      * Make an entry for each one in the response table

@@ -97,6 +97,7 @@ public class ArticleController extends SqlController {
         return result;
     }
     
+    
     /**
      * Check if an article with give submissionID exists in the database
      * @param submissionId

@@ -343,7 +343,7 @@ public class JournalController extends SqlController {
     
     /**
      * Get a journal by issn
-     * @return list of articles
+     * @return a journal object
      * @throws SQLException
      */
     public static Journal getJournal(int issn) throws SQLException {
