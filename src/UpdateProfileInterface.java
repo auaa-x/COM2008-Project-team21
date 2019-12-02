@@ -318,7 +318,12 @@ public class UpdateProfileInterface extends JFrame implements ActionListener {
                     break;
                 case 2:
                     System.out.println("Author detected");
+                try {
                     new AuthorInterface(username);
+                } catch (SQLException e1) {
+                    // TODO Auto-generated catch block
+                    e1.printStackTrace();
+                }
                     this.dispose();
                     break;
                 case 3:
