@@ -63,8 +63,9 @@ public class ArticleController extends SqlController {
         return submissionId;
     }
     
+    
     /**
-     * Update pdfFile of article
+     * Update the PDF of a submission
      * @param submissionId
      * @param pdfFile
      * @return true if update successful, otherwise false
@@ -78,7 +79,7 @@ public class ArticleController extends SqlController {
             try {
             	FileInputStream inputStream = new FileInputStream(pdfFile);
             	try {
-                    pstmt = con.prepareStatement("UPDATE `team021`.`article` SET `linkedFinalPDF` = ? WHERE (`submissionId` = ?)");
+                    pstmt = con.prepareStatement("UPDATE `team021`.`submission` SET `linkedFinalPDF` = ? WHERE (`submissionId` = ?)");
                     pstmt.setBlob(1, inputStream);
                     pstmt.setInt(2, submissionId);
 
@@ -96,6 +97,7 @@ public class ArticleController extends SqlController {
     	}
         return result;
     }
+    
     
     /**
      * Check if an article with give submissionID exists in the database
@@ -154,6 +156,7 @@ public class ArticleController extends SqlController {
          return submissionId;
      }
 
+    
     /**
      * Get a PDF of an article by submissionID
      * @param submissionId
@@ -191,36 +194,6 @@ public class ArticleController extends SqlController {
             closeConnection();
         }
         return result;
-    }
-    
-    /**
-     * Get a title of an article by submissionID
-     * @param submissionId
-     * @return 
-     * @return article's title
-     * @throws SQLException
-     * @throws IOException
-     */
-    public static String getArticleTitle(int submissionId) throws SQLException, IOException {
-        openConnection();
-        PreparedStatement pstmt = null;
-        String title = null;
-        try {
-            
-            pstmt = con.prepareStatement("SELECT * FROM article WHERE (submissionID = ?) ");
-            pstmt.setInt(1, submissionId); 
-            ResultSet res = pstmt.executeQuery();
-            
-            while (res.next()) {
-                title = res.getString("title");
-            }
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        } finally {
-            if (pstmt != null) pstmt.close();
-            closeConnection();
-        }
-        return title;
     }
     
     
@@ -261,6 +234,41 @@ public class ArticleController extends SqlController {
             closeConnection();
         }
         return result;
+    }
+    
+    
+    /**
+     * Get an article by submissionID
+     * @param submissionId
+     * @return article object
+     * @throws SQLException
+     * @throws IOException
+     */
+    public static Article getArticle(int submissionId) throws SQLException {
+        openConnection();
+        PreparedStatement pstmt = null;
+        Article article = null;
+        try {
+            
+            pstmt = con.prepareStatement("SELECT * FROM article WHERE (submissionID = ?) ");
+            pstmt.setInt(1, submissionId); 
+            ResultSet res = pstmt.executeQuery();
+            
+            if (res.next()) {
+                String title = res.getString("title");
+                String artAbstract = res.getString("abstract");
+                boolean isPublished = res.getBoolean("isPublished");
+                int issn = res.getInt("ISSN");
+                String mAuthorEmail = res.getString("mAuthorEmail");
+                article = new Article(submissionId, title, artAbstract, isPublished, issn, mAuthorEmail);
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        return article;
     }
     
     
@@ -318,8 +326,9 @@ public class ArticleController extends SqlController {
                 int submissionID = res.getInt("submissionID");
                 int reviewCount = res.getInt("reviewCount");
                 Status status = Status.valueOf(res.getString("status"));
+                int costCovered = res.getInt("costCovered");
                 
-                Submission submission = new Submission(submissionID, reviewCount, status);
+                Submission submission = new Submission(submissionID, reviewCount, status, costCovered);
                 submissions.add(submission);
             }
         } catch (SQLException ex) {
@@ -414,8 +423,9 @@ public class ArticleController extends SqlController {
             while (res.next()) {
                 int submissionID = res.getInt("submissionID");
                 int reviewCount = res.getInt("reviewCount");
+                int costCovered = res.getInt("costCovered");
                 
-                Submission submission = new Submission(submissionID, reviewCount, status);
+                Submission submission = new Submission(submissionID, reviewCount, status, costCovered);
                 submissions.add(submission);
             }
         } catch (SQLException ex) {
@@ -437,6 +447,7 @@ public class ArticleController extends SqlController {
             //System.out.println(getAuthors(4));
             //System.out.println(updatePDFFile(4, pdfFile));
             System.out.println(getArticlePDF(4));
+            System.out.println(getArticle(4));
         } catch (SQLException ex) {
             ex.printStackTrace();
         }

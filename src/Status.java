@@ -6,11 +6,9 @@
 public enum Status {
     
     SUBMITTED("SUBMITTED"),
-    REVIEWS_RECEIVED("REVIEWS RECEIVED"),
-    INITIAL_VERDICT("INITIAL VERDICT"),
-    RESPONSES_RECEIVED("RESPONSES RECEIVED"),
-    FINAL_VERDICT("FINAL VERDICT"),
-    COMPLETED("COMPLETED");
+    REVIEWS_RECEIVED("REVIEWS RECEIVED"), // all 3 reviews received
+    RESPONSES_RECEIVED("RESPONSES RECEIVED"), // all 3 responses
+    COMPLETED("COMPLETED"); // all 3 final verdicts
     
     private String statusName;
     

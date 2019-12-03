@@ -17,6 +17,24 @@ public class ReviewController extends SqlController {
     protected static LinkedList<String> answerList = new LinkedList<String>();
 
     /**
+     * Get question list
+     * @return current list of questions
+     */
+    public LinkedList<String> getQuestionList() {
+        return questionList;
+    }
+
+
+    /**
+     * Get answer list
+     * @return current list of questions
+     */
+    public LinkedList<String> getAnswerList() {
+        return answerList;
+    }
+
+
+    /**
      * Checks if there exists a conflict between a reviewer and a submission
      * @param reviewerEmail
      * @param submissionId
@@ -83,7 +101,7 @@ public class ReviewController extends SqlController {
         LinkedList<Submission> submissions = new LinkedList<Submission>();
 
         // return empty list if user is not a reviewer
-        if (!UserController.checkUsertype(reviewerEmail, 3)) return submissions;
+        if (!UserController.checkUsertype(reviewerEmail, 3) || ReviewController.remainingCostToCover(reviewerEmail) == 0) return submissions;
 
         // get all submissions with SUBMITTED status
         submissions = ArticleController.getSubmissionByStatus(Status.SUBMITTED);
@@ -103,14 +121,138 @@ public class ReviewController extends SqlController {
         }
 
         // remove the ones that had been already taken by this reviewer
-        LinkedList<Integer> taken = getReviewingSubmissions(reviewerEmail);
+        LinkedList<Submission> taken = getSubmissionsReviewing(reviewerEmail);
         Iterator<Submission> subItertor = submissions.iterator();
-        Iterator<Integer> takenItertor = taken.iterator();
+        Iterator<Submission> takenIterator = taken.iterator();
         while(subItertor.hasNext()) {
             Submission s = subItertor.next();
-            while(takenItertor.hasNext()) {
-                int id = takenItertor.next().intValue();
+            while(takenIterator.hasNext()) {
+                int id = takenIterator.next().getSubmissionID();
                 if (s.getSubmissionID() == id) subItertor.remove();
+            }
+        }
+        return submissions;
+    }
+
+
+    /**
+     * Get a list of submissions selected by a reviewer to review but not yet submitted
+     * @param reviewerEmail
+     * @param anonId
+     * @return submissions selected by a reviewer but not yet submitted
+     * @throws SQLException
+     */
+    public static LinkedList<Submission> getSubmissionsSelected(String reviewerEmail) throws SQLException {
+        LinkedList<Submission> submissions = new LinkedList<Submission>();
+
+        // return empty list if user is not a reviewer
+        if (!UserController.checkUsertype(reviewerEmail, 3)) return submissions;
+
+        // get all submissions which the reviewer is reviewing
+        submissions = getSubmissionsReviewing(reviewerEmail);
+
+        // remove the ones that have status different to SUBMITTED
+        Iterator<Submission> iterator = submissions.iterator();
+        while(iterator.hasNext()) {
+            Submission s = iterator.next();
+            if (!s.getStatus().equals(Status.SUBMITTED)) {
+                iterator.remove();
+            }
+        }
+
+        // remove the ones that are already submitted
+        iterator = submissions.iterator();
+        while(iterator.hasNext()) {
+            Submission s = iterator.next();
+            String currentID = null;
+            
+            // get anonID of a given submission
+            openConnection();
+            PreparedStatement pstmt = null;
+            try {
+
+                // get the anonID corresponding to the submission
+                pstmt = con.prepareStatement("SELECT * FROM `reviewer` WHERE (email = ?) and (submissionID = ?)");
+                pstmt.setString(1, reviewerEmail);
+                pstmt.setInt(2, s.getSubmissionID());
+                ResultSet res = pstmt.executeQuery();
+
+                if (res.next()) {
+                    currentID = res.getString("anonID");
+                }
+
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            } finally {
+                if (pstmt != null) pstmt.close();
+                closeConnection();
+            }
+            
+            // remove from list if already submitted
+            if (isSubmittedReview(s.getSubmissionID(), currentID)) {
+                iterator.remove();
+            }
+        }
+
+        return submissions;
+    }
+
+
+    /**
+     * Get a list of submissions selected by a reviewer to review but not yet submitted
+     * @param reviewerEmail
+     * @param anonId
+     * @return submissions selected by a reviewer but not yet submitted
+     * @throws SQLException
+     */
+    public static LinkedList<Submission> getSubmissionsResponded(String reviewerEmail) throws SQLException {
+        LinkedList<Submission> submissions = new LinkedList<Submission>();
+
+        // return empty list if user is not a reviewer
+        if (!UserController.checkUsertype(reviewerEmail, 3)) return submissions;
+
+        // get all submissions which the reviewer is reviewing
+        submissions = getSubmissionsReviewing(reviewerEmail);
+
+        // remove the ones that have status different to RESPONSES_RECEIVED
+        Iterator<Submission> iterator = submissions.iterator();
+        while(iterator.hasNext()) {
+            Submission s = iterator.next();
+            if (!s.getStatus().equals(Status.RESPONSES_RECEIVED)) {
+                iterator.remove();
+            }
+        }
+        
+        // remove the ones that have final verdicts
+        iterator = submissions.iterator();
+        while(iterator.hasNext()) {
+            Submission s = iterator.next();
+            String currentID = null;
+            
+            // get anonID of a given submission
+            openConnection();
+            PreparedStatement pstmt = null;
+            try {
+                pstmt = con.prepareStatement("SELECT * FROM `reviewer` WHERE (email = ?) and (submissionID = ?)");
+                pstmt.setString(1, reviewerEmail);
+                pstmt.setInt(1, s.getSubmissionID());
+                ResultSet res = pstmt.executeQuery();
+                
+                // get the anonID corresponding to the submission
+                if (res.next()) {
+                    currentID = res.getString("anonID");
+                }
+
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            } finally {
+                if (pstmt != null) pstmt.close();
+                closeConnection();        
+            }
+            
+            // remove the submission that already have final verdicts
+            if (isVerdictFinal(s.getSubmissionID(), currentID)) {
+                iterator.remove();
             }
         }
         return submissions;
@@ -126,12 +268,59 @@ public class ReviewController extends SqlController {
      */
     public static boolean selectToReview(String reviewerEmail, int submissionId) throws SQLException {
         boolean result = false;
+
+        // create anonymous reviewer ID
         String anonId = "reviewer" + Integer.toString(getReviewCount(submissionId) + 1);
 
         // update the review count, create a reviewer, create a review
         if (updateReviewCount(submissionId) && UserController.createReviewer(anonId, reviewerEmail, submissionId)
                 && createReview(submissionId, anonId)) result = true;
+
+        // get all submissions of the reviewer
+        LinkedList<Submission> authorSubmissions = ArticleController.getSubmissions(reviewerEmail);
+
+        // update the cost covered counter of one of them
+        boolean found = false;
+        for(Submission s : authorSubmissions) {
+            if (!found && s.getReviewCount() <= 2) {
+                updateCostCovered(s.getSubmissionID());
+                found = true;
+            }
+        }
+
         return result;
+    }
+    
+    /**
+     * Get anonID by reviewer email and submissionID
+     * @param email
+     * @param submissionId
+     * @return anonID
+     * @throws SQLException
+     */
+    public static String getAnonID(String email, int submissionId) throws SQLException {
+        String anonID = null;
+        openConnection();
+        PreparedStatement pstmt = null;
+        try {
+
+            // get the current reviewCount of the submission
+            pstmt = con.prepareStatement("SELECT * FROM `reviewer` WHERE (`email` = ?) and (`submissionID` = ?)");
+            pstmt.setString(1, email);
+            pstmt.setInt(2, submissionId);
+            ResultSet res = pstmt.executeQuery();
+
+            if (res.next()) {
+                anonID = res.getString("anonID");
+            }
+
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        return anonID;
     }
 
 
@@ -165,27 +354,174 @@ public class ReviewController extends SqlController {
         return count;
     }
 
+    
+    /**
+     * Check if review is submitted
+     * @param submissionID
+     * @param anonID
+     * @return result true if it is, otherwise false
+     */
+    public static boolean isSubmittedReview(int submissionID, String anonID) throws SQLException {
+        openConnection();
+        boolean submitted = false;
+        PreparedStatement pstmt = null;
+        try {
+            pstmt = con.prepareStatement("SELECT * FROM `review` WHERE (`submissionID` = ?) and (`anonID` = ?) ");
+            pstmt.setInt(1, submissionID);
+            pstmt.setString(2, anonID);
+            ResultSet res = pstmt.executeQuery();
+            while (res.next()) {
+            	submitted = res.getBoolean("isSubmitted");
+
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+     return submitted;
+    }
+
 
     /**
-     * Get a list of submissionIDs of submissions which are being reviewed by a given reviewer
-     * @param reviewerEmail
-     * @return list of submissions
+     * Check if response is submitted
+     * @param submissionID
+     * @param anonID
+     * @return result true if it is, otherwise false
+     */
+    public static boolean isSubmittedResponse(int submissionID, String anonID) throws SQLException {
+        openConnection();
+        boolean submitted = false;
+        PreparedStatement pstmt = null;
+        try {
+            pstmt = con.prepareStatement("SELECT * FROM `response` WHERE (`submissionID` = ?) and (`anonID` = ?) ");
+            pstmt.setInt(1, submissionID);
+            pstmt.setString(2, anonID);
+            ResultSet res = pstmt.executeQuery();
+            if (res.next()) {
+                submitted = true;
+
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+     return submitted;
+    }
+    
+    
+    /**
+     * Check if a verdict for a submission is final
+     * @param submissionID
+     * @param anonID
+     * @return result true if it is, otherwise false
+     */
+    public static boolean isVerdictFinal(int submissionID, String anonID) throws SQLException {
+        openConnection();
+        boolean isFinal = false;
+        PreparedStatement pstmt = null;
+        try {
+            pstmt = con.prepareStatement("SELECT * FROM `verdict` WHERE (`submissionID` = ?) and (`anonID` = ?) ");
+            pstmt.setInt(1, submissionID);
+            pstmt.setString(2, anonID);
+            ResultSet res = pstmt.executeQuery();
+            while (res.next()) {
+                isFinal = res.getBoolean("isFinal");
+
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+     return isFinal;
+    }
+
+
+    /**
+     * Get a cost covered counter for a given submission (reviews started to cover the cost of publication)
+     * @param submissionId
+     * @return number of started reviews
      * @throws SQLException
      */
-    public static LinkedList<Integer> getReviewingSubmissions(String reviewerEmail) throws SQLException {
-        LinkedList<Integer> submissions = new LinkedList<Integer>();
+    public static int getCostCovered(int submissionId) throws SQLException {
+        int cost = 0;
         openConnection();
         PreparedStatement pstmt = null;
         try {
 
-            // get the current reviewCount of the submission
-            pstmt = con.prepareStatement("SELECT * FROM `reviewer` WHERE `email` = ?");
+            // get the current costCovered of the submission
+            pstmt = con.prepareStatement("SELECT * FROM `submission` WHERE `submissionID` = ?");
+            pstmt.setInt(1, submissionId);
+            ResultSet res = pstmt.executeQuery();
+
+            if (res.next()) {
+                cost = res.getInt("costCovered");
+            }
+
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        return cost;
+    }
+
+
+    /**
+     * Get remaining review counter for a given reviewer
+     * @param reviewerEmail
+     * @return number of remaining reviews
+     * @throws SQLException
+     */
+    public static int remainingCostToCover(String reviewerEmail) throws SQLException {
+
+        // get all submissions done by this author
+        LinkedList<Submission> submissions = ArticleController.getSubmissions(reviewerEmail);
+
+        // count all reviews that he is allowed to make
+        int remaining = 3 * submissions.size();
+
+        for(Submission s : submissions) {
+            // subtract the submissions that had been already started
+            int started = getCostCovered(s.getSubmissionID());
+            // System.out.println("Started reviews for sumbissionID " + s.getSubmissionID() + ": " + started);
+            remaining -= started;
+        }
+        return remaining;
+    }
+
+
+    /**
+     * Get a list of all submissions which are being reviewed by a given reviewer
+     * @param reviewerEmail
+     * @return list of submissions
+     * @throws SQLException
+     */
+    public static LinkedList<Submission> getSubmissionsReviewing(String reviewerEmail) throws SQLException {
+        LinkedList<Submission> submissions = new LinkedList<Submission>();
+        openConnection();
+        PreparedStatement pstmt = null;
+        try {
+
+            pstmt = con.prepareStatement("SELECT * FROM reviewer r, submission s WHERE (s.submissionID = r.submissionID) and (r.email = ?)");
             pstmt.setString(1, reviewerEmail);
             ResultSet res = pstmt.executeQuery();
 
             while (res.next()) {
-                int id = res.getInt("submissionID");
-                submissions.add(Integer.valueOf(id));
+                int submissionID = res.getInt("submissionID");
+                int reviewCount = res.getInt("reviewCount");
+                String stringStatus = res.getString("status");
+                Status status = Status.valueOf(stringStatus);
+                int costCovered = res.getInt("costCovered");
+                Submission submission = new Submission(submissionID, reviewCount, status, costCovered);
+
+                submissions.add(submission);
             }
 
         } catch (SQLException ex) {
@@ -220,6 +556,46 @@ public class ReviewController extends SqlController {
             // update review counter
             count++;
             pstmt = con.prepareStatement("UPDATE `team021`.`submission` SET `reviewCount` = ? WHERE (`submissionID` = ?)");
+            pstmt.setInt(1, count);
+            pstmt.setInt(2, submissionId);
+            int res = pstmt.executeUpdate();
+
+            if (res != 0) {
+                result = true;
+            }
+
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        return result;
+    }
+
+
+    /**
+     * Update cost covered for a given submission
+     * @param submissionId
+     * @return true if update successful, otherwise false
+     * @throws SQLException
+     */
+    public static boolean updateCostCovered(int submissionId) throws SQLException {
+        boolean result = false;
+
+        // get current review count
+        int count = getCostCovered(submissionId);
+
+        // return false if there are too many reviews already
+        if (count >= 3) return result;
+
+        openConnection();
+        PreparedStatement pstmt = null;
+        try {
+
+            // update review counter
+            count++;
+            pstmt = con.prepareStatement("UPDATE `team021`.`submission` SET `costCovered` = ? WHERE (`submissionID` = ?)");
             pstmt.setInt(1, count);
             pstmt.setInt(2, submissionId);
             int res = pstmt.executeUpdate();
@@ -341,11 +717,24 @@ public class ReviewController extends SqlController {
     }
 
 
+    /**
+     * Submit a review with summary, typos, and a verdict
+     * @param submissionId
+     * @param anonID
+     * @param summary
+     * @param typos
+     * @param verdict
+     * @return true if submission successful, otherwise false
+     * @throws SQLException
+     */
     public static boolean submitReview(int submissionId, String anonId, String summary, String typos, Verdict verdict) throws SQLException {
         boolean result = false;
         if (addSummaryToReview(submissionId, anonId, summary) && addTyposToReview(submissionId, anonId, typos) &&
                 addAllQuestions(submissionId, anonId) && addVerdict(submissionId, verdict, anonId)) {
             result = true;
+            
+            // update status if all 3 reviews had been submitted
+            if (getReviewSubmittedCount(submissionId) == 3) ArticleController.updateStatus(submissionId, Status.REVIEWS_RECEIVED);
 
             // update the isSubmitted field
             openConnection();
@@ -368,6 +757,123 @@ public class ReviewController extends SqlController {
         }
 
         return result;
+    }
+    
+    
+    /**
+     * Submit a final verdict for a given submission
+     * @param submissionId
+     * @param verdict
+     * @param anonID
+     * @return true if submission successful, otherwise false
+     * @throws SQLException
+     */
+    public static boolean submitFinalVerdict(int submissionId, Verdict verdict, String anonId) throws SQLException {
+        boolean result = false;
+        if (updateVerdict(submissionId, verdict, anonId)) {
+            // update the database
+            openConnection();
+            PreparedStatement pstmt = null;
+            try {
+
+                pstmt = con.prepareStatement("UPDATE `team021`.`verdict` SET `isFinal` = 1 WHERE (`submissionID` = ?) and (`anonID` = ?)");
+                pstmt.setInt(1, submissionId);
+                pstmt.setString(2, anonId);
+                int count = pstmt.executeUpdate();
+                if (count != 0 ) result = true;
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            } finally {
+                if (pstmt != null) pstmt.close();
+                closeConnection();
+            }
+        }
+        return result;
+    }
+    
+    
+    /**
+     * Submit all the responses and revised version of the article PDF and update the status of the submission
+     * @param submissionId
+     * @param anonID
+     * @param pdfFile
+     * @return true if submission successful, otherwise false
+     * @throws SQLException
+     */
+    public static boolean submitResponsesAndPdf(int submissionId, File pdfFile) throws SQLException {
+        boolean result = false;
+        // check if status of the submission is REVIEWS_RECEIVED and 3 responses have been submitted
+        if (getSubmission(submissionId).getStatus().equals(Status.REVIEWS_RECEIVED) && getResponseCount(submissionId) == 3) {
+            if (ArticleController.updatePDFFile(submissionId, pdfFile) && ArticleController.updateStatus(submissionId, Status.RESPONSES_RECEIVED)) {
+                result = true;
+            }
+        }
+        return result;
+    }
+    
+    
+    /**
+     * Get count of submitted reviews for a given submission
+     * @param submissionId
+     * @return number of submitted reviews
+     * @throws SQLException
+     */
+    public static int getReviewSubmittedCount(int submissionId) throws SQLException {
+        int count = 0;
+        
+        openConnection();
+        PreparedStatement pstmt = null;
+        try {
+            
+            pstmt = con.prepareStatement("SELECT * FROM `review` WHERE (submissionID = ?) and (isSubmitted = 1)");
+            pstmt.setInt(1, submissionId);
+            ResultSet res = pstmt.executeQuery();
+            
+            while (res.next()) {
+                count++;
+            }
+            
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        
+        return count;
+    }
+
+    
+    
+    /**
+     * Get count of sumbission's submitted responses
+     * @param submissionId
+     * @return number of submitted responses
+     * @throws SQLException
+     */
+    public static int getResponseCount(int submissionId) throws SQLException {
+        int count = 0;
+        
+        openConnection();
+        PreparedStatement pstmt = null;
+        try {
+            
+            pstmt = con.prepareStatement("SELECT * FROM `response` WHERE `submissionID` = ?");
+            pstmt.setInt(1, submissionId);
+            ResultSet res = pstmt.executeQuery();
+            
+            while (res.next()) {
+                count++;
+            }
+            
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        
+        return count;
     }
 
 
@@ -413,15 +919,6 @@ public class ReviewController extends SqlController {
 
 
     /**
-     * Add a question to the question list
-     * @param question
-     */
-    public static void addQuestion(String question) {
-        questionList.add(question);
-    }
-
-
-    /**
      * Add a verdict to a given submission
      * @param verdict
      */
@@ -448,18 +945,140 @@ public class ReviewController extends SqlController {
         return result;
     }
 
+    
     /**
-     * Submits response
+     * Update verdict of a given review by submissionID and anonID
+     * @param verdict
+     */
+    public static boolean updateVerdict(int submissionId, Verdict verdict, String anonId) throws SQLException {
+        boolean result = false;
+        openConnection();
+        PreparedStatement pstmt = null;
+        try {
+            String verdictName = verdict.name();
+            pstmt = con.prepareStatement("UPDATE `team021`.`verdict` SET `value` = ? WHERE (`submissionID` = ?) and (`anonID` = ?)");
+            pstmt.setString(1, verdictName);
+            pstmt.setInt(2, submissionId);
+            pstmt.setString(3, anonId);
+
+            int res = pstmt.executeUpdate();
+            if (res != 0) result = true;
+
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        return result;
+    }
+
+    
+    /**
+     * Get verdict by submissionID and anonID
+     * @param submissionID
+     * @param anonID
+     * @return verdict
+     * @throws SQLException
+     */
+    public static Verdict getVerdict(int submissionID, String anonID) throws SQLException {
+        openConnection();
+        Verdict verdict = null;
+        PreparedStatement pstmt = null;
+        try {
+            pstmt = con.prepareStatement("SELECT * FROM `verdict` WHERE (`submissionID` = ?) and (`anonID` = ?) ");
+            pstmt.setInt(1, submissionID);
+            pstmt.setString(2, anonID);
+            ResultSet res = pstmt.executeQuery();
+            if (res.next()) {
+                String stringVerdict = res.getString("value");
+                verdict = Verdict.valueOf(stringVerdict);
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        return verdict;
+    }
+
+
+    /**
+     * Get a list of all questions for this review
+     * @param submissionID
+     * @param anonID
+     * @return list of questions
+     * @throws SQLException
+     */
+    public static LinkedList<Question> getQuestions(int submissionID, String anonID) throws SQLException {
+        LinkedList<Question> questions = new LinkedList<Question>();
+        openConnection();
+        PreparedStatement pstmt = null;
+        try {
+        	pstmt = con.prepareStatement("SELECT * FROM `question` WHERE (`submissionID` = ?) and (`anonID` = ?) ");
+            pstmt.setInt(1, submissionID);
+            pstmt.setString(2, anonID);
+            ResultSet res = pstmt.executeQuery();
+            while (res.next()) {
+            	int noNum = res.getInt("noNum");
+                String value = res.getString("value");
+                Question question = new Question(submissionID, noNum, value, anonID);
+                questions.add(question);
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        return questions;
+    }
+
+    
+    /**
+     * Get a list of all answers for this review
+     * @param submissionID
+     * @param anonID
+     * @return list of questions
+     * @throws SQLException
+     */
+    public static LinkedList<Answer> getAnswers(int submissionID, String anonID) throws SQLException {
+        LinkedList<Answer> answers = new LinkedList<Answer>();
+        openConnection();
+        PreparedStatement pstmt = null;
+        try {
+        	pstmt = con.prepareStatement("SELECT * FROM `answer` WHERE (`submissionID` = ?) and (`anonID` = ?) ");
+            pstmt.setInt(1, submissionID);
+            pstmt.setString(2, anonID);
+            ResultSet res = pstmt.executeQuery();
+            while (res.next()) {
+            	int noNum = res.getInt("noNum");
+                String value = res.getString("value");
+                Answer answer = new Answer(submissionID, noNum, value, anonID);
+                answers.add(answer);
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        return answers;
+    }
+
+
+    /**
+     * Creates response
      * Make an entry for each one in the response table
      * @param submissionId
      * @param anonId
-     * @param pdfFile
-     * @return true if addition of all the responses is successful, otherwise false
+     * @return true if addition of the response is successful, otherwise false
      * @throws SQLException
      */
-    public static boolean submitResponse(int submissionId, String anonId,  File pdfFile) throws SQLException {
+    public static boolean createResponse(int submissionId, String anonId) throws SQLException {
         boolean result = false;
-        if (addAllAnswers(submissionId, anonId) && ArticleController.updatePDFFile(submissionId, pdfFile)) {
+        if (addAllAnswers(submissionId, anonId)) {
 	        	openConnection();
 	        PreparedStatement pstmt = null;
 	        try {
@@ -536,19 +1155,98 @@ public class ReviewController extends SqlController {
     }
 
 
+    /**
+     * Add a question to the question list
+     * @param question
+     */
+    public static void addQuestion(String question) {
+        answerList.add(question);
+    }
+
+
+    /**
+     * Get submission
+     * @param submissionId
+     * @return submissionId, reviewCount, status, costCovered wrapped in Submission Object
+     * @throws SQLException
+     */
+    public static Submission getSubmission(int submissionId) throws SQLException {
+        Submission submission = null;
+        openConnection();
+        PreparedStatement pstmt = null;
+        try {
+        	pstmt = con.prepareStatement("SELECT * FROM `submission` WHERE (`submissionID` = ?) ");
+            pstmt.setInt(1, submissionId);
+            ResultSet res = pstmt.executeQuery();
+            while (res.next()) {
+            	int reviewCount = res.getInt("reviewCount");
+                Status status = Status.valueOf(res.getString("status"));
+                int costCovered = res.getInt("costCovered");
+                submission = new Submission (submissionId, reviewCount,status, costCovered);
+
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        return submission;
+    }
+
+    
+    /**
+     * Get review
+     * @param submissionId
+     * @return submissionId,summary,typoErrors,anonId,isSubmitted
+     * @throws SQLException
+     */
+    public static Review getReview(int submissionId, String anonId) throws SQLException {
+        Review review = null;
+        openConnection();
+        PreparedStatement pstmt = null;
+        try {
+        	pstmt = con.prepareStatement("SELECT * FROM `review` WHERE (`submissionID` = ?) and (`anonID` = ?)");
+            pstmt.setInt(1, submissionId);
+            pstmt.setString(2, anonId);
+            ResultSet res = pstmt.executeQuery();
+            while (res.next()) {
+            	String summary = res.getString("summary");
+            	String typoErrors = res.getString("typoErrors");
+            	boolean isSubmitted = res.getBoolean("isSubmitted");
+                review = new Review (submissionId, summary, typoErrors, anonId, isSubmitted);
+
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        return review;
+    }
+
+
+
 
     public static void main (String[] args) throws IOException {
     	//plzzz dont delete
-    	File pdfFile = new File("./Systems Design Project.pdf");
+    	//File pdfFile = new File("./Systems Design Project.pdf");
         try {
-            System.out.println(getReviewingSubmissions("chaddock@illinois.ac.uk"));
-            addAnswer("answer1");
-            addAnswer("answer2");
-            addAnswer("answer3");
-            addAnswer("answer4");
-            System.out.println(answerList);
-            System.out.println(submitResponse(1,"reviewer1",pdfFile));
-            
+            /*
+            System.out.println("Remaining review count: " + remainingCostToCover("chaddock@illinois.ac.uk"));
+            System.out.println("Submissions to review: " + getSubmissionsToReview("chaddock@illinois.ac.uk"));
+            System.out.println(selectToReview("chaddock@illinois.ac.uk", 1));
+            System.out.println("Selected submission 1 to review.");
+            System.out.println("Remaining review count: " + remainingCostToCover("chaddock@illinois.ac.uk"));
+            System.out.println("Submissions to review: " + getSubmissionsToReview("chaddock@illinois.ac.uk"));
+            System.out.println("Reviewing submission: " + getReviewingSubmissions("chaddock@illinois.ac.uk"));
+            */
+            //System.out.println("Reviewing submission: " + getReviewingSubmissions("chaddock@illinois.ac.uk"));
+            //System.out.println(getSubmissionsSelected("chaddock@illinois.ac.uk","reviewer1"));
+            System.out.println(getAnonID("chaddock@illinois.ac.uk", 1));
+            System.out.println(getSubmissionsReviewing("chaddock@illinois.ac.uk"));
+            System.out.println(remainingCostToCover("chaddock@illinois.ac.uk"));
 
         } catch (SQLException e) {
             e.printStackTrace();

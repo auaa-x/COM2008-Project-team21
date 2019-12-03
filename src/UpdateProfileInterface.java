@@ -323,6 +323,7 @@ public class UpdateProfileInterface extends JFrame implements ActionListener {
                     } catch (SQLException ex) {
                         ex.printStackTrace();
                     }
+
                     this.dispose();
                     break;
                 case 3:

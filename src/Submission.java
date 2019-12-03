@@ -6,11 +6,13 @@ public class Submission {
 	private int submissionID;
     private int reviewCount;
     private Status status;
+    private int costCovered;
 
-    Submission(int submissionID, int reviewCount, Status status) {
+    Submission(int submissionID, int reviewCount, Status status, int costCovered) {
         this.submissionID = submissionID;
         this.reviewCount = reviewCount;
         this.status = status;
+        this.costCovered = costCovered;
     }
 
     public int getSubmissionID() {
@@ -23,6 +25,10 @@ public class Submission {
 
     public Status getStatus() {
         return status;
+    }
+    
+    public int getCostCovered() {
+        return costCovered;
     }
     
     @Override
