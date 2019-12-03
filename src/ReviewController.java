@@ -1114,20 +1114,20 @@ public class ReviewController extends SqlController {
      * @return submissionId,summary,typoErrors,anonId,isSubmitted
      * @throws SQLException
      */
-    public static Review getReview(int submissionId) throws SQLException {
+    public static Review getReview(int submissionId, String anonId) throws SQLException {
         Review review = null;
         openConnection();
         PreparedStatement pstmt = null;
         try {
-        	pstmt = con.prepareStatement("SELECT * FROM `review` WHERE (`submissionID` = ?) ");
+        	pstmt = con.prepareStatement("SELECT * FROM `review` WHERE (`submissionID` = ?) and (`anonID` = ?)");
             pstmt.setInt(1, submissionId);
+            pstmt.setString(2, anonId);
             ResultSet res = pstmt.executeQuery();
             while (res.next()) {
             	String summary = res.getString("summary");
             	String typoErrors = res.getString("typoErrors");
-            	String anonID = res.getString("anonID");
             	boolean isSubmitted = res.getBoolean("isSubmitted");
-                review = new Review (submissionId, summary, typoErrors, anonID, isSubmitted);
+                review = new Review (submissionId, summary, typoErrors, anonId, isSubmitted);
 
             }
         } catch (SQLException ex) {
