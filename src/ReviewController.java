@@ -831,6 +831,69 @@ public class ReviewController extends SqlController {
     public static void addQuestion(String question) {
         answerList.add(question);
     }
+    
+    //methods for author
+    /**
+     * Get submission
+     * @param submissionId
+     * @return submissionId,reviewCount,status,costCovered
+     * @throws SQLException
+     */
+    public static Submission getSubmission(int submissionId) throws SQLException {
+        Submission submission = null;
+        openConnection();
+        PreparedStatement pstmt = null;
+        try {
+        	pstmt = con.prepareStatement("SELECT * FROM `submission` WHERE (`submissionID` = ?) ");
+            pstmt.setInt(1, submissionId);
+            ResultSet res = pstmt.executeQuery();
+            while (res.next()) {
+            	int reviewCount = res.getInt("reviewCount");
+                Status status= Status.valueOf(res.getString("status"));
+                int costCovered = res.getInt("costCovered");
+                submission = new Submission (submissionId, reviewCount,status, costCovered);
+                
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        return submission;
+    }
+    
+    /**
+     * Get review
+     * @param submissionId
+     * @return submissionId,summary,typoErrors,anonId,isSubmitted
+     * @throws SQLException
+     */
+    public static Review getReview(int submissionId) throws SQLException {
+        Review review = null;
+        openConnection();
+        PreparedStatement pstmt = null;
+        try {
+        	pstmt = con.prepareStatement("SELECT * FROM `review` WHERE (`submissionID` = ?) ");
+            pstmt.setInt(1, submissionId);
+            ResultSet res = pstmt.executeQuery();
+            while (res.next()) {
+            	String summary = res.getString("summary");
+            	String typoErrors = res.getString("typoErrors");
+            	String anonID = res.getString("anonID");
+            	boolean isSubmitted = res.getBoolean("isSubmitted");
+                review = new Review (submissionId, summary, typoErrors, anonID, isSubmitted);
+                
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        return review;
+    }
+
 
 
 
@@ -849,7 +912,7 @@ public class ReviewController extends SqlController {
             */
             //System.out.println("Reviewing submission: " + getReviewingSubmissions("chaddock@illinois.ac.uk"));
             //System.out.println(getSubmissionsSelected("chaddock@illinois.ac.uk","reviewer1"));
-            System.out.println(isSubmitted(1,"reviewer1"));
+            System.out.println(getReview(1).getAnonId());
 
         } catch (SQLException e) {
             e.printStackTrace();
