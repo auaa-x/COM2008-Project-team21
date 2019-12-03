@@ -13,7 +13,10 @@ import java.util.LinkedList;
 public class AuthorInterface extends JFrame implements ActionListener{
 
 	private static final long serialVersionUID = 1L;
+	private JPanel reviewsPanel;
+    private JPanel reviewPanel;
     private JMenuBar menubar;
+
     // JMenu
     private JMenu selectSub;
     private JRadioButtonMenuItem subItem;
@@ -24,27 +27,16 @@ public class AuthorInterface extends JFrame implements ActionListener{
     private String username;
     private LinkedList<Submission> submissions;
     private Status subStatus;
-
-
-    private JTextField titleField;
-    private JTextField fnField;
-    private JTextField snField;
-    private JTextField uniField;
-    private JButton update, update1;
-    private JButton back, back1;
-
-    private JPanel subPanel;
-    // Menu items
-
-
     //Articles display panel
 
 
     public AuthorInterface(String username) throws SQLException {
         this.setTitle("Submission");
         this.setSize(1000, 600);
+        reviewsPanel = new JPanel();
+        reviewsPanel.setSize(1000,600);
         this.setLocationRelativeTo(null);
-        this.setResizable(false);
+        //this.setResizable(false);
 
         this.username = username;
         group = new ButtonGroup();
@@ -105,12 +97,14 @@ public class AuthorInterface extends JFrame implements ActionListener{
         //articlesTable.setBounds(30, 40, 200, 300);*/
 
         Integer selectedSubId = Integer.parseInt(getSelectedButtonText(group));
-        Status status = getStatusByID(selectedSubId);
+        //Status status = getStatusByID(selectedSubId);
+        int id = 1;
+        Status status = Status.REVIEWS_RECEIVED;
         if (status.equals(Status.SUBMITTED)){
             System.out.println("condition detected");
             submittedPanel(selectedSubId);
         } else if (status.equals(Status.REVIEWS_RECEIVED)){
-            reviewsReceivedPanel(selectedSubId);
+            reviewsReceivedPanel(id);
         } else if (status.equals(Status.RESPONSES_RECEIVED)) {
             responsesReceivedPanel(selectedSubId);
         } else if (status.equals(Status.COMPLETED)) {
@@ -132,7 +126,7 @@ public class AuthorInterface extends JFrame implements ActionListener{
     }
 
     public void submittedPanel(Integer id){
-        subPanel = new JPanel();
+        JPanel subPanel = new JPanel();
         JLabel subTitle = new JLabel("Submission: " + id + " have been received.");
         subTitle.setBorder(BorderFactory.createEmptyBorder(180, 200, 50, 200));
         JLabel subTitle1 = new JLabel("Waiting for reviews....");
@@ -147,9 +141,119 @@ public class AuthorInterface extends JFrame implements ActionListener{
 
     }
 
-    public void reviewsReceivedPanel(Integer id){
-        //TO-DO method
-        //System.out.println("Reviews Received Panel");
+    public void reviewsReceivedPanel(Integer id) throws SQLException {
+        System.out.println("reviewsReceivedPanel");
+        reviewsPanel.add(review(id,1));
+        //reviewsPanel.add(review(id,2));
+        //reviewsPanel.add(review(id,3));
+        JScrollPane scrollPane = new JScrollPane(reviewsPanel);
+        scrollPane.setPreferredSize(new Dimension(1000,600));
+        scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        this.add(scrollPane);
+    }
+
+    public JPanel review(int submissionID, int no) throws SQLException {
+        System.out.println("review " + no);
+        reviewPanel = new JPanel();
+        String anonID = null;
+        switch (no) {
+            case 1:
+                anonID = "reviewer1";
+                break;
+            case 2:
+                anonID = "reviewer2";
+                break;
+            case 3:
+                anonID = "reviewer3";
+                break;
+        }
+        Review review = ReviewController.getReview(submissionID, anonID);
+        LinkedList<Question> questions = new LinkedList<>(ReviewController.getQuestions(submissionID, anonID));
+        String initialVd = ReviewController.getVerdict(submissionID,anonID).toString();
+        JPanel noticePanel = new JPanel();
+        JLabel banner = new JLabel("Review 1");
+        banner.setFont(new Font("Lucida Grande", Font.PLAIN, 30));
+        banner.setBorder(BorderFactory.createEmptyBorder(30, 0, 30, 0));
+
+        //Personal details
+        JPanel summaryGroup = new JPanel(new BorderLayout(10, 10));
+        summaryGroup.setPreferredSize(new Dimension(1000,300));
+        summaryGroup.setBorder(BorderFactory.createEmptyBorder(10, 100, 20, 100));
+        JLabel summary = new JLabel("Summary");
+        summary.setFont(new Font("Lucida Grande", Font.PLAIN, 20));
+        JTextArea sumField = new JTextArea(2,50);
+        sumField.setFont(new Font("Arial", Font.PLAIN, 15));
+        sumField.setText(review.getSummary());
+        sumField.setEditable(false);
+        summaryGroup.add(summary, BorderLayout.PAGE_START);
+        summaryGroup.add(sumField, BorderLayout.CENTER);
+
+        //Errors
+        JPanel errorsGroup = new JPanel(new BorderLayout(10, 10));
+        errorsGroup.setPreferredSize(new Dimension(1000,300));
+        errorsGroup.setBorder(BorderFactory.createEmptyBorder(10, 100, 20, 100));
+        JLabel error = new JLabel("Errors");
+        error.setFont(new Font("Lucida Grande", Font.PLAIN, 20));
+        JTextArea errorField = new JTextArea(2,50);
+        errorField.setFont(new Font("Arial", Font.PLAIN, 15));
+        errorField.setText(review.getTypoErrors());
+        errorField.setEditable(false);
+        errorsGroup.add(error, BorderLayout.PAGE_START);
+        errorsGroup.add(errorField, BorderLayout.CENTER);
+
+        //List of Qs
+        JPanel qsGroup = new JPanel(new BorderLayout(10, 10));
+        qsGroup.setPreferredSize(new Dimension(1000,300));
+        qsGroup.setBorder(BorderFactory.createEmptyBorder(10, 100, 20, 100));
+        JLabel question = new JLabel("List of Questions");
+        question.setFont(new Font("Lucida Grande", Font.PLAIN, 20));
+        JTextArea qsField = new JTextArea(2,50);
+        qsField.setFont(new Font("Arial", Font.PLAIN, 15));
+        for (Question qs : questions) {
+            qsField.append(qs.toString()+"\n");
+        }
+        qsField.setEditable(false);
+        qsGroup.add(question, BorderLayout.PAGE_START);
+        qsGroup.add(qsField, BorderLayout.CENTER);
+
+        //Initial verdict
+        JPanel vdGroup = new JPanel(new BorderLayout(10, 10));
+        //vdGroup.setPreferredSize(new Dimension(1000,300));
+        vdGroup.setBorder(BorderFactory.createEmptyBorder(10, 100, 20, 100));
+        JLabel verdict = new JLabel("Initial Verdict");
+        verdict.setFont(new Font("Lucida Grande", Font.PLAIN, 20));
+        JTextArea vdField = new JTextArea(1,12);
+        vdField.setFont(new Font("Arial", Font.PLAIN, 15));
+        vdField.setText(initialVd);
+        vdField.setEditable(false);
+        vdGroup.add(verdict, BorderLayout.PAGE_START);
+        vdGroup.add(vdField, BorderLayout.WEST);
+
+        JPanel buttonPanel = new JPanel(new BorderLayout());
+        buttonPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 20, 100));
+        JButton response = new JButton("Create a Response");
+        response.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e)
+            {
+                System.out.println("Respond to " + no);
+                new RespondInterface(no, questions);
+            }
+        });
+        response.setFont(new Font("Lucida Grande", Font.PLAIN, 20));
+        buttonPanel.add(response, BorderLayout.EAST);
+
+        noticePanel.setLayout(new BoxLayout(noticePanel,BoxLayout.LINE_AXIS));
+        noticePanel.add(banner);
+
+        reviewPanel.setLayout(new BoxLayout(reviewPanel,BoxLayout.Y_AXIS));
+        reviewPanel.add(noticePanel);
+        reviewPanel.add(summaryGroup);
+        reviewPanel.add(errorsGroup);
+        reviewPanel.add(qsGroup);
+        reviewPanel.add(vdGroup);
+        reviewPanel.add(buttonPanel);
+
+        return reviewPanel;
     }
 
 
@@ -208,7 +312,6 @@ public class AuthorInterface extends JFrame implements ActionListener{
         }
 
     public static void main(String[] args) throws SQLException {
-
         new AuthorInterface("chaddock@illinois.ac.uk");
     }
 }
