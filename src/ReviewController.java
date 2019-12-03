@@ -164,7 +164,7 @@ public class ReviewController extends SqlController {
         iterator = submissions.iterator();
         while(iterator.hasNext()) {
             Submission s = iterator.next();
-            if (isSubmitted(s.getSubmissionID(), anonId)) {
+            if (isSubmittedReview(s.getSubmissionID(), anonId)) {
                 iterator.remove();
             }
         }
@@ -274,13 +274,14 @@ public class ReviewController extends SqlController {
         return count;
     }
     
+    
     /**
      * Check if review is submitted
      * @param submissionID
      * @param anonID
      * @return result true if it is, otherwise false
      */
-    public static boolean isSubmitted(int submissionID, String anonID) throws SQLException {
+    public static boolean isSubmittedReview(int submissionID, String anonID) throws SQLException {
         openConnection();
         boolean submitted = false;
         PreparedStatement pstmt = null;
@@ -291,6 +292,35 @@ public class ReviewController extends SqlController {
             ResultSet res = pstmt.executeQuery();
             while (res.next()) {
             	submitted = res.getBoolean("isSubmitted");
+
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+     return submitted;
+    }
+    
+    
+    /**
+     * Check if response is submitted
+     * @param submissionID
+     * @param anonID
+     * @return result true if it is, otherwise false
+     */
+    public static boolean isSubmittedResponse(int submissionID, String anonID) throws SQLException {
+        openConnection();
+        boolean submitted = false;
+        PreparedStatement pstmt = null;
+        try {
+            pstmt = con.prepareStatement("SELECT * FROM `response` WHERE (`submissionID` = ?) and (`anonID` = ?) ");
+            pstmt.setInt(1, submissionID);
+            pstmt.setString(2, anonID);
+            ResultSet res = pstmt.executeQuery();
+            while (res.next()) {
+                submitted = res.getBoolean("isSubmitted");
 
             }
         } catch (SQLException ex) {
@@ -647,9 +677,6 @@ public class ReviewController extends SqlController {
     }
 
 
-
-
-
     /**
      * Add all the questions to the review
      * Make an entry for each one in the question table
@@ -719,7 +746,7 @@ public class ReviewController extends SqlController {
     }
 
     /**
-     * Update verdict to a given submission
+     * Update verdict of a given review by submissionID and anonID
      * @param verdict
      */
     public static boolean updateVerdict(int submissionId, Verdict verdict, String anonId) throws SQLException {
@@ -746,7 +773,7 @@ public class ReviewController extends SqlController {
     }
     
     /**
-     * Get verdict
+     * Get verdict by submissionID and anonID
      * @param submissionID
      * @param anonID
      * @return verdict
