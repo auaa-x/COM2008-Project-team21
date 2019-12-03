@@ -319,8 +319,8 @@ public class ReviewController extends SqlController {
             pstmt.setInt(1, submissionID);
             pstmt.setString(2, anonID);
             ResultSet res = pstmt.executeQuery();
-            while (res.next()) {
-                submitted = res.getBoolean("isSubmitted");
+            if (res.next()) {
+                submitted = true;
 
             }
         } catch (SQLException ex) {
@@ -652,6 +652,9 @@ public class ReviewController extends SqlController {
         if (addSummaryToReview(submissionId, anonId, summary) && addTyposToReview(submissionId, anonId, typos) &&
                 addAllQuestions(submissionId, anonId) && addVerdict(submissionId, verdict, anonId)) {
             result = true;
+            
+            // update status if all 3 reviews had been submitted
+            if (getReviewSubmittedCount(submissionId) == 3) ArticleController.updateStatus(submissionId, Status.REVIEWS_RECEIVED);
 
             // update the isSubmitted field
             openConnection();
@@ -674,6 +677,91 @@ public class ReviewController extends SqlController {
         }
 
         return result;
+    }
+    
+    
+    /**
+     * Submit all the responses and revised version of the article PDF and update the status of the submission
+     * @param submissionId
+     * @param anonID
+     * @param pdfFile
+     * @return true if submission successful, otherwise false
+     * @throws SQLException
+     */
+    public static boolean submitResponsesAndPdf(int submissionId, String anonId, File pdfFile) throws SQLException {
+        boolean result = false;
+        // check if status of the submission is REVIEWS_RECEIVED and 3 responses have been submitted
+        if (getSubmission(submissionId).getStatus().equals(Status.REVIEWS_RECEIVED) && getResponseCount(submissionId) == 3) {
+            if (ArticleController.updatePDFFile(submissionId, pdfFile) && ArticleController.updateStatus(submissionId, Status.RESPONSES_RECEIVED)) {
+                result = true;
+            }
+        }
+        return result;
+    }
+    
+    
+    /**
+     * Get count of submitted reviews for a given submission
+     * @param submissionId
+     * @return number of submitted reviews
+     * @throws SQLException
+     */
+    public static int getReviewSubmittedCount(int submissionId) throws SQLException {
+        int count = 0;
+        
+        openConnection();
+        PreparedStatement pstmt = null;
+        try {
+            
+            pstmt = con.prepareStatement("SELECT * FROM `review` WHERE (submissionID = ?) and (isSubmitted = 1)");
+            pstmt.setInt(1, submissionId);
+            ResultSet res = pstmt.executeQuery();
+            
+            while (res.next()) {
+                count++;
+            }
+            
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        
+        return count;
+    }
+
+    
+    
+    /**
+     * Get count of sumbission's submitted responses
+     * @param submissionId
+     * @return number of submitted responses
+     * @throws SQLException
+     */
+    public static int getResponseCount(int submissionId) throws SQLException {
+        int count = 0;
+        
+        openConnection();
+        PreparedStatement pstmt = null;
+        try {
+            
+            pstmt = con.prepareStatement("SELECT * FROM `response` WHERE `submissionID` = ?");
+            pstmt.setInt(1, submissionId);
+            ResultSet res = pstmt.executeQuery();
+            
+            while (res.next()) {
+                count++;
+            }
+            
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        
+        return count;
     }
 
 
@@ -745,6 +833,7 @@ public class ReviewController extends SqlController {
         return result;
     }
 
+    
     /**
      * Update verdict of a given review by submissionID and anonID
      * @param verdict
@@ -772,6 +861,7 @@ public class ReviewController extends SqlController {
         return result;
     }
 
+    
     /**
      * Get verdict by submissionID and anonID
      * @param submissionID
@@ -833,6 +923,7 @@ public class ReviewController extends SqlController {
         return questions;
     }
 
+    
     /**
      * Get a list of all answers for this review
      * @param submissionID
@@ -866,17 +957,16 @@ public class ReviewController extends SqlController {
 
 
     /**
-     * Submits response
+     * Creates response
      * Make an entry for each one in the response table
      * @param submissionId
      * @param anonId
-     * @param pdfFile
-     * @return true if addition of all the responses is successful, otherwise false
+     * @return true if addition of the response is successful, otherwise false
      * @throws SQLException
      */
-    public static boolean submitResponse(int submissionId, String anonId,  File pdfFile) throws SQLException {
+    public static boolean createResponse(int submissionId, String anonId) throws SQLException {
         boolean result = false;
-        if (addAllAnswers(submissionId, anonId) && ArticleController.updatePDFFile(submissionId, pdfFile)) {
+        if (addAllAnswers(submissionId, anonId)) {
 	        	openConnection();
 	        PreparedStatement pstmt = null;
 	        try {
@@ -965,7 +1055,7 @@ public class ReviewController extends SqlController {
     /**
      * Get submission
      * @param submissionId
-     * @return submissionId,reviewCount,status,costCovered
+     * @return submissionId, reviewCount, status, costCovered wrapped in Submission Object
      * @throws SQLException
      */
     public static Submission getSubmission(int submissionId) throws SQLException {
@@ -992,6 +1082,7 @@ public class ReviewController extends SqlController {
         return submission;
     }
 
+    
     /**
      * Get review
      * @param submissionId
@@ -1041,7 +1132,7 @@ public class ReviewController extends SqlController {
             */
             //System.out.println("Reviewing submission: " + getReviewingSubmissions("chaddock@illinois.ac.uk"));
             //System.out.println(getSubmissionsSelected("chaddock@illinois.ac.uk","reviewer1"));
-            System.out.println(getReview(1).getAnonId());
+            System.out.println(getResponseCount(2));
 
         } catch (SQLException e) {
             e.printStackTrace();
