@@ -267,6 +267,38 @@ public class ReviewController extends SqlController {
 
         return result;
     }
+    
+    /**
+     * Get anonID by reviewer email and submissionID
+     * @param email
+     * @param submissionId
+     * @return anonID
+     * @throws SQLException
+     */
+    public static String getAnonID(String email, int submissionId) throws SQLException {
+        String anonID = null;
+        openConnection();
+        PreparedStatement pstmt = null;
+        try {
+
+            // get the current reviewCount of the submission
+            pstmt = con.prepareStatement("SELECT * FROM `reviewer` WHERE (`email` = ?) and (`submissionID` = ?)");
+            pstmt.setString(1, email);
+            pstmt.setInt(2, submissionId);
+            ResultSet res = pstmt.executeQuery();
+
+            if (res.next()) {
+                anonID = res.getString("anonID");
+            }
+
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        return anonID;
+    }
 
 
     /**
@@ -1157,7 +1189,7 @@ public class ReviewController extends SqlController {
             */
             //System.out.println("Reviewing submission: " + getReviewingSubmissions("chaddock@illinois.ac.uk"));
             //System.out.println(getSubmissionsSelected("chaddock@illinois.ac.uk","reviewer1"));
-            System.out.println(getResponseCount(2));
+            System.out.println(getAnonID("chaddock@illinois.ac.uk",1));
 
         } catch (SQLException e) {
             e.printStackTrace();
