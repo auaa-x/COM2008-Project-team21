@@ -142,7 +142,7 @@ public class ReviewController extends SqlController {
      * @return submissions selected by a reviewer but not yet submitted
      * @throws SQLException
      */
-    public static LinkedList<Submission> getSubmissionsSelected(String reviewerEmail, String anonId) throws SQLException {
+    public static LinkedList<Submission> getSubmissionsSelected(String reviewerEmail) throws SQLException {
         LinkedList<Submission> submissions = new LinkedList<Submission>();
 
         // return empty list if user is not a reviewer
@@ -164,7 +164,32 @@ public class ReviewController extends SqlController {
         iterator = submissions.iterator();
         while(iterator.hasNext()) {
             Submission s = iterator.next();
-            if (isSubmittedReview(s.getSubmissionID(), anonId)) {
+            String currentID = null;
+            
+            // get anonID of a given submission
+            openConnection();
+            PreparedStatement pstmt = null;
+            try {
+
+                // get the anonID corresponding to the submission
+                pstmt = con.prepareStatement("SELECT * FROM `reviewer` WHERE (email = ?) and (submissionID = ?)");
+                pstmt.setString(1, reviewerEmail);
+                pstmt.setInt(1, s.getSubmissionID());
+                ResultSet res = pstmt.executeQuery();
+
+                if (res.next()) {
+                    currentID = res.getString("anonID");
+                }
+
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            } finally {
+                if (pstmt != null) pstmt.close();
+                closeConnection();
+            }
+            
+            // remove from list if already submitted
+            if (isSubmittedReview(s.getSubmissionID(), currentID)) {
                 iterator.remove();
             }
         }
@@ -688,7 +713,7 @@ public class ReviewController extends SqlController {
      * @return true if submission successful, otherwise false
      * @throws SQLException
      */
-    public static boolean submitResponsesAndPdf(int submissionId, String anonId, File pdfFile) throws SQLException {
+    public static boolean submitResponsesAndPdf(int submissionId, File pdfFile) throws SQLException {
         boolean result = false;
         // check if status of the submission is REVIEWS_RECEIVED and 3 responses have been submitted
         if (getSubmission(submissionId).getStatus().equals(Status.REVIEWS_RECEIVED) && getResponseCount(submissionId) == 3) {
