@@ -65,7 +65,7 @@ public class ArticleController extends SqlController {
     
     
     /**
-     * Update pdfFile of article
+     * Update pdfFile of submission
      * @param submissionId
      * @param pdfFile
      * @return true if update successful, otherwise false
@@ -79,7 +79,7 @@ public class ArticleController extends SqlController {
             try {
             	FileInputStream inputStream = new FileInputStream(pdfFile);
             	try {
-                    pstmt = con.prepareStatement("UPDATE `team021`.`article` SET `linkedFinalPDF` = ? WHERE (`submissionId` = ?)");
+                    pstmt = con.prepareStatement("UPDATE `team021`.`submission` SET `linkedFinalPDF` = ? WHERE (`submissionId` = ?)");
                     pstmt.setBlob(1, inputStream);
                     pstmt.setInt(2, submissionId);
 
