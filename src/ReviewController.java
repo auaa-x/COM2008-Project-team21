@@ -156,13 +156,56 @@ public class ReviewController extends SqlController {
         while(iterator.hasNext()) {
             Submission s = iterator.next();
             if (!s.getStatus().equals(Status.SUBMITTED)) {
-                System.out.println("NOT EQUAL");
                 iterator.remove();
             }
         }
 
-        // REMOVE THE ONES THAT ARE ALREADY SUBMITTED use isSubmitted(reviewerEmail, anonId)
-        // ------------ code goes here -------------
+        // remove the ones that are already submitted
+        iterator = submissions.iterator();
+        while(iterator.hasNext()) {
+            Submission s = iterator.next();
+            if (isSubmitted(s.getSubmissionID(), anonId)) {
+                iterator.remove();
+            }
+        }
+
+        return submissions;
+    }
+    
+    
+    /**
+     * Get a list of submissions selected by a reviewer to review but not yet submitted
+     * @param reviewerEmail
+     * @param anonId
+     * @return submissions selected by a reviewer but not yet submitted
+     * @throws SQLException
+     */
+    public static LinkedList<Submission> getSubmissionsResponded(String reviewerEmail, String anonId) throws SQLException {
+        LinkedList<Submission> submissions = new LinkedList<Submission>();
+
+        // return empty list if user is not a reviewer
+        if (!UserController.checkUsertype(reviewerEmail, 3)) return submissions;
+
+        // get all submissions which the reviewer is reviewing
+        submissions = getReviewingSubmissions(reviewerEmail);
+
+        // remove the ones that have status different to RESPONSES_RECEIVED
+        Iterator<Submission> iterator = submissions.iterator();
+        while(iterator.hasNext()) {
+            Submission s = iterator.next();
+            if (!s.getStatus().equals(Status.RESPONSES_RECEIVED)) {
+                iterator.remove();
+            }
+        }
+
+        // remove the ones that have final verdicts
+        iterator = submissions.iterator();
+        while(iterator.hasNext()) {
+            Submission s = iterator.next();
+            if (isVerdictFinal(s.getSubmissionID(), anonId)) {
+                iterator.remove();
+            }
+        }
 
         return submissions;
     }
@@ -235,7 +278,7 @@ public class ReviewController extends SqlController {
      * Check if review is submitted
      * @param submissionID
      * @param anonID
-     * @return result true if it is , otherwise false
+     * @return result true if it is, otherwise false
      */
     public static boolean isSubmitted(int submissionID, String anonID) throws SQLException {
         openConnection();
@@ -257,6 +300,35 @@ public class ReviewController extends SqlController {
             closeConnection();
         }
      return submitted;
+    }
+    
+    
+    /**
+     * Check if a verdict for a submission is final
+     * @param submissionID
+     * @param anonID
+     * @return result true if it is, otherwise false
+     */
+    public static boolean isVerdictFinal(int submissionID, String anonID) throws SQLException {
+        openConnection();
+        boolean isFinal = false;
+        PreparedStatement pstmt = null;
+        try {
+            pstmt = con.prepareStatement("SELECT * FROM `verdict` WHERE (`submissionID` = ?) and (`anonID` = ?) ");
+            pstmt.setInt(1, submissionID);
+            pstmt.setString(2, anonID);
+            ResultSet res = pstmt.executeQuery();
+            while (res.next()) {
+                isFinal = res.getBoolean("isFinal");
+
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+     return isFinal;
     }
 
 
@@ -849,7 +921,8 @@ public class ReviewController extends SqlController {
             */
             //System.out.println("Reviewing submission: " + getReviewingSubmissions("chaddock@illinois.ac.uk"));
             //System.out.println(getSubmissionsSelected("chaddock@illinois.ac.uk","reviewer1"));
-            System.out.println(isSubmitted(1,"reviewer1"));
+            System.out.println(getSubmissionsSelected("chaddock@illinois.ac.uk", "reviewer1"));
+            System.out.println(isVerdictFinal(1, "reviewer1"));
 
         } catch (SQLException e) {
             e.printStackTrace();
