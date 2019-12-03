@@ -230,6 +230,34 @@ public class ReviewController extends SqlController {
         }
         return count;
     }
+    
+    /**
+     * Check if review is submitted
+     * @param submissionID
+     * @param anonID
+     * @return result true if it is , otherwise false
+     */
+    public static boolean isSubmitted(int submissionID, String anonID) throws SQLException {
+        openConnection();
+        boolean submitted = false;
+        PreparedStatement pstmt = null;
+        try {
+            pstmt = con.prepareStatement("SELECT * FROM `review` WHERE (`submissionID` = ?) and (`anonID` = ?) ");
+            pstmt.setInt(1, submissionID);
+            pstmt.setString(2, anonID);
+            ResultSet res = pstmt.executeQuery();
+            while (res.next()) {
+            	submitted = res.getBoolean("isSubmitted");
+
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+     return submitted;
+    }
 
 
     /**
@@ -819,8 +847,9 @@ public class ReviewController extends SqlController {
             System.out.println("Submissions to review: " + getSubmissionsToReview("chaddock@illinois.ac.uk"));
             System.out.println("Reviewing submission: " + getReviewingSubmissions("chaddock@illinois.ac.uk"));
             */
-            System.out.println("Reviewing submission: " + getReviewingSubmissions("chaddock@illinois.ac.uk"));
-            System.out.println(getSubmissionsSelected("chaddock@illinois.ac.uk","reviewer1"));
+            //System.out.println("Reviewing submission: " + getReviewingSubmissions("chaddock@illinois.ac.uk"));
+            //System.out.println(getSubmissionsSelected("chaddock@illinois.ac.uk","reviewer1"));
+            System.out.println(isSubmitted(1,"reviewer1"));
 
         } catch (SQLException e) {
             e.printStackTrace();
