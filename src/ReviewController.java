@@ -101,7 +101,7 @@ public class ReviewController extends SqlController {
         LinkedList<Submission> submissions = new LinkedList<Submission>();
 
         // return empty list if user is not a reviewer
-        if (!UserController.checkUsertype(reviewerEmail, 3)) return submissions;
+        if (!UserController.checkUsertype(reviewerEmail, 3) || ReviewController.remainingCostToCover(reviewerEmail) == 0) return submissions;
 
         // get all submissions with SUBMITTED status
         submissions = ArticleController.getSubmissionByStatus(Status.SUBMITTED);
@@ -121,7 +121,7 @@ public class ReviewController extends SqlController {
         }
 
         // remove the ones that had been already taken by this reviewer
-        LinkedList<Submission> taken = getReviewingSubmissions(reviewerEmail);
+        LinkedList<Submission> taken = getSubmissionsReviewing(reviewerEmail);
         Iterator<Submission> subItertor = submissions.iterator();
         Iterator<Submission> takenIterator = taken.iterator();
         while(subItertor.hasNext()) {
@@ -149,7 +149,7 @@ public class ReviewController extends SqlController {
         if (!UserController.checkUsertype(reviewerEmail, 3)) return submissions;
 
         // get all submissions which the reviewer is reviewing
-        submissions = getReviewingSubmissions(reviewerEmail);
+        submissions = getSubmissionsReviewing(reviewerEmail);
 
         // remove the ones that have status different to SUBMITTED
         Iterator<Submission> iterator = submissions.iterator();
@@ -174,7 +174,7 @@ public class ReviewController extends SqlController {
                 // get the anonID corresponding to the submission
                 pstmt = con.prepareStatement("SELECT * FROM `reviewer` WHERE (email = ?) and (submissionID = ?)");
                 pstmt.setString(1, reviewerEmail);
-                pstmt.setInt(1, s.getSubmissionID());
+                pstmt.setInt(2, s.getSubmissionID());
                 ResultSet res = pstmt.executeQuery();
 
                 if (res.next()) {
@@ -205,14 +205,14 @@ public class ReviewController extends SqlController {
      * @return submissions selected by a reviewer but not yet submitted
      * @throws SQLException
      */
-    public static LinkedList<Submission> getSubmissionsResponded(String reviewerEmail, String anonId) throws SQLException {
+    public static LinkedList<Submission> getSubmissionsResponded(String reviewerEmail) throws SQLException {
         LinkedList<Submission> submissions = new LinkedList<Submission>();
 
         // return empty list if user is not a reviewer
         if (!UserController.checkUsertype(reviewerEmail, 3)) return submissions;
 
         // get all submissions which the reviewer is reviewing
-        submissions = getReviewingSubmissions(reviewerEmail);
+        submissions = getSubmissionsReviewing(reviewerEmail);
 
         // remove the ones that have status different to RESPONSES_RECEIVED
         Iterator<Submission> iterator = submissions.iterator();
@@ -222,16 +222,39 @@ public class ReviewController extends SqlController {
                 iterator.remove();
             }
         }
-
+        
         // remove the ones that have final verdicts
         iterator = submissions.iterator();
         while(iterator.hasNext()) {
             Submission s = iterator.next();
-            if (isVerdictFinal(s.getSubmissionID(), anonId)) {
+            String currentID = null;
+            
+            // get anonID of a given submission
+            openConnection();
+            PreparedStatement pstmt = null;
+            try {
+                pstmt = con.prepareStatement("SELECT * FROM `reviewer` WHERE (email = ?) and (submissionID = ?)");
+                pstmt.setString(1, reviewerEmail);
+                pstmt.setInt(1, s.getSubmissionID());
+                ResultSet res = pstmt.executeQuery();
+                
+                // get the anonID corresponding to the submission
+                if (res.next()) {
+                    currentID = res.getString("anonID");
+                }
+
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            } finally {
+                if (pstmt != null) pstmt.close();
+                closeConnection();        
+            }
+            
+            // remove the submission that already have final verdicts
+            if (isVerdictFinal(s.getSubmissionID(), currentID)) {
                 iterator.remove();
             }
         }
-
         return submissions;
     }
 
@@ -467,7 +490,7 @@ public class ReviewController extends SqlController {
         for(Submission s : submissions) {
             // subtract the submissions that had been already started
             int started = getCostCovered(s.getSubmissionID());
-            System.out.println("Started reviews for sumbissionID " + s.getSubmissionID() + ": " + started);
+            // System.out.println("Started reviews for sumbissionID " + s.getSubmissionID() + ": " + started);
             remaining -= started;
         }
         return remaining;
@@ -480,7 +503,7 @@ public class ReviewController extends SqlController {
      * @return list of submissions
      * @throws SQLException
      */
-    public static LinkedList<Submission> getReviewingSubmissions(String reviewerEmail) throws SQLException {
+    public static LinkedList<Submission> getSubmissionsReviewing(String reviewerEmail) throws SQLException {
         LinkedList<Submission> submissions = new LinkedList<Submission>();
         openConnection();
         PreparedStatement pstmt = null;
@@ -733,6 +756,38 @@ public class ReviewController extends SqlController {
 
         }
 
+        return result;
+    }
+    
+    
+    /**
+     * Submit a final verdict for a given submission
+     * @param submissionId
+     * @param verdict
+     * @param anonID
+     * @return true if submission successful, otherwise false
+     * @throws SQLException
+     */
+    public static boolean submitFinalVerdict(int submissionId, Verdict verdict, String anonId) throws SQLException {
+        boolean result = false;
+        if (updateVerdict(submissionId, verdict, anonId)) {
+            // update the database
+            openConnection();
+            PreparedStatement pstmt = null;
+            try {
+
+                pstmt = con.prepareStatement("UPDATE `team021`.`verdict` SET `isFinal` = 1 WHERE (`submissionID` = ?) and (`anonID` = ?)");
+                pstmt.setInt(1, submissionId);
+                pstmt.setString(2, anonId);
+                int count = pstmt.executeUpdate();
+                if (count != 0 ) result = true;
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            } finally {
+                if (pstmt != null) pstmt.close();
+                closeConnection();
+            }
+        }
         return result;
     }
     
@@ -1108,7 +1163,7 @@ public class ReviewController extends SqlController {
         answerList.add(question);
     }
 
-    //methods for author
+
     /**
      * Get submission
      * @param submissionId
@@ -1125,7 +1180,7 @@ public class ReviewController extends SqlController {
             ResultSet res = pstmt.executeQuery();
             while (res.next()) {
             	int reviewCount = res.getInt("reviewCount");
-                Status status= Status.valueOf(res.getString("status"));
+                Status status = Status.valueOf(res.getString("status"));
                 int costCovered = res.getInt("costCovered");
                 submission = new Submission (submissionId, reviewCount,status, costCovered);
 
@@ -1189,7 +1244,9 @@ public class ReviewController extends SqlController {
             */
             //System.out.println("Reviewing submission: " + getReviewingSubmissions("chaddock@illinois.ac.uk"));
             //System.out.println(getSubmissionsSelected("chaddock@illinois.ac.uk","reviewer1"));
-            System.out.println(getAnonID("chaddock@illinois.ac.uk",1));
+            System.out.println(getAnonID("chaddock@illinois.ac.uk", 1));
+            System.out.println(getSubmissionsReviewing("chaddock@illinois.ac.uk"));
+            System.out.println(remainingCostToCover("chaddock@illinois.ac.uk"));
 
         } catch (SQLException e) {
             e.printStackTrace();
