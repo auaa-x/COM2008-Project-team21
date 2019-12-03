@@ -406,7 +406,7 @@ public class ReviewController extends SqlController {
             while (res.next()) {
                 int submissionID = res.getInt("submissionID");
                 int reviewCount = res.getInt("reviewCount");
-                String stringStatus = res.getString("status").replaceAll(" ", "_");
+                String stringStatus = res.getString("status");
                 Status status = Status.valueOf(stringStatus);
                 int costCovered = res.getInt("costCovered");
                 Submission submission = new Submission(submissionID, reviewCount, status, costCovered);
@@ -744,6 +744,36 @@ public class ReviewController extends SqlController {
         }
         return result;
     }
+    
+    /**
+     * Get verdict
+     * @param submissionID
+     * @param anonID
+     * @return verdict
+     * @throws SQLException
+     */
+    public static Verdict getVerdict(int submissionID, String anonID) throws SQLException {
+        openConnection();
+        Verdict verdict = null;
+        PreparedStatement pstmt = null;
+        try {
+            pstmt = con.prepareStatement("SELECT * FROM `verdict` WHERE (`submissionID` = ?) and (`anonID` = ?) ");
+            pstmt.setInt(1, submissionID);
+            pstmt.setString(2, anonID);
+            ResultSet res = pstmt.executeQuery();
+            if (res.next()) {
+                String stringVerdict = res.getString("value");
+                verdict = Verdict.valueOf(stringVerdict);
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        return verdict;
+    }
+    
 
     /**
      * Get a list of all questions for this review
@@ -923,6 +953,7 @@ public class ReviewController extends SqlController {
             //System.out.println(getSubmissionsSelected("chaddock@illinois.ac.uk","reviewer1"));
             System.out.println(getSubmissionsSelected("chaddock@illinois.ac.uk", "reviewer1"));
             System.out.println(isVerdictFinal(1, "reviewer1"));
+            System.out.println(getVerdict(1, "reviewer1"));
 
         } catch (SQLException e) {
             e.printStackTrace();
