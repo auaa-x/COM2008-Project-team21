@@ -156,13 +156,56 @@ public class ReviewController extends SqlController {
         while(iterator.hasNext()) {
             Submission s = iterator.next();
             if (!s.getStatus().equals(Status.SUBMITTED)) {
-                System.out.println("NOT EQUAL");
                 iterator.remove();
             }
         }
 
-        // REMOVE THE ONES THAT ARE ALREADY SUBMITTED use isSubmitted(reviewerEmail, anonId)
-        // ------------ code goes here -------------
+        // remove the ones that are already submitted
+        iterator = submissions.iterator();
+        while(iterator.hasNext()) {
+            Submission s = iterator.next();
+            if (isSubmitted(s.getSubmissionID(), anonId)) {
+                iterator.remove();
+            }
+        }
+
+        return submissions;
+    }
+
+
+    /**
+     * Get a list of submissions selected by a reviewer to review but not yet submitted
+     * @param reviewerEmail
+     * @param anonId
+     * @return submissions selected by a reviewer but not yet submitted
+     * @throws SQLException
+     */
+    public static LinkedList<Submission> getSubmissionsResponded(String reviewerEmail, String anonId) throws SQLException {
+        LinkedList<Submission> submissions = new LinkedList<Submission>();
+
+        // return empty list if user is not a reviewer
+        if (!UserController.checkUsertype(reviewerEmail, 3)) return submissions;
+
+        // get all submissions which the reviewer is reviewing
+        submissions = getReviewingSubmissions(reviewerEmail);
+
+        // remove the ones that have status different to RESPONSES_RECEIVED
+        Iterator<Submission> iterator = submissions.iterator();
+        while(iterator.hasNext()) {
+            Submission s = iterator.next();
+            if (!s.getStatus().equals(Status.RESPONSES_RECEIVED)) {
+                iterator.remove();
+            }
+        }
+
+        // remove the ones that have final verdicts
+        iterator = submissions.iterator();
+        while(iterator.hasNext()) {
+            Submission s = iterator.next();
+            if (isVerdictFinal(s.getSubmissionID(), anonId)) {
+                iterator.remove();
+            }
+        }
 
         return submissions;
     }
@@ -230,12 +273,12 @@ public class ReviewController extends SqlController {
         }
         return count;
     }
-    
+
     /**
      * Check if review is submitted
      * @param submissionID
      * @param anonID
-     * @return result true if it is , otherwise false
+     * @return result true if it is, otherwise false
      */
     public static boolean isSubmitted(int submissionID, String anonID) throws SQLException {
         openConnection();
@@ -257,6 +300,35 @@ public class ReviewController extends SqlController {
             closeConnection();
         }
      return submitted;
+    }
+
+
+    /**
+     * Check if a verdict for a submission is final
+     * @param submissionID
+     * @param anonID
+     * @return result true if it is, otherwise false
+     */
+    public static boolean isVerdictFinal(int submissionID, String anonID) throws SQLException {
+        openConnection();
+        boolean isFinal = false;
+        PreparedStatement pstmt = null;
+        try {
+            pstmt = con.prepareStatement("SELECT * FROM `verdict` WHERE (`submissionID` = ?) and (`anonID` = ?) ");
+            pstmt.setInt(1, submissionID);
+            pstmt.setString(2, anonID);
+            ResultSet res = pstmt.executeQuery();
+            while (res.next()) {
+                isFinal = res.getBoolean("isFinal");
+
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+     return isFinal;
     }
 
 
@@ -334,7 +406,7 @@ public class ReviewController extends SqlController {
             while (res.next()) {
                 int submissionID = res.getInt("submissionID");
                 int reviewCount = res.getInt("reviewCount");
-                String stringStatus = res.getString("status").replaceAll(" ", "_");
+                String stringStatus = res.getString("status");
                 Status status = Status.valueOf(stringStatus);
                 int costCovered = res.getInt("costCovered");
                 Submission submission = new Submission(submissionID, reviewCount, status, costCovered);
@@ -674,6 +746,36 @@ public class ReviewController extends SqlController {
     }
 
     /**
+     * Get verdict
+     * @param submissionID
+     * @param anonID
+     * @return verdict
+     * @throws SQLException
+     */
+    public static Verdict getVerdict(int submissionID, String anonID) throws SQLException {
+        openConnection();
+        Verdict verdict = null;
+        PreparedStatement pstmt = null;
+        try {
+            pstmt = con.prepareStatement("SELECT * FROM `verdict` WHERE (`submissionID` = ?) and (`anonID` = ?) ");
+            pstmt.setInt(1, submissionID);
+            pstmt.setString(2, anonID);
+            ResultSet res = pstmt.executeQuery();
+            if (res.next()) {
+                String stringVerdict = res.getString("value");
+                verdict = Verdict.valueOf(stringVerdict);
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        return verdict;
+    }
+
+
+    /**
      * Get a list of all questions for this review
      * @param submissionID
      * @param anonID
@@ -831,7 +933,7 @@ public class ReviewController extends SqlController {
     public static void addQuestion(String question) {
         answerList.add(question);
     }
-    
+
     //methods for author
     /**
      * Get submission
@@ -852,7 +954,7 @@ public class ReviewController extends SqlController {
                 Status status= Status.valueOf(res.getString("status"));
                 int costCovered = res.getInt("costCovered");
                 submission = new Submission (submissionId, reviewCount,status, costCovered);
-                
+
             }
         } catch (SQLException ex) {
             ex.printStackTrace();
@@ -862,7 +964,7 @@ public class ReviewController extends SqlController {
         }
         return submission;
     }
-    
+
     /**
      * Get review
      * @param submissionId
@@ -883,7 +985,7 @@ public class ReviewController extends SqlController {
             	String anonID = res.getString("anonID");
             	boolean isSubmitted = res.getBoolean("isSubmitted");
                 review = new Review (submissionId, summary, typoErrors, anonID, isSubmitted);
-                
+
             }
         } catch (SQLException ex) {
             ex.printStackTrace();
