@@ -150,7 +150,11 @@ public class ChangePw extends JFrame implements ActionListener {
 
                     break;
                 case 2:
-                    new AuthorInterface(username);
+                    try {
+                        new AuthorInterface(username);
+                    } catch (SQLException ex) {
+                        ex.printStackTrace();
+                    }
                     break;
                 case 3:
                     // new ReviewerInterface(username);
