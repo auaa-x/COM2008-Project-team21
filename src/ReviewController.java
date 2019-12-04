@@ -803,6 +803,9 @@ public class ReviewController extends SqlController {
                 if (pstmt != null) pstmt.close();
                 closeConnection();
             }
+            
+            // update submission's status if all 3 final verdicts have been received
+            if (getFinalVerdictsCount(submissionId) == 3) ArticleController.updateStatus(submissionId, Status.FINAL_VERDICTS_RECEIVED);
         }
         return result;
     }
@@ -875,6 +878,38 @@ public class ReviewController extends SqlController {
         try {
             
             pstmt = con.prepareStatement("SELECT * FROM `response` WHERE `submissionID` = ?");
+            pstmt.setInt(1, submissionId);
+            ResultSet res = pstmt.executeQuery();
+            
+            while (res.next()) {
+                count++;
+            }
+            
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        
+        return count;
+    }
+    
+    
+    /**
+     * Get count of sumbission's final verdicts
+     * @param submissionId
+     * @return number of final verdicts
+     * @throws SQLException
+     */
+    public static int getFinalVerdictsCount(int submissionId) throws SQLException {
+        int count = 0;
+        
+        openConnection();
+        PreparedStatement pstmt = null;
+        try {
+            
+            pstmt = con.prepareStatement("SELECT * FROM `verdict` WHERE (`submissionID` = ?) and (`isFinal` = 1)");
             pstmt.setInt(1, submissionId);
             ResultSet res = pstmt.executeQuery();
             

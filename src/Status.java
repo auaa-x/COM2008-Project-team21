@@ -8,7 +8,8 @@ public enum Status {
     SUBMITTED("SUBMITTED"),
     REVIEWS_RECEIVED("REVIEWS RECEIVED"), // all 3 reviews received
     RESPONSES_RECEIVED("RESPONSES RECEIVED"), // all 3 responses
-    COMPLETED("COMPLETED"); // all 3 final verdicts
+    FINAL_VERDICTS_RECEIVED("FINAL VERDICTS RECEIVED"), // all 3 final verdicts
+    COMPLETED("COMPLETED"); // accepted or rejected by an editor
     
     private String statusName;
     
