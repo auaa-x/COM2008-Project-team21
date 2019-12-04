@@ -24,6 +24,14 @@ public class ReviewController extends SqlController {
         return questionList;
     }
 
+    
+    /**
+     * Clear the question list
+     */
+    public void clearQuestionList() {
+        questionList.clear();
+    }
+    
 
     /**
      * Get answer list
@@ -31,6 +39,14 @@ public class ReviewController extends SqlController {
      */
     public LinkedList<String> getAnswerList() {
         return answerList;
+    }
+    
+    
+    /**
+     * Clear the answer list
+     */
+    public void clearAnswerList() {
+        answerList.clear();
     }
 
 
@@ -753,9 +769,9 @@ public class ReviewController extends SqlController {
                 if (pstmt != null) pstmt.close();
                 closeConnection();
             }
-
         }
-
+        
+        questionList.clear();
         return result;
     }
     
