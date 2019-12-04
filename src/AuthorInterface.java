@@ -127,7 +127,7 @@ public class AuthorInterface extends JFrame implements ActionListener{
 
     public void submittedPanel(Integer id){
         JPanel subPanel = new JPanel();
-        JLabel subTitle = new JLabel("Submission: " + id + " have been received.");
+        JLabel subTitle = new JLabel("Submission " + id + " is waiting for reviews.");
         subTitle.setBorder(BorderFactory.createEmptyBorder(180, 200, 50, 200));
         JLabel subTitle1 = new JLabel("Waiting for reviews....");
         subTitle.setFont(new Font("Lucida Grande", Font.PLAIN, 30));
