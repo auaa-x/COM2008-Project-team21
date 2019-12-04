@@ -11,7 +11,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.sql.SQLException;
 
-public class UpdateProfileInterface extends JFrame implements ActionListener {
+public class UpdateProfileInterface extends JFrame implements ActionListener, ItemListener{
     public static void main(String[] args) {
         //launching code goes in here
         new UpdateProfileInterface ("harry.potter@warwick.ac.uk", 1);
@@ -68,7 +68,7 @@ public class UpdateProfileInterface extends JFrame implements ActionListener {
         //title combobox
         String[] titleTypes = {"Prof", "Dr", "Mr","Mrs", "Ms", "Miss"};
         comboTitleTypes = new JComboBox<>(titleTypes);
-        comboTitleTypes.addItemListener((ItemListener) this);
+        comboTitleTypes.addItemListener(this);
         comboTitleTypes.setFont(new Font("Arial", Font.PLAIN, 16));
 
         //password
