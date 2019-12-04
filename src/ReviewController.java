@@ -20,17 +20,33 @@ public class ReviewController extends SqlController {
      * Get question list
      * @return current list of questions
      */
-    public LinkedList<String> getQuestionList() {
+    public static LinkedList<String> getQuestionList() {
         return questionList;
     }
 
+    
+    /**
+     * Clear the question list
+     */
+    public static void clearQuestionList() {
+        questionList.clear();
+    }
+    
 
     /**
      * Get answer list
      * @return current list of questions
      */
-    public LinkedList<String> getAnswerList() {
+    public static LinkedList<String> getAnswerList() {
         return answerList;
+    }
+    
+    
+    /**
+     * Clear the answer list
+     */
+    public static void clearAnswerList() {
+        answerList.clear();
     }
 
 
@@ -753,9 +769,9 @@ public class ReviewController extends SqlController {
                 if (pstmt != null) pstmt.close();
                 closeConnection();
             }
-
         }
-
+        
+        questionList.clear();
         return result;
     }
     
