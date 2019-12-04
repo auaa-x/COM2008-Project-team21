@@ -1,4 +1,3 @@
-
 /**
  * Class for Editor Interface
  * @author Ting Guo
@@ -19,7 +18,7 @@ import java.util.LinkedList;
 public class EditorInterface extends JFrame implements ActionListener {
     private JMenuBar menuBar;
     private JRadioButtonMenuItem journalItem, journalItem1;
-    private JMenu journalSelection;
+    private JMenu selectJournal;
     private ButtonGroup group;
     private JMenu settings;
     private JMenuItem retire, changePw,updatePf, toChiefEditor, logOut;
@@ -63,7 +62,7 @@ public class EditorInterface extends JFrame implements ActionListener {
 
         //journal selection
         //menu.addSeparator();
-        journalSelection = new JMenu("Select Journal" );
+        selectJournal = new JMenu("Select Journal" );
         group = new ButtonGroup();
         for (int j=0; j<journalsISSN.size(); ++j){
             issn = journalsISSN.get(j);
@@ -72,13 +71,13 @@ public class EditorInterface extends JFrame implements ActionListener {
             journals.add(journal);
             journalItem.addActionListener(this);
             group.add(journalItem);
+            selectJournal.add(journalItem);
             if (j==0){
                 journalItem.setSelected(true);
             }
-            journalSelection.add(journalItem);
         }
 
-        menuBar.add(journalSelection);
+        menuBar.add(selectJournal);
 
         //settings:
         settings = new JMenu("Settings");
@@ -176,10 +175,6 @@ public class EditorInterface extends JFrame implements ActionListener {
         //add panels functions
         this.add(treePanel, BorderLayout.WEST);
         this.add(infoPanel, BorderLayout.EAST);
-        this.setJMenuBar(menuBar);
-
-
-
 
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setVisible(true);
@@ -216,7 +211,7 @@ public class EditorInterface extends JFrame implements ActionListener {
             this.dispose();
         }
         else if(e.getSource()==updatePf){
-            new UpdateProfileInterface(username, 1);
+            new UpdateProfileInterface(username, 1,false);
             this.dispose();
         }
         //retire

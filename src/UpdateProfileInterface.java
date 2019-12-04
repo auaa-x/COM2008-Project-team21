@@ -11,14 +11,15 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.sql.SQLException;
 
-public class UpdateProfileInterface extends JFrame implements ActionListener, ItemListener{
+public class UpdateProfileInterface extends JFrame implements ActionListener, ItemListener {
     public static void main(String[] args) {
         //launching code goes in here
-        new UpdateProfileInterface ("harry.potter@warwick.ac.uk", 1);
+        new UpdateProfileInterface("chaddock@illinois.ac.uk", 2, false);
     }
 
     // Needed for serialisation
     private static final long serialVersionUID = 1L;
+    private JPanel updatePanel, displayPanel;
     private String username;
     private String currentTitle;
     private String currentFn;
@@ -32,29 +33,47 @@ public class UpdateProfileInterface extends JFrame implements ActionListener, It
     private JTextField uniField;
     private JButton update, update1;
     private JButton back, back1;
-    int userType;
+    private int userType;
+    private boolean validation;
 
 
     // Constructor with frame title
-    public UpdateProfileInterface(String username, int userType) {
+    public UpdateProfileInterface(String username, int userType, boolean validation) {
         this.username = username;
         this.userType = userType;
         this.setTitle("Update Profile");
         this.setSize(1000, 600);
         this.setLocationRelativeTo(null);
         this.setResizable(false);
-        displayInfoPanel();
+
+        try {
+            currentTitle = UserController.getUsersTitle(username);
+            currentFn = UserController.getUsersForename(username);
+            currentSn = UserController.getUsersSurname(username);
+            currentUni = UserController.getUsersUniversity(username);
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+
+        if (!validation) {
+            System.out.println("not validation");
+            displayInfoPanel();
+        } else if (validation) {
+            System.out.println("validation");
+            UpdateInfoPanel();
+        }
+        //extra settings
+        this.setLocationRelativeTo(null);
+        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        this.setVisible(true);
     }
 
-    public void UpdateInfoPanel(String currentFn, String currentSn, String currentUni) {
-        //button panel
+    public void UpdateInfoPanel() {
+        updatePanel = new JPanel();
         JPanel noticePanel = new JPanel();
         JPanel buttonPane = new JPanel();
         JPanel fieldsPanel = new JPanel();
 
-        this.currentFn = currentFn;
-        this.currentSn = currentSn;
-        this.currentUni = currentUni;
 
         //Welcome banner
         JLabel banner = new JLabel("Update personal details");
@@ -66,7 +85,7 @@ public class UpdateProfileInterface extends JFrame implements ActionListener, It
         JLabel title = new JLabel("Title");
         title.setFont(new Font("Arial", Font.PLAIN, 20));
         //title combobox
-        String[] titleTypes = {"Prof", "Dr", "Mr","Mrs", "Ms", "Miss"};
+        String[] titleTypes = {"Prof", "Dr", "Mr", "Mrs", "Ms", "Miss"};
         comboTitleTypes = new JComboBox<>(titleTypes);
         comboTitleTypes.addItemListener(this);
         comboTitleTypes.setFont(new Font("Arial", Font.PLAIN, 16));
@@ -76,6 +95,7 @@ public class UpdateProfileInterface extends JFrame implements ActionListener, It
         forename.setFont(new Font("Tahoma", Font.PLAIN, 26));
         fnField = new JTextField(10);
         fnField.setText(currentFn);
+        fnField.setEnabled(true);
         fnField.setFont(new Font("Tahoma", Font.PLAIN, 26));
 
         //password
@@ -83,6 +103,7 @@ public class UpdateProfileInterface extends JFrame implements ActionListener, It
         surname.setFont(new Font("Tahoma", Font.PLAIN, 26));
         snField = new JTextField(10);
         snField.setText(currentSn);
+        snField.setEnabled(true);
         snField.setFont(new Font("Tahoma", Font.PLAIN, 26));
 
         //university
@@ -90,6 +111,7 @@ public class UpdateProfileInterface extends JFrame implements ActionListener, It
         university.setFont(new Font("Tahoma", Font.PLAIN, 26));
         uniField = new JTextField(10);
         uniField.setText(currentUni);
+        uniField.setEnabled(true);
         uniField.setFont(new Font("Tahoma", Font.PLAIN, 26));
 
 
@@ -148,29 +170,16 @@ public class UpdateProfileInterface extends JFrame implements ActionListener, It
         this.add(noticePanel);
         this.add(fieldsPanel);
         this.add(buttonPane);
-
-        //extra settings
-        this.setLocationRelativeTo(null);
-        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        this.setVisible(true);
     }
 
 
     public void displayInfoPanel() {
-
-        //button panel
+        System.out.println("not validation");
+        displayPanel = new JPanel();
         JPanel noticePanel = new JPanel();
         JPanel buttonPane = new JPanel();
         JPanel fieldsPanel = new JPanel();
 
-        try {
-            currentTitle = UserController.getUsersTitle(username);
-            currentFn = UserController.getUsersForename(username);
-            currentSn = UserController.getUsersSurname(username);
-            currentUni = UserController.getUsersUniversity(username);
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        }
 
         //Welcome banner
         JLabel banner = new JLabel("Update personal details");
@@ -267,10 +276,7 @@ public class UpdateProfileInterface extends JFrame implements ActionListener, It
         this.add(fieldsPanel);
         this.add(buttonPane);
 
-        //extra settings
-        this.setLocationRelativeTo(null);
-        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        this.setVisible(true);
+        // this.add(displayPanel);
     }
 
 
@@ -331,31 +337,43 @@ public class UpdateProfileInterface extends JFrame implements ActionListener, It
                     this.dispose();
                     break;
             }
-        }
-        else if (e.getSource() == update) {
-            String password = JOptionPane.showInputDialog("Please enter your password");
-            if(password != null) {
-                try {
-                    if (UserController.checkPassword(username, password)) {
-                        this.dispose();
-                        UpdateInfoPanel(currentFn,currentSn,currentUni);
-                    } else {
-                        JOptionPane.showMessageDialog(null, "Sorry, your password is wrong,\n" +
-                                "please try again!");
+        } else if (e.getSource() == update) {
+            JPanel panel = new JPanel();
+            JLabel label = new JLabel("Please enter your password:");
+            JPasswordField passwordField = new JPasswordField(10);
+            panel.add(label);
+            panel.add(passwordField);
+            String[] options = new String[]{"OK", "Cancel"};
+            int option = JOptionPane.showOptionDialog(null, panel, "The title",
+                    JOptionPane.NO_OPTION, JOptionPane.PLAIN_MESSAGE,
+                    null, options, options[1]);
+
+            if (option == 0) {
+                if (passwordField != null) {
+                    try {
+                        String password = String.valueOf(passwordField.getPassword());
+                        if (UserController.checkPassword(username, password)) {
+                            this.dispose();
+                            validation = true;
+                            new UpdateProfileInterface(username, userType, true);
+                        } else {
+                            JOptionPane.showMessageDialog(null, "Sorry, your password is wrong,\n" +
+                                    "please try again!");
+                        }
+                    } catch (SQLException ex) {
+                        ex.printStackTrace();
                     }
-                } catch (SQLException ex) {
-                    ex.printStackTrace();
                 }
             }
-        }
-        else if (e.getSource() == update1) {
+        } else if (e.getSource() == update1) {
+            System.out.println("final update button detected");
             String surname = snField.getText();
             String forename = fnField.getText();
             String university = uniField.getText();
             try {
-                if (UserController.updateTitle(username, userTitle) && UserController.updateSurname(surname, userTitle) &&
-                        UserController.updateForename(forename, userTitle) && UserController.updateUniversity(university, userTitle)) {
-                    JOptionPane.showMessageDialog(null,"You have updated profile successfully!");
+                if (UserController.updateTitle(username, userTitle) && UserController.updateSurname(username, surname) &&
+                        UserController.updateForename(username, forename) && UserController.updateUniversity(username, university)) {
+                    JOptionPane.showMessageDialog(null, "You have updated profile successfully!");
                     switch (userType) {
                         case 1:
                             try {
@@ -371,9 +389,14 @@ public class UpdateProfileInterface extends JFrame implements ActionListener, It
                             //new ReviewerInterface(username);
                             break;
                     }
+                    this.dispose();
+                } else {
+                    JOptionPane.showMessageDialog(null, "Sorry, please try again!");
+
                 }
             } catch (SQLException ex) {
                 ex.printStackTrace();
+
             }
         }
     }
