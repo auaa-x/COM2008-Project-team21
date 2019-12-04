@@ -78,46 +78,25 @@ public class AuthorInterface extends JFrame implements ActionListener{
         logOut = new JMenuItem("Log out");
         logOut.addActionListener(this);
         menubar.add(logOut);
-        //if (authorPwChanged){ changePw.setEnabled(false);} else {changePw.setEnabled(true);}
 
         this.setJMenuBar(menubar);
 
-/*
-        //Articles information display table
-        String[][] data = {
-                { "Journal of Computer Science", "xxxxxxxx", "link here",""},
-                { "Journal of Software Engineering", "xxxxxxxx", "link here",""},
-                { "Journal of Artificial Intelligence", "xxxxxxxx", "link here",""}
-        };
-
-        // Column Names
-        String[] columnNames = { "Journal", "ISSN", "Linked PDF", "Date"};
-
-        articlesTable = new JTable(data, columnNames);
-        //articlesTable.setBounds(30, 40, 200, 300);*/
 
         Integer selectedSubId = Integer.parseInt(getSelectedButtonText(group));
-        //Status status = getStatusByID(selectedSubId);
-        int id = 1;
-        Status status = Status.REVIEWS_RECEIVED;
+        Status status = getStatusByID(selectedSubId);
+        //Status status = Status.REVIEWS_RECEIVED;
+        //Status status = Status.COMPLETED;
+
         if (status.equals(Status.SUBMITTED)){
             System.out.println("condition detected");
             submittedPanel(selectedSubId);
         } else if (status.equals(Status.REVIEWS_RECEIVED)){
-            reviewsReceivedPanel(id);
+            reviewsReceivedPanel(selectedSubId);
         } else if (status.equals(Status.RESPONSES_RECEIVED)) {
             responsesReceivedPanel(selectedSubId);
         } else if (status.equals(Status.COMPLETED)) {
             completedPanel(selectedSubId);
         }
-
-/*        // adding it to JScrollPane
-
-        ;*/
-
-
-/*        JScrollPane scrollPane = new JScrollPane();
-        this.add(scrollPane);*/
 
     //extra settings
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -258,13 +237,42 @@ public class AuthorInterface extends JFrame implements ActionListener{
 
 
     public void responsesReceivedPanel(Integer id){
-        //TO-DO method
+        JPanel responseReceivedPanel = new JPanel();
+        JLabel title = new JLabel("Waiting for final verdict.");
+        title.setBorder(BorderFactory.createEmptyBorder(220, 200, 50, 200));
+        title.setFont(new Font("Lucida Grande", Font.PLAIN, 30));
+        //System.out.println(subTitle1.getFont());
+        title.setHorizontalAlignment(JLabel.CENTER);
+        responseReceivedPanel.add(title);
+        this.add(responseReceivedPanel);
         //System.out.println("Responses Received Panel");
     }
 
 
     public void completedPanel(Integer id){
-        //TO-DO method
+        JPanel completedPanel = new JPanel();
+        JLabel title = new JLabel("Your article has completed the review process.");
+        title.setBorder(BorderFactory.createEmptyBorder(180, 200, 50, 200));
+        title.setFont(new Font("Lucida Grande", Font.PLAIN, 30));
+        //System.out.println(subTitle1.getFont());
+        title.setHorizontalAlignment(JLabel.CENTER);
+
+        //Initial verdict
+        JPanel vdGroup = new JPanel(new BorderLayout(10, 10));
+        //vdGroup.setPreferredSize(new Dimension(1000,300));
+        vdGroup.setBorder(BorderFactory.createEmptyBorder(10, 100, 20, 100));
+        JLabel verdict = new JLabel("  Final Verdict");
+        verdict.setFont(new Font("Lucida Grande", Font.PLAIN, 20));
+        JTextArea vdField = new JTextArea(1,12);
+        vdField.setFont(new Font("Arial", Font.PLAIN, 15));
+        //vdField.setText(finalVd);
+        vdField.setEditable(false);
+        vdGroup.add(verdict, BorderLayout.PAGE_START);
+        vdGroup.add(vdField, BorderLayout.WEST);
+
+        completedPanel.add(title);
+        completedPanel.add(vdGroup);
+        this.add(completedPanel);
         //System.out.println("Completed Panel");
     }
 
