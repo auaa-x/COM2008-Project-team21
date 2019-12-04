@@ -22,7 +22,7 @@ public class RespondInterface extends JFrame implements ActionListener {
     private String anonID;
 
 
-    RespondInterface(String username, int submissionId, int no, LinkedList<Question> questions){
+    RespondInterface(String username, int submissionId, int no, LinkedList<Question> questions) {
         this.setTitle("Respond Review "+ no);
         this.setSize(1000, 600);
         this.setLocationRelativeTo(null);
