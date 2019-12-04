@@ -83,8 +83,6 @@ public class AuthorInterface extends JFrame implements ActionListener{
         Integer selectedSubId = Integer.parseInt(getSelectedButtonText(group));
         Status status = getStatusByID(selectedSubId);
         System.out.println(status);
-        //Status status = Status.REVIEWS_RECEIVED;
-        //Status status = Status.COMPLETED;
 
         if (status.equals(Status.SUBMITTED)){
             System.out.println("submitted condition detected");
@@ -333,7 +331,6 @@ public class AuthorInterface extends JFrame implements ActionListener{
         else if (e.getSource()==logOut) {
         	this.dispose();
         	JOptionPane.showMessageDialog(null, "You have logged out successfully!");
-            new LoginInterface();
             }
         }
 

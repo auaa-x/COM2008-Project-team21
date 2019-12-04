@@ -20,7 +20,7 @@ public class ReviewController extends SqlController {
      * Get question list
      * @return current list of questions
      */
-    public LinkedList<String> getQuestionList() {
+    public static LinkedList<String> getQuestionList() {
         return questionList;
     }
 
@@ -28,7 +28,7 @@ public class ReviewController extends SqlController {
     /**
      * Clear the question list
      */
-    public void clearQuestionList() {
+    public static void clearQuestionList() {
         questionList.clear();
     }
     
@@ -37,7 +37,7 @@ public class ReviewController extends SqlController {
      * Get answer list
      * @return current list of questions
      */
-    public LinkedList<String> getAnswerList() {
+    public static LinkedList<String> getAnswerList() {
         return answerList;
     }
     
@@ -45,7 +45,7 @@ public class ReviewController extends SqlController {
     /**
      * Clear the answer list
      */
-    public void clearAnswerList() {
+    public static void clearAnswerList() {
         answerList.clear();
     }
 
