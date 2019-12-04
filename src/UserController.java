@@ -507,6 +507,7 @@ public class UserController extends SqlController {
             if (pstmt != null) pstmt.close();
             closeConnection();
         }
+        removeAccountIfUseless(email);
         return result;
     }
 
@@ -526,12 +527,16 @@ public class UserController extends SqlController {
             String surname, String university, String password, String sharedPassword, String articleTitle, String description,
             File pdfFile, int ISSN) throws SQLException, FileNotFoundException {
         boolean result = false;
-        // STILL NEED TO CREATE TABLE ENTRIES FOR AUTHOR AND REVIEWER !!!!!!!!!!!!
+        // create an account for main author (author role) and add reviewer role
         if (createUser(email, title, forename, surname, university, password, 2) && addRole(email, 3)) {
             result = true;
+            // create entry in article table
             int submissionID = ArticleController.createArticle(articleTitle, description, pdfFile, ISSN, email);
+            // create entry in submission table
             ArticleController.createSubmission(submissionID, pdfFile);
+            // create entry in author table for the main author
             createAuthor(email, submissionID);
+            // add co-authors if there are any on the list
             if (!coAuthorsList.isEmpty()) addCoAuthors(sharedPassword, submissionID);
         }
         return result;
@@ -549,13 +554,12 @@ public class UserController extends SqlController {
     public static boolean addCoAuthors(String sharedPassword, int submissionID) throws SQLException {
         boolean result = false;
         ListIterator<String> iterator = coAuthorsList.listIterator();
-        // create user account for each co-author on the list
+        // add each co-author on the list
         while(iterator.hasNext()) {
             String email = iterator.next().toString();
-            createTempUser(email, sharedPassword, 2);
-            addRole(email, 2); // author role
-            createAuthor(email, submissionID);
-            addRole(email, 3); // reviewer role
+            createTempUser(email, sharedPassword, 2); // create temporary user (author role)
+            createAuthor(email, submissionID); // create entry in author table
+            addRole(email, 3); // add reviewer role
             result = true;
         }
         coAuthorsList.clear();
@@ -628,6 +632,7 @@ public class UserController extends SqlController {
             if (pstmt != null) pstmt.close();
             closeConnection();
         }
+        removeAccountIfUseless(email);
         return result;
     }
 
@@ -688,6 +693,7 @@ public class UserController extends SqlController {
             if (pstmt != null) pstmt.close();
             closeConnection();
         }
+        removeAccountIfUseless(email);
         return result;
     }
 
@@ -827,7 +833,7 @@ public class UserController extends SqlController {
 
                 int count = pstmt.executeUpdate();
                 if (count != 0) result = true;
-                System.out.println("Title changed for user: " + newTitle);
+                // System.out.println("Title changed for user: " + newTitle);
             } catch (SQLException ex) {
                 ex.printStackTrace();
             } finally {

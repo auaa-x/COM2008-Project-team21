@@ -215,9 +215,10 @@ public class JournalController extends SqlController {
     public static boolean publishNextEdition(int issn, int volNum, int noNum) throws SQLException {
         boolean result = false;
         int artCount = getArtCount(issn, volNum, noNum);
+        
         // check if the number of articles in edition is allowed
         if (artCount >= 3 && artCount <= 8) {
-            openConnection();  ;
+            openConnection();
             PreparedStatement pstmt = null;
                 try {
                     int pubMonth = Calendar.getInstance().get(Calendar.MONTH) + 1;
@@ -245,6 +246,7 @@ public class JournalController extends SqlController {
         return result;
     }
     
+    
     /**
      * Get article counter of a given edition of a journal
      * @param issn
@@ -259,7 +261,6 @@ public class JournalController extends SqlController {
         PreparedStatement pstmt = null;
             try {
 
-                // find what's the noNum of the new edition
                 pstmt = con.prepareStatement("SELECT * FROM `team021`.`edition` WHERE (`ISSN` = ?) and (`volNum` = ?) and (`noNum` = ?)");
                 pstmt.setInt(1, issn);
                 pstmt.setInt(2, volNum);
@@ -393,7 +394,6 @@ public class JournalController extends SqlController {
             while (res.next()) {
                 issn = res.getInt("ISSN");
             }
-            journal = getJournal(issn);
             
         } catch (SQLException ex) {
             ex.printStackTrace();
@@ -401,6 +401,7 @@ public class JournalController extends SqlController {
             if (pstmt != null) pstmt.close();
             closeConnection();
         }
+        journal = getJournal(issn);
         return journal;
     }
 
@@ -486,7 +487,7 @@ public class JournalController extends SqlController {
     
     
     /**
-     * Get a list of a given editor journals
+     * Get a list of journals issns of a given editor
      * @param email
      * @return list of journals
      * @throws SQLException
@@ -724,15 +725,40 @@ public class JournalController extends SqlController {
         }
         return result;
     }
+    
+    
+    public static LinkedList<Verdict> getFinalVerdicts(int submissionID) throws SQLException {
+        LinkedList<Verdict> verdicts = new LinkedList<Verdict>();
+        openConnection();
+        PreparedStatement pstmt = null;
+        try {
+            // get all others editors of the journal
+            pstmt = con.prepareStatement("SELECT * FROM `verdict` WHERE `submissionID` = ?");
+            pstmt.setInt(1, submissionID);
+            ResultSet res = pstmt.executeQuery();
+            
+            while(res.next()) {
+                Verdict verdict = Verdict.valueOf(res.getString("value"));
+                verdicts.add(verdict);
+            }
+            
+
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        return verdicts;
+        
+    }
 
 
     public static void main (String[] args) throws IOException {
     	//File pdfFile = new File("./Systems Design Project.pdf");
         try {
-            //System.out.println(getVolumes(77777777));
-            //System.out.println(checkEditorConflict("harry.potter@warwick.ac.uk", 1)); // conflict
-            //System.out.println(checkEditorConflict("harry.potter@warwick.ac.uk", 2)); // no conflict (but one uni null)
             System.out.println(getJournalByArticle(1));
+            System.out.println(getFinalVerdicts(1));
             
         } catch (SQLException ex) {
             ex.printStackTrace();

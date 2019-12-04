@@ -87,7 +87,7 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 		register = new JMenuItem("Register an editor");
 		appoint = new JMenuItem("Appoint an editor");
 		passChiefEditor = new JMenuItem("Pass the role");
-		retire = new JMenuItem("Retire");
+		retire = new JMenuItem("Retire as chief editor");
 		publish = new JMenuItem("Publish");
 		delay = new JMenuItem("Delay article");
 		register.addActionListener(this);

@@ -787,6 +787,7 @@ public class ReviewController extends SqlController {
     public static boolean submitFinalVerdict(int submissionId, Verdict verdict, String anonId) throws SQLException {
         boolean result = false;
         if (updateVerdict(submissionId, verdict, anonId)) {
+            
             // update the database
             openConnection();
             PreparedStatement pstmt = null;
