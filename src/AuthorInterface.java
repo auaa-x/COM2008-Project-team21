@@ -4,8 +4,13 @@
  */
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.Enumeration;
 import java.util.LinkedList;
@@ -26,6 +31,13 @@ public class AuthorInterface extends JFrame implements ActionListener{
     private String username;
     private LinkedList<Submission> submissions;
     private Status subStatus;
+
+    //components in reviews received panel
+    private JTextArea addedPDF;
+    private JButton btnAddPdf;
+    private Path path = null;
+    private File pdf;
+    private Object AuthorInterface;
 
 
     public AuthorInterface(String username) throws SQLException {
@@ -117,14 +129,82 @@ public class AuthorInterface extends JFrame implements ActionListener{
     public void reviewsReceivedPanel(Integer id) throws SQLException {
         System.out.println("reviewsReceivedPanel");
         reviewsPanel = new JPanel();
+
+
+        //notice panel for add answers
+        JPanel noticePanel = new JPanel();
+        JLabel banner = new JLabel("Add the revised version of the article after responding to all reviews!");
+        banner.setFont(new Font("Lucida Grande", Font.PLAIN, 24));
+        banner.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
+        noticePanel.add(banner);
+
+
+        //pdf panel
+        JPanel pdfPanel = new JPanel();
+        //pdfPanel.setPreferredSize(new Dimension(20,20));
+        //add PDF button and display
+        addedPDF = new JTextArea(1,8);
+        addedPDF.setText("Revised PDF");
+        addedPDF.setAlignmentY(Component.CENTER_ALIGNMENT);
+        addedPDF.setFont(new Font("Arial", Font.PLAIN, 15));
+        addedPDF.setEditable (false); //set textArea non-editable
+
+        JScrollPane pdfPane = new JScrollPane(addedPDF);
+        //pdfPane.setPreferredSize(new Dimension(20,20));
+        pdfPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+        pdfPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        //add pdf button
+        btnAddPdf = new JButton("Add PDF");
+        btnAddPdf.addActionListener(this);
+        btnAddPdf.setFont(new Font("Arial", Font.PLAIN, 15));
+
+        pdfPanel.setLayout(new BoxLayout(pdfPanel,BoxLayout.X_AXIS));
+        pdfPanel.setBorder(new EmptyBorder(new Insets(20, 350, 20, 350)));
+        pdfPanel.add(pdfPane);
+        pdfPanel.add(btnAddPdf);
+
+
+        //button panel
+        JPanel submitButtonPane = new JPanel();
+        JButton submit = new JButton("Submit");
+        submit.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    if (ReviewController.submitResponsesAndPdf(id, pdf)){
+                        JOptionPane.showMessageDialog(null, "you have respond successfully!");
+                        dispose();
+                        new AuthorInterface(username);
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Sorry, please try again!");
+                    }
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
+        submit.setFont(new Font("Lucida Grande", Font.PLAIN, 20));
+        //layout for submitButtonPane
+        submitButtonPane.setLayout(new BoxLayout(submitButtonPane, BoxLayout.X_AXIS));
+        submitButtonPane.setBorder(BorderFactory.createEmptyBorder(10, 0, 50, 0));
+        submitButtonPane.add(submit);
+
+
         reviewsPanel.setLayout(new BoxLayout(reviewsPanel, BoxLayout.Y_AXIS));
         reviewsPanel.add(review(id,1));
         reviewsPanel.add(review(id,2));
         reviewsPanel.add(review(id,3));
+        reviewsPanel.add(noticePanel);
+        reviewsPanel.add(pdfPanel);
+        reviewsPanel.add(submitButtonPane);
+
+
+
         JScrollPane scrollPane = new JScrollPane(reviewsPanel);
         scrollPane.setPreferredSize(new Dimension(1000,600));
         scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         this.add(scrollPane);
+
+
     }
 
     public JPanel review(int submissionID, int no) throws SQLException {
@@ -231,7 +311,8 @@ public class AuthorInterface extends JFrame implements ActionListener{
         response.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 System.out.println("Respond to " + no);
-                new RespondInterface(submissionID, no, questions);
+                SwingUtilities.getWindowAncestor(response).dispose();
+                new RespondInterface(username, submissionID, no, questions);
             }
         });
         response.setFont(new Font("Lucida Grande", Font.PLAIN, 20));
@@ -317,22 +398,31 @@ public class AuthorInterface extends JFrame implements ActionListener{
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        if(e.getSource()==submissions){
-            System.out.println("Menu B clicked"); }
-
-        else if(e.getSource()==changePw){
+        if (e.getSource() == submissions) {
+            System.out.println("Menu B clicked");
+        } else if (e.getSource() == changePw) {
             new ChangePw(username, 2);
             this.dispose();
-        }
-        else if(e.getSource()==updatePf){
+        } else if (e.getSource() == updatePf) {
             new UpdateProfileInterface(username, 2);
             this.dispose();
-        }
-        else if (e.getSource()==logOut) {
-        	this.dispose();
-        	JOptionPane.showMessageDialog(null, "You have logged out successfully!");
+        } else if (e.getSource() == logOut) {
+            this.dispose();
+            JOptionPane.showMessageDialog(null, "You have logged out successfully!");
+        } else if (e.getSource() == btnAddPdf) {
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setDialogTitle("Please select your revised file");
+            fileChooser.setApproveButtonText("ok");
+            FileNameExtensionFilter filter = new FileNameExtensionFilter("Pdf Files", "pdf");
+            fileChooser.setFileFilter(filter);
+            fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+            if (JFileChooser.APPROVE_OPTION == fileChooser.showOpenDialog(this)) {
+                path = Paths.get(fileChooser.getSelectedFile().getPath());
             }
+            addedPDF.setText(fileChooser.getSelectedFile().getPath());
+            pdf = path.toFile();
         }
+    }
 
     public static void main(String[] args) throws SQLException {
         new AuthorInterface("larsen@copenhagen.ac.uk");

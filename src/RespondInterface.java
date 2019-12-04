@@ -22,7 +22,7 @@ public class RespondInterface extends JFrame implements ActionListener {
     private String anonID;
 
 
-    RespondInterface(int submissionId, int no, LinkedList<Question> questions){
+    RespondInterface(String username, int submissionId, int no, LinkedList<Question> questions){
         this.setTitle("Respond Review "+ no);
         this.setSize(1000, 600);
         this.setLocationRelativeTo(null);
@@ -89,6 +89,7 @@ public class RespondInterface extends JFrame implements ActionListener {
                     ReviewController.addAnswer(ans);
                     asArea.append(ans + "\n");
                     asField.setText("");
+                    System.out.println(ReviewController.getAnswerList());
                 } else {
                     JOptionPane.showMessageDialog(null,"Please enter your answer!");
                 }
@@ -132,7 +133,14 @@ public class RespondInterface extends JFrame implements ActionListener {
                 }
 
                 try {
-                    ReviewController.createResponse(submissionId, anonID);
+                    if (ReviewController.createResponse(submissionId, anonID)){
+                        SwingUtilities.getWindowAncestor(submit).dispose();
+                        JOptionPane.showMessageDialog(null,"You have respond to " + anonID +
+                                " successfully!");
+                        new AuthorInterface(username);
+                    } else {
+                        JOptionPane.showMessageDialog(null,"Sorry, please try again!");
+                    }
                 } catch (SQLException ex) {
                     ex.printStackTrace();
                 }
@@ -143,27 +151,26 @@ public class RespondInterface extends JFrame implements ActionListener {
         submit.setFont(new Font("Lucida Grande", Font.PLAIN, 20));
 
 
+        //layout
+        //layout for buttonPane - addAnswer & reset
         buttonPane.setLayout(new BoxLayout(buttonPane, BoxLayout.X_AXIS));
         buttonPane.add(addAnswer);
         buttonPane.add(reset);
-
+        //layout for submitButtonPane
         submitButtonPane.setLayout(new BoxLayout(submitButtonPane, BoxLayout.X_AXIS));
         submitButtonPane.add(submit);
-
+        //layout for leftPanel - answer title  & asFieldPane & buttonPane
         leftPanel.add(answer, BorderLayout.NORTH);
         leftPanel.add(asFieldPane, BorderLayout.CENTER);
         leftPanel.add(buttonPane, BorderLayout.SOUTH);
+        //layout for right - answers title & answersPane & submitButtonPane
         rightPanel.add(answers, BorderLayout.NORTH);
         rightPanel.add(answersPane, BorderLayout.CENTER);
         rightPanel.add(submitButtonPane, BorderLayout.SOUTH);
-
-
+        //layout for asGroup - leftPanel & rightPanel
         asGroup.add(noticePanel, BorderLayout.NORTH);
         asGroup.add(leftPanel, BorderLayout.WEST);
         asGroup.add(rightPanel, BorderLayout.EAST);
-
-
-
 
 
 
@@ -174,7 +181,6 @@ public class RespondInterface extends JFrame implements ActionListener {
 
 
         JScrollPane scrollPane = new JScrollPane(respondPanel);
-        //scrollPane.setPreferredSize(new Dimension(1000,600));
         scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         this.add(scrollPane);
 
