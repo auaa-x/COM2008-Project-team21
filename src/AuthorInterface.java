@@ -404,7 +404,7 @@ public class AuthorInterface extends JFrame implements ActionListener{
             new ChangePw(username, 2);
             this.dispose();
         } else if (e.getSource() == updatePf) {
-            new UpdateProfileInterface(username, 2);
+            new UpdateProfileInterface(username, 2,false);
             this.dispose();
         } else if (e.getSource() == logOut) {
             this.dispose();
