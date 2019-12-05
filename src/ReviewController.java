@@ -1271,7 +1271,7 @@ public class ReviewController extends SqlController {
      * @param question
      */
     public static void addQuestion(String question) {
-        answerList.add(question);
+        questionList.add(question);
     }
 
 
