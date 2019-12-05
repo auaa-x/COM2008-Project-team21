@@ -445,9 +445,8 @@ public class ArticleController extends SqlController {
 
             //System.out.println(getSubmissionByStatus(Status.SUBMITTED));
             //System.out.println(getAuthors(4));
-            //System.out.println(updatePDFFile(4, pdfFile));
-            System.out.println(getArticlePDF(4));
-            System.out.println(getArticle(4));
+            //System.out.println(updatePDFFile(4, pdfFile)););
+            System.out.println(updateStatus(2, Status.REVIEWS_RECEIVED));
         } catch (SQLException ex) {
             ex.printStackTrace();
         }

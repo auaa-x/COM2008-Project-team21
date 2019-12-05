@@ -172,8 +172,8 @@ public class ReviewerInterface extends JFrame implements ActionListener {
                     try {
                         ReviewController.selectToReview(username, id);
                         availableArticleTable.setValueAt("Selected",row,3);
-                        JOptionPane.showMessageDialog(null,"You have selected to review "+
-                                availableArticleTable.getValueAt(row,1) + " successfully!");
+                        JOptionPane.showMessageDialog(null,"You have selected to review " +
+                                availableArticleTable.getValueAt(row, 1));
                         SwingUtilities.getWindowAncestor(availableArticleTable).dispose();
                         new ReviewerInterface(username);
                     } catch (SQLException | IOException e) {
@@ -183,7 +183,7 @@ public class ReviewerInterface extends JFrame implements ActionListener {
                 }
             }
         });
-        remainingLabel = new JLabel("Remaining articles: " + remaining);
+        remainingLabel = new JLabel("Remaining articles to review: " + remaining);
         add(remainingLabel, BorderLayout.SOUTH);
 
         JScrollPane scrollPane = new JScrollPane(availableArticleTable);

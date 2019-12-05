@@ -783,9 +783,6 @@ public class ReviewController extends SqlController {
                 addAllQuestions(submissionId, anonId) && addVerdict(submissionId, verdict, anonId)) {
             result = true;
             
-            // update status if all 3 reviews had been submitted
-            if (getReviewSubmittedCount(submissionId) == 3) ArticleController.updateStatus(submissionId, Status.REVIEWS_RECEIVED);
-
             // update the isSubmitted field
             openConnection();
             PreparedStatement pstmt = null;
@@ -803,7 +800,11 @@ public class ReviewController extends SqlController {
                 if (pstmt != null) pstmt.close();
                 closeConnection();
             }
-        }
+        }      
+
+        // update status if all 3 reviews had been submitted
+        if (getReviewSubmittedCount(submissionId) == 3) ArticleController.updateStatus(submissionId, Status.REVIEWS_RECEIVED);
+
         
         questionList.clear();
         return result;
@@ -1354,10 +1355,7 @@ public class ReviewController extends SqlController {
             */
             //System.out.println("Reviewing submission: " + getReviewingSubmissions("chaddock@illinois.ac.uk"));
             //System.out.println(getSubmissionsSelected("chaddock@illinois.ac.uk","reviewer1"));
-            System.out.println(getAnonID("chaddock@illinois.ac.uk", 1));
-            System.out.println(getSubmissionsReviewing("chaddock@illinois.ac.uk"));
-            System.out.println(remainingCostToCover("chaddock@illinois.ac.uk"));
-            System.out.println(getReviewerEmail("reviewer1", 1));
+            System.out.println(getReviewSubmittedCount(2));
 
         } catch (SQLException e) {
             e.printStackTrace();
