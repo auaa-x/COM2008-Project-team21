@@ -815,7 +815,7 @@ public class JournalController extends SqlController {
                 int issn = res.getInt("ISSN");
                 String mAuthorEmail = res.getString("mAuthorEmail");
                 Article article = new Article(submissionId, title, artAbstract, isPublished, issn, mAuthorEmail);
-                articlesForEditor.add(article);
+                //articlesForEditor.add(article);
                 result = true;
             }
         } catch (SQLException ex) {
