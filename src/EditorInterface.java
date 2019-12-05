@@ -11,6 +11,7 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Dictionary;
 import java.util.Enumeration;
 import java.util.LinkedList;
 
@@ -37,7 +38,14 @@ public class EditorInterface extends JFrame implements ActionListener {
     private String username;
     private LinkedList<Integer> journalsISSN;
     private LinkedList<Journal> journals;
+    private LinkedList<Article> considerList;
     private int issn;
+    private int selectedID;
+    private Article selectedArt;
+
+    private JPanel titleGroup, absGroup, maGroup;
+    private JPanel vdGroup, saGroup, buttonPanel, buttonPanel1;
+    private JPanel panel;
 
 
     EditorInterface(String username) throws SQLException {
@@ -109,23 +117,22 @@ public class EditorInterface extends JFrame implements ActionListener {
         JPanel treePanel = new JPanel();
         //create the root node
         DefaultMutableTreeNode root = new DefaultMutableTreeNode("Journal Publish System");
+        considerList = new LinkedList<>();
 
         for (Journal journal : journals) {
-            DefaultMutableTreeNode journal1 = new DefaultMutableTreeNode(journal.getTitle());
+            DefaultMutableTreeNode journal1 = new DefaultMutableTreeNode(journal);
             root.add(journal1);
-            for (Volume volume : JournalController.getVolumes(journal.getIssn())) {
-                DefaultMutableTreeNode volume1 = new DefaultMutableTreeNode("vol. " + volume.getVolNum());
-                journal1.add(volume1);
-                for (Edition edition : JournalController.getEditions(volume.getIssn(), volume.getVolNum())) {
-                    DefaultMutableTreeNode edition1 = new DefaultMutableTreeNode(edition.toString());
-                    volume1.add(edition1);
-                    for (Article article : JournalController.getPublishedArticles(journal.getIssn(), edition.getVolNum(), edition.getNoNum())) {
-                        DefaultMutableTreeNode article1 = new DefaultMutableTreeNode(article.toString());
-                        edition1.add(article1);
-                    }
-                }
+            DefaultMutableTreeNode underCs = new DefaultMutableTreeNode("Under Consideration");
+            journal1.add(underCs);
+            journal.getIssn();
+            considerList = JournalController.getArtByStatusAndJournal(Status.FINAL_VERDICTS_RECEIVED,
+                   journal.getIssn());
+            for (Article a : considerList){
+                DefaultMutableTreeNode a1 = new DefaultMutableTreeNode(a);
+                underCs.add(a1);
             }
         }
+
 
         //create the tree by passing in the root node
         tree = new JTree(root);
@@ -139,52 +146,225 @@ public class EditorInterface extends JFrame implements ActionListener {
         add(selectedLabel, BorderLayout.SOUTH);
         tree.getSelectionModel().addTreeSelectionListener(e -> {
             DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
-            selectedLabel.setText(selectedNode.getUserObject().toString());
-            if (selectedNode.getUserObject().toString().equals("Article")){
-                //first check if Desktop is supported by Platform or not
-                if(!Desktop.isDesktopSupported()){
-                    JOptionPane.showMessageDialog(null, "Desktop does not support this function");
-                    return;
-                } else if (article.exists()){
-                    try {
-                        desktop.open(article);
-                    } catch (IOException ex) {
-                        ex.printStackTrace();
-                    }
+            if (selectedNode.isLeaf() && considerList != null){
+                selectedLabel.setText(selectedNode.getUserObject().toString());
+                selectedArt = (Article)selectedNode.getUserObject();
+                selectedID = selectedArt.getSubmissionID();
+                System.out.println(selectedID);
+                try {
+                    this.add(panel(selectedID), BorderLayout.EAST);
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
                 }
             }
+
         });
-
-        //set up the article information panel
-        infoPanel.setPreferredSize(new Dimension(725, 525));
-
-
-        //title of the information panel
-        infoTitle = new JLabel("Article Information Display Here");
-        infoTitle.setFont(new Font("Tahoma", Font.PLAIN, 20));
-        //open button
-        open = new JButton("Open");
-        open.addActionListener(this);
-        open.setFont(new Font("Tahoma", Font.PLAIN, 15));
-
         treePanel.add(treeScrollPane);
-        infoPanel.add(infoTitle);
-
-
 
         //add panels functions
         this.add(treePanel, BorderLayout.WEST);
-        this.add(infoPanel, BorderLayout.EAST);
+
 
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setVisible(true);
     }
 
+    public JPanel panel(int submissionId) throws SQLException {
+        //set up the article information panel
+        infoPanel.setPreferredSize(new Dimension(730, 300));
+
+        //List of Qs
+        //questions panel settings
+        titleGroup = new JPanel(new BorderLayout());
+        //qsGroup.setPreferredSize(new Dimension(1000,230));
+        titleGroup.setBorder(BorderFactory.createEmptyBorder(10, 50, 0, 0));
+        JLabel lblTitle = new JLabel("Title of Article");
+        lblTitle.setFont(new Font("Lucida Grande", Font.PLAIN, 20));
+        JLabel title = new JLabel(selectedArt.getTitle());
+        title.setFont(new Font("Arial", Font.PLAIN, 15));
+        titleGroup.add(lblTitle, BorderLayout.PAGE_START);
+        titleGroup.add(title, BorderLayout.WEST);
+
+        absGroup = new JPanel(new BorderLayout(10,10));
+        absGroup.setBorder(BorderFactory.createEmptyBorder(0, 50, 10, 0));
+        JLabel lblAbstract = new JLabel("Abstract of Article");
+        lblAbstract.setFont(new Font("Lucida Grande", Font.PLAIN, 20));
+        JTextArea artAbstract = new JTextArea();
+        artAbstract.setText(selectedArt.getAbstract());
+        artAbstract.setEditable(false);
+        artAbstract.setLineWrap(true);
+        artAbstract.setWrapStyleWord(true);
+        artAbstract.setFont(new Font("Arial", Font.PLAIN, 15));
+        JScrollPane absPane = new JScrollPane(artAbstract);
+        absPane.setPreferredSize(new Dimension(630,100));
+        absPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        absPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+        absGroup.add(lblAbstract, BorderLayout.PAGE_START);
+        absGroup.add(absPane, BorderLayout.WEST);
+
+        maGroup = new JPanel(new BorderLayout());
+        //qsGroup.setPreferredSize(new Dimension(1000,230));
+        maGroup.setBorder(BorderFactory.createEmptyBorder(0, 50, 10, 0));
+        JLabel lblMa = new JLabel("Main Author");
+        lblMa.setFont(new Font("Lucida Grande", Font.PLAIN, 20));
+        JLabel mainAuthor = new JLabel(selectedArt.getMAuthorEmail());
+        mainAuthor.setFont(new Font("Arial", Font.PLAIN, 15));
+        maGroup.add(lblMa, BorderLayout.PAGE_START);
+        maGroup.add(mainAuthor, BorderLayout.WEST);
+
+        buttonPanel = new JPanel(new BorderLayout());
+        buttonPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 20, 100));
+        open = new JButton("Open");
+        open.addActionListener((new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    System.out.println("open " + selectedID);
+                    ArticleController.getSubmissionPDF(selectedID);
+                    File article = new File("article.pdf");
+                    if (!Desktop.isDesktopSupported()) {
+                        JOptionPane.showMessageDialog(null, "Desktop does not support this function");
+                    } else if (article.exists()) {
+
+                        desktop.open(article);
+                    }
+                } catch (IOException | SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }));
+        open.setFont(new Font("Lucida Grande", Font.PLAIN, 15));
+        buttonPanel.add(open, BorderLayout.EAST);
+
+        //open button
+        infoPanel.setLayout(new BoxLayout(infoPanel,BoxLayout.Y_AXIS));
+        infoPanel.add(titleGroup);
+        infoPanel.add(absGroup);
+        infoPanel.add(maGroup);
+        infoPanel.add(buttonPanel);
+
+
+
+
+        //set up the verdict panel
+        verdictPanel.setPreferredSize(new Dimension(730, 100));
+        verdictPanel.setLayout(new BorderLayout());
+
+        LinkedList<Verdict> finalVerdicts = JournalController.getFinalVerdicts(submissionId);
+        //List of final verdicts
+        //final verdicts panel settings
+        vdGroup = new JPanel();
+        vdGroup.setLayout(new BoxLayout(vdGroup, BoxLayout.Y_AXIS));
+        vdGroup.setPreferredSize(new Dimension(190,100));
+        vdGroup.setBorder(BorderFactory.createEmptyBorder(40, 50, 0, 0));
+        for (Verdict vd : finalVerdicts) {
+            JLabel vd1 = new JLabel(vd.toString());
+            vdGroup.add(vd1);
+            vd1.setFont(new Font("Lucida Grande", Font.PLAIN, 20));
+        }
+
+
+
+        saGroup = new JPanel();
+        saGroup.setLayout(new BoxLayout(saGroup, BoxLayout.Y_AXIS));
+        saGroup.setPreferredSize(new Dimension(600,100));
+        saGroup.setBorder(BorderFactory.createEmptyBorder(40, 0, 0, 0));
+
+        JLabel actTitle = new JLabel("Suggested Action:");
+        actTitle.setFont(new Font("Lucida Grande", Font.PLAIN, 20));
+        JLabel suggestion = new JLabel(JournalController.getSuggestion(submissionId));
+        suggestion.setFont(new Font("Lucida Grande", Font.PLAIN, 20));
+        saGroup.add(actTitle);
+        saGroup.add(suggestion);
+
+
+        JButton accept = new JButton("Accept");
+        accept.setFont(new Font("Lucida Grande", Font.PLAIN, 18));
+        accept.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    if (JournalController.checkEditorConflict(username, submissionId)) {
+                        JOptionPane.showMessageDialog(null, "Sorry, there is an interest conflict \n" +
+                                "with this submission!");
+                    } else {
+                        if (JournalController.acceptAnArticle(submissionId)) {
+                            JOptionPane.showMessageDialog(null, "You have accept " + submissionId +
+                                    "successfully!");
+                        } else {
+                            JOptionPane.showMessageDialog(null, "Sorry, please try again!");
+                        }
+                    }
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
+        JButton reject = new JButton("Reject");
+        reject.setFont(new Font("Lucida Grande", Font.PLAIN, 18));
+        reject.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    if (JournalController.checkEditorConflict(username, submissionId)) {
+                        JOptionPane.showMessageDialog(null, "Sorry, there is an interest conflict \n" +
+                                "with this submission!");
+                    } else {
+                        JournalController.rejectAnArticle(submissionId);
+                        if (JournalController.rejectAnArticle(submissionId)) {
+                            JOptionPane.showMessageDialog(null, "You have accept " + submissionId +
+                                    "successfully!");
+                        } else {
+                            JOptionPane.showMessageDialog(null, "Sorry, please try again!");
+                        }
+                    }
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
+
+        //layout for buttonPane - accept and reject
+        buttonPanel1 = new JPanel();
+        buttonPanel1.setLayout(new BoxLayout(buttonPanel1, BoxLayout.X_AXIS));
+        buttonPanel1.setBorder(BorderFactory.createEmptyBorder(0, 150, 0, 0));
+        buttonPanel1.add(accept);
+        buttonPanel1.add(reject);
+
+
+        JPanel rightPane = new JPanel();
+        rightPane.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 100));
+        rightPane.setPreferredSize(new Dimension(600,100));
+        rightPane.setLayout(new BoxLayout(rightPane, BoxLayout.Y_AXIS));
+        rightPane.add(saGroup);
+        rightPane.add(buttonPanel1);
+
+
+        verdictPanel.add(vdGroup, BorderLayout.WEST);
+        verdictPanel.add(rightPane, BorderLayout.CENTER);
+
+        JScrollPane northPane = new JScrollPane(infoPanel);
+        northPane.setPreferredSize(new Dimension(730,300));
+        northPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+
+        JScrollPane southPane = new JScrollPane(verdictPanel);
+        southPane.setPreferredSize(new Dimension(730,100));
+        southPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+
+        panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setPreferredSize(new Dimension(730,600));
+        panel.add(northPane);
+        panel.add(southPane);
+
+        return panel;
+    }
+
+
     //get selected radio box text
     public String getSelectedButtonText(ButtonGroup buttonGroup) {
         for (Enumeration<AbstractButton> buttons = buttonGroup.getElements(); buttons.hasMoreElements(); ) {
             AbstractButton button = buttons.nextElement();
-
             if (button.isSelected()) {
                 return button.getText();
             }
@@ -234,20 +414,6 @@ public class EditorInterface extends JFrame implements ActionListener {
                     ex.printStackTrace();
                 }
             }
-            //select which journal editor will retire from
-           /* JComboBox journalSelection = new JComboBox(journals.toArray());
-            JOptionPane.showMessageDialog( null, journalSelection, "please select a journal", JOptionPane.QUESTION_MESSAGE);
-            Integer selection = (Integer) journalSelection.getSelectedItem();
-            try {
-                if (JournalController.editorRetire(username, selection)){
-                    JOptionPane.showMessageDialog(null,"You have retired from "+ selection +" successfully!");
-                } else {
-                    JOptionPane.showMessageDialog(null,"Please try again!");
-                }
-            } catch (SQLException ex) {
-
-                ex.printStackTrace();
-            }*/
         }
         else if (e.getSource() == changePw) {
             new ChangePw(username, 1);
@@ -258,7 +424,8 @@ public class EditorInterface extends JFrame implements ActionListener {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             try {
-                new EditorInterface("hermiona.granger@hogwarts.ac.uk");
+                //new EditorInterface("hermiona.granger@hogwarts.ac.uk");
+                new EditorInterface("harry.potter@warwick.ac.uk");
             } catch (SQLException e) {
                 JOptionPane.showMessageDialog(null, "Could not connect to the  server, please try again.");
                 e.printStackTrace();
