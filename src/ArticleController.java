@@ -219,7 +219,7 @@ public class ArticleController extends SqlController {
             output = new FileOutputStream(articlePDF);
             if (res.next()) {
                 result = true;
-                input = res.getBinaryStream("linkedFinalPDF");
+                input = res.getBinaryStream("linkedDraftPDF");
                 byte[] buffer = new byte [1024];
                 while (input.read(buffer) > 0) {
                     output.write(buffer);
