@@ -1,5 +1,5 @@
 /**
- * Class for Author Interface
+ * Class for Respond Interface
  * @author Ting Guo
  */
 
