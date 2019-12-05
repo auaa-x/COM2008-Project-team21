@@ -113,11 +113,11 @@ public class JournalController extends SqlController {
     /**
      * Create a new volume for a given journal
      * @param ISSN
-     * @return result true if volume is created successfully
+     * @return created volume object
      * @throws SQLException
      */
-    public static boolean createVolume(int issn) throws SQLException {
-        boolean result = false;
+    public static Volume createVolume(int issn) throws SQLException {
+        Volume volume = null;
         int volNum = 0;
         int pubYear = Calendar.getInstance().get(Calendar.YEAR);
         openConnection();  ;
@@ -125,15 +125,6 @@ public class JournalController extends SqlController {
         PreparedStatement pstmt2 = null;
         PreparedStatement pstmt3 = null;
             try {
-                // check if this year's volume already exists
-                pstmt1 = con.prepareStatement("SELECT * FROM `team021`.`volume` WHERE (`ISSN` = ?) and (`pubYear` = ?)");
-                pstmt1.setInt(1, issn);
-                pstmt1.setInt(2, pubYear);
-                ResultSet res1 = pstmt1.executeQuery();
-
-                // don't create new volume if one already exists this year
-                if (res1.next()) return false;
-
                 // find out what's the volNum of the new volume
                 pstmt2 = con.prepareStatement("SELECT COUNT(*) FROM `team021`.`volume` WHERE (`ISSN` = ?)");
                 pstmt2.setInt(1, issn);
@@ -150,8 +141,51 @@ public class JournalController extends SqlController {
 
                 int count = pstmt3.executeUpdate();
                 if (count != 0) {
-                    result = true;
                     System.out.println("Volume " + volNum + " " + issn + " added");
+                }
+                
+                // create volume object
+                volume = new Volume(volNum, pubYear, issn, 0);
+
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            } finally {
+                if (pstmt1 != null) pstmt1.close();
+                if (pstmt2 != null) pstmt2.close();
+                if (pstmt3 != null) pstmt3.close();
+                closeConnection();
+            }
+        return volume;
+    }
+    
+    
+    /**
+     * Get current volume of the journal
+     * @param ISSN
+     * @return current volume object
+     * @throws SQLException
+     */
+    public static Volume gettCurrentVolume(int issn) throws SQLException {
+        Volume volume;
+        int pubYear = Calendar.getInstance().get(Calendar.YEAR);
+        openConnection();  ;
+        PreparedStatement pstmt1 = null;
+        PreparedStatement pstmt2 = null;
+        PreparedStatement pstmt3 = null;
+            try {
+                
+                // check if this year's volume already exists
+                pstmt1 = con.prepareStatement("SELECT * FROM `team021`.`volume` WHERE (`ISSN` = ?) and (`pubYear` = ?)");
+                pstmt1.setInt(1, issn);
+                pstmt1.setInt(2, pubYear);
+                ResultSet res1 = pstmt1.executeQuery();
+
+                // return volume object of volume exists
+                if (res1.next()) {
+                    int volNum = res1.getInt("volNum");
+                    int editionCount = res1.getInt("editionCount");
+                    volume = new Volume(volNum, pubYear, issn, editionCount);
+                    return volume;
                 }
 
             } catch (SQLException ex) {
@@ -162,7 +196,9 @@ public class JournalController extends SqlController {
                 if (pstmt3 != null) pstmt3.close();
                 closeConnection();
             }
-        return result;
+        // create volume if one doesn't exist
+        volume = createVolume(issn);
+        return volume;
     }
 
 
