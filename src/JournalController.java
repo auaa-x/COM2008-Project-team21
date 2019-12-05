@@ -12,6 +12,15 @@ import java.io.*;
 public class JournalController extends SqlController {
     
     private static int currentJournal;
+    protected static LinkedList<Integer> articlesForEditor = new LinkedList<Integer>();
+    
+    /**
+     * Get list of submission ids of articles to publish
+     * @return list of submissionIds 
+     */
+    public static LinkedList<Integer> getArticleList() {
+        return articlesForEditor;
+    }
 
     
     /**
@@ -752,13 +761,92 @@ public class JournalController extends SqlController {
         return verdicts;
         
     }
+    
+    /**
+     * Get a list of all articles by status and journal
+     * @param status
+     * @param issn
+     * @return list of articles
+     * @throws SQLException
+     */
+    public static LinkedList<Article> getArtByStatusAndJournal(Status status, int issn) throws SQLException {
+        LinkedList<Article> articles = new LinkedList<Article>();
+        openConnection();
+        PreparedStatement pstmt = null;
+        try {
+        	pstmt = con.prepareStatement("SELECT * FROM article a, submission s WHERE (a.ISSN =?) and (s.submissionID = a.submissionID) and (s.status = ?) ");
+            pstmt.setInt(1, issn);
+            pstmt.setString(2, status.name());
+            ResultSet res = pstmt.executeQuery();
+            while (res.next()) {
+            	int submissionId = res.getInt("submissionID");
+            	String title = res.getString("title");
+                String artAbstract = res.getString("abstract");
+                boolean isPublished = res.getBoolean("isPublished");
+                String mAuthorEmail = res.getString("mAuthorEmail");
+                int costCovered = res.getInt("costCovered");
+                if (costCovered >= 3) {
+	                Article article = new Article(submissionId, title, artAbstract, isPublished, issn, mAuthorEmail);
+	                articles.add(article);
+                }
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        return articles;
+    }
+    
+    /**
+     * Add article to articles to publish list
+     * @param answer
+     */
+    public static void addToToPublish(int submissionId) {
+    	 articlesForEditor.add(Integer.valueOf(submissionId));
+    }
+    
+    /**
+     * Publish articles from list to publish
+     * @param submissionId
+     * @return list of articles
+     * @throws SQLException
+     */
+    public static boolean publishArticles(int submissionId) throws SQLException {
+    	boolean result = false;
+        openConnection();
+        PreparedStatement pstmt = null;
+        try {
+        	pstmt = con.prepareStatement("SELECT * FROM article WHERE submissionID = ? ");
+            pstmt.setInt(1, submissionId);
+            ResultSet res = pstmt.executeQuery();
+            if (res.next()) {
+            	String title = res.getString("title");
+                String artAbstract = res.getString("abstract");
+                boolean isPublished = res.getBoolean("isPublished");
+                int issn = res.getInt("ISSN");
+                String mAuthorEmail = res.getString("mAuthorEmail");
+                Article article = new Article(submissionId, title, artAbstract, isPublished, issn, mAuthorEmail);
+                articlesForEditor.add(article);
+                result = true;
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        return result;
+    }
 
 
+    
     public static void main (String[] args) throws IOException {
     	//File pdfFile = new File("./Systems Design Project.pdf");
         try {
-            System.out.println(getJournalByArticle(1));
-            System.out.println(getFinalVerdicts(1));
+            //System.out.println(getJournalByArticle(1));
+            System.out.println(getArtByStatusAndJournal(Status.FINAL_VERDICTS_RECEIVED,77777777));
             
         } catch (SQLException ex) {
             ex.printStackTrace();
