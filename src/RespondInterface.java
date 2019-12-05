@@ -26,6 +26,8 @@ public class RespondInterface extends JFrame implements ActionListener {
         this.setTitle("Respond Review "+ no);
         this.setSize(1000, 600);
         this.setLocationRelativeTo(null);
+        this.setResizable(false);
+
 
         //List of Qs
         //questions panel settings
