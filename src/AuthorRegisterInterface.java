@@ -198,7 +198,7 @@ public class AuthorRegisterInterface extends JFrame implements ActionListener, I
         coEmailField = new JTextField(15);
         coEmailField.setFont(new Font("Arial", Font.PLAIN, 15));
 
-        //add co-author button
+        //reset co-author button
         resetCoAuthor = new JButton("Reset");
         resetCoAuthor.addActionListener(this);
         resetCoAuthor.setFont(new Font("Tahoma", Font.PLAIN, 15));

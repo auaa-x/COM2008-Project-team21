@@ -9,6 +9,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.io.IOException;
 import java.sql.SQLException;
 
 public class UpdateProfileInterface extends JFrame implements ActionListener, ItemListener {
@@ -63,7 +64,6 @@ public class UpdateProfileInterface extends JFrame implements ActionListener, It
             UpdateInfoPanel();
         }
         //extra settings
-        this.setLocationRelativeTo(null);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setVisible(true);
     }
@@ -313,29 +313,24 @@ public class UpdateProfileInterface extends JFrame implements ActionListener, It
     public void actionPerformed(ActionEvent e) {
 
         if (e.getSource() == back | e.getSource() == back1) {
-            switch (userType) {
-                case 1:
-                    try {
+            try {
+                switch (userType) {
+                    case 1:
                         new EditorInterface(username);
-                    } catch (SQLException ex) {
-                        ex.printStackTrace();
-                    }
-                    this.dispose();
-                    break;
-                case 2:
-                    System.out.println("Author detected");
-                    try {
+                        this.dispose();
+                        break;
+                    case 2:
+                        System.out.println("Author detected");
                         new AuthorInterface(username);
-                    } catch (SQLException ex) {
-                        ex.printStackTrace();
-                    }
-
-                    this.dispose();
-                    break;
-                case 3:
-                    //new ReviewerInterface(username);
-                    this.dispose();
-                    break;
+                        this.dispose();
+                        break;
+                    case 3:
+                        new ReviewerInterface(username);
+                        this.dispose();
+                        break;
+                }
+            } catch (SQLException | IOException ex) {
+                ex.printStackTrace();
             }
         } else if (e.getSource() == update) {
             JPanel panel = new JPanel();
@@ -376,25 +371,21 @@ public class UpdateProfileInterface extends JFrame implements ActionListener, It
                     JOptionPane.showMessageDialog(null, "You have updated profile successfully!");
                     switch (userType) {
                         case 1:
-                            try {
-                                new EditorInterface(username);
-                            } catch (SQLException ex) {
-                                ex.printStackTrace();
-                            }
+                            new EditorInterface(username);
                             break;
                         case 2:
                             new AuthorInterface(username);
                             break;
                         case 3:
-                            //new ReviewerInterface(username);
+                            new ReviewerInterface(username);
+                            System.out.println(1);
                             break;
                     }
                     this.dispose();
                 } else {
                     JOptionPane.showMessageDialog(null, "Sorry, please try again!");
-
                 }
-            } catch (SQLException ex) {
+            } catch (SQLException | IOException ex) {
                 ex.printStackTrace();
 
             }

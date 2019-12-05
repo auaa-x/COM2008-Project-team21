@@ -31,7 +31,6 @@ public class LoginInterface extends JFrame implements ActionListener, ItemListen
         this.setResizable(false);
 
 
-
         //button panel
         JPanel noticePanel = new JPanel();
         JPanel buttonPane = new JPanel();
@@ -44,7 +43,6 @@ public class LoginInterface extends JFrame implements ActionListener, ItemListen
         banner.setBorder(BorderFactory.createEmptyBorder(70, 200, 50, 200));
 
 
-
         //user types combobox
         JLabel role = new JLabel("Role: ");
         role.setFont(new Font("Tahoma", Font.PLAIN, 26));
@@ -52,7 +50,6 @@ public class LoginInterface extends JFrame implements ActionListener, ItemListen
         JComboBox<String> comboUserTypes = new JComboBox<>(userTypes);
         comboUserTypes.addItemListener(this);
         comboUserTypes.setFont(new Font("Tahoma", Font.PLAIN, 20));
-
 
 
         //username
@@ -71,7 +68,6 @@ public class LoginInterface extends JFrame implements ActionListener, ItemListen
         passwordField.setColumns(10);
 
 
-
         //login button
         btnLogin = new JButton("Log in");
         btnLogin.addActionListener(this);
@@ -88,7 +84,6 @@ public class LoginInterface extends JFrame implements ActionListener, ItemListen
         btnRegister = new JButton("Register");
         btnRegister.addActionListener(this);
         btnRegister.setFont(new Font("Tahoma", Font.PLAIN, 22));
-
 
 
         //layouts
@@ -116,7 +111,6 @@ public class LoginInterface extends JFrame implements ActionListener, ItemListen
         buttonSpace.insets = new Insets(0, 50, 0, 5);
 
 
-
         //add functions
         //noticePanel
         noticePanel.add(banner);
@@ -127,7 +121,6 @@ public class LoginInterface extends JFrame implements ActionListener, ItemListen
         fieldsPanel.add(emailField, right);
         fieldsPanel.add(lblPassword, left);
         fieldsPanel.add(passwordField, right);
-
 
         buttonPane.add(btnLogin,buttonSpace);
         buttonPane.add(btnNoLogin,buttonSpace);
@@ -142,7 +135,6 @@ public class LoginInterface extends JFrame implements ActionListener, ItemListen
     }
 
     public void itemStateChanged(ItemEvent e) {
-
         String item = (String)e.getItem();
         switch (item) {
             case "Editor":
@@ -177,7 +169,7 @@ public class LoginInterface extends JFrame implements ActionListener, ItemListen
                                 new AuthorInterface(userName);
                                 break;
                             case 3 : //Reviewer
-                                //new ReviewerInterface();
+                                new ReviewerInterface(userName);
                                 break;
                         }
                     } else {
@@ -191,7 +183,7 @@ public class LoginInterface extends JFrame implements ActionListener, ItemListen
                         JOptionPane.showMessageDialog(null, "Please enter your password!");
                     }
                 }
-            } catch (SQLException ex) {
+            } catch (SQLException | IOException ex) {
                 ex.printStackTrace();
             }
         }

@@ -8,6 +8,7 @@
 import java.awt.*;
 import javax.swing.*;
 import java.awt.event.*;
+import java.io.IOException;
 import java.sql.SQLException;
 
 
@@ -127,9 +128,6 @@ public class ChangePw extends JFrame implements ActionListener {
         this.add(buttonPane);
 
         //extra settings
-
-        this.setSize(1000, 600);
-        this.setLocationRelativeTo(null);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setVisible(true);
     }
@@ -139,27 +137,21 @@ public class ChangePw extends JFrame implements ActionListener {
 
         if (e.getSource() == back) {
             this.dispose();
-            switch (userType) {
-                case 1:
-                    try {
+            try {
+                switch (userType) {
+                    case 1:
                         new EditorInterface(username);
-                        System.out.println("Editor" + username +" back");
-                    } catch (SQLException ex) {
-                        ex.printStackTrace();
-                    }
-
-                    break;
-                case 2:
-                    try {
+                        System.out.println("Editor" + username + " back");
+                        break;
+                    case 2:
                         new AuthorInterface(username);
-                    } catch (SQLException ex) {
-                        ex.printStackTrace();
-                    }
-
-                    break;
-                case 3:
-                    // new ReviewerInterface(username);
-                    break;
+                        break;
+                    case 3:
+                        new ReviewerInterface(username);
+                        break;
+                }
+            } catch (SQLException | IOException ex) {
+                ex.printStackTrace();
             }
         } else {
             String oldPassword = String.valueOf(oldPwField.getPassword());

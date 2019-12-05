@@ -233,7 +233,7 @@ public class AuthorInterface extends JFrame implements ActionListener{
         banner.setFont(new Font("Lucida Grande", Font.PLAIN, 30));
         banner.setBorder(BorderFactory.createEmptyBorder(30, 0, 30, 0));
 
-        //Personal details
+        //Summary group
         JPanel summaryGroup = new JPanel(new BorderLayout(10, 10));
         summaryGroup.setPreferredSize(new Dimension(1000,300));
         summaryGroup.setBorder(BorderFactory.createEmptyBorder(10, 100, 20, 100));
@@ -409,6 +409,7 @@ public class AuthorInterface extends JFrame implements ActionListener{
         } else if (e.getSource() == logOut) {
             this.dispose();
             JOptionPane.showMessageDialog(null, "You have logged out successfully!");
+            new LoginInterface();
         } else if (e.getSource() == btnAddPdf) {
             JFileChooser fileChooser = new JFileChooser();
             fileChooser.setDialogTitle("Please select your revised file");
