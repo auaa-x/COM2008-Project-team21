@@ -12,16 +12,6 @@ import java.io.*;
 public class JournalController extends SqlController {
 
     private static int currentJournal;
-    protected static LinkedList<Integer> articlesForEditor = new LinkedList<Integer>();
-
-    /**
-     * Get list of submission ids of articles to publish
-     * @return list of submissionIds
-     */
-    public static LinkedList<Integer> getArticleList() {
-        return articlesForEditor;
-    }
-
 
     /**
      * Set currently viewed journal
@@ -120,7 +110,7 @@ public class JournalController extends SqlController {
         boolean result = false;
         int volNum = 0;
         int pubYear = Calendar.getInstance().get(Calendar.YEAR);
-        openConnection();  ;
+        openConnection();
         PreparedStatement pstmt1 = null;
         PreparedStatement pstmt2 = null;
         PreparedStatement pstmt3 = null;
@@ -180,6 +170,7 @@ public class JournalController extends SqlController {
         PreparedStatement pstmt1 = null;
         PreparedStatement pstmt2 = null;
             try {
+            	int pubMonth = Calendar.getInstance().get(Calendar.MONTH) + 1;
 
                 // find what's the noNum of the new edition
                 pstmt1 = con.prepareStatement("SELECT COUNT(*) FROM `team021`.`edition` WHERE (`ISSN` = ?) and (`volNum` = ?)");
@@ -191,15 +182,16 @@ public class JournalController extends SqlController {
                 }
 
                 // update database
-                pstmt2 = con.prepareStatement("INSERT INTO `team021`.`edition` (`noNum`, `volNum`, `ISSN`) VALUES (?, ?, ?)");
+                pstmt2 = con.prepareStatement("INSERT INTO `team021`.`edition` (`noNum`, `volNum`, `ISSN`, `pubMonth`) VALUES (?, ?, ?, ?)");
                 pstmt2.setInt(1, noNum);
                 pstmt2.setInt(2, volNum);
                 pstmt2.setInt(3, issn);
+                pstmt2.setInt(4, pubMonth);
 
                 int count = pstmt2.executeUpdate();
                 if (count != 0) {
                     result = true;
-                    System.out.println("Edition number: " + noNum + " volume: " + volNum + " journal: " + issn + " added");
+                    System.out.println("Edition number: " + noNum + " volume: " + volNum + " journal: " + issn + " pubMonth: " + pubMonth + " added");
                 }
 
             } catch (SQLException ex) {
@@ -208,50 +200,51 @@ public class JournalController extends SqlController {
                 if (pstmt1 != null) pstmt1.close();
                 if (pstmt2 != null) pstmt2.close();
                 closeConnection();
+                publishArticles(issn, noNum, volNum);
             }
         return result;
     }
-
+    
 
     /**
-     * Publish the next edition of a given journal
+     * Add articles to published_articles
      * @param issn
      * @param volNum
      * @param noNum
-     * @return result true if edition is published successfully
+     * @return result true if articles published successfully
      * @throws SQLException
      */
-    public static boolean publishNextEdition(int issn, int volNum, int noNum) throws SQLException {
+    public static boolean publishArticles(int issn, int noNum, int volNum) throws SQLException {
         boolean result = false;
-        int artCount = getArtCount(issn, volNum, noNum);
+        LinkedList <Article> articles = getArticlesToPublish(issn);
+        int artCount = getArticlesToPublish(issn).size();
+        openConnection();
+        PreparedStatement pstmt = null;
+        PreparedStatement pstmt2 = null;
+            try {
+            	if (artCount >= 3 && artCount <= 8) {
+            		for(Article a : articles) {
+            			int submissionId = a.getSubmissionID();
+            			pstmt = con.prepareStatement(" INSERT INTO `team021`.`published_article` (`submissionID`, `noNum`, `volNum`)"
+		                        + " VALUES (?, ?, ?)");
+		                pstmt.setInt(1, submissionId);
+		                pstmt.setInt(2, noNum);
+		                pstmt.setInt(3, volNum);
+		                int count = pstmt.executeUpdate();
+		                pstmt2 = con.prepareStatement("UPDATE `team021`.`article` SET `isPublished` = 1 WHERE (`submissionID` = ?)");
+		                pstmt2.setInt(1, submissionId);
+		                int count2 = pstmt2.executeUpdate();
+		                if (count != 0 && count2 != 0) result = true;
+	            	}
+            	}
 
-        // check if the number of articles in edition is allowed
-        if (artCount >= 3 && artCount <= 8) {
-            openConnection();
-            PreparedStatement pstmt = null;
-                try {
-                    int pubMonth = Calendar.getInstance().get(Calendar.MONTH) + 1;
-                    System.out.println(pubMonth);
-                    // update database
-                    pstmt = con.prepareStatement("UPDATE `team021`.`edition` SET `pubMonth` = ?, `isPublished` = '1' WHERE (`ISSN` = ?) and (`volNum` = ?) and (`noNum` = ?)");
-                    pstmt.setInt(1, pubMonth);
-                    pstmt.setInt(2, issn);
-                    pstmt.setInt(3, volNum);
-                    pstmt.setInt(4, noNum);
-
-                    int count = pstmt.executeUpdate();
-                    if (count != 0) {
-                        result = true;
-                        System.out.println("Edition number: " + noNum + ", volume: " + volNum + ", journal: " + issn + " published");
-                    }
-
-                } catch (SQLException ex) {
-                    ex.printStackTrace();
-                } finally {
-                    if (pstmt != null) pstmt.close();
-                    closeConnection();
-                }
-        }
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            } finally {
+                if (pstmt != null) pstmt.close();
+                if (pstmt2 != null) pstmt2.close();
+                closeConnection();
+            }
         return result;
     }
 
@@ -267,6 +260,43 @@ public class JournalController extends SqlController {
     public static int getArtCount(int issn, int volNum, int noNum) throws SQLException {
         int artCount = getPublishedArticles(issn, volNum, noNum).size();
         return artCount;
+    }
+    
+    /**
+     * Get a list of all articles to publish in next edition
+     * @param issn
+     * @return list of articles
+     * @throws SQLException
+     */
+    public static LinkedList<Article> getArticlesToPublish(int issn) throws SQLException {
+        LinkedList<Article> articles = new LinkedList<Article>();
+        openConnection();
+        PreparedStatement pstmt = null;
+        try {
+            pstmt = con.prepareStatement("SELECT * FROM article a, submission s WHERE (a.submissionID = s.submissionID) "
+            		+ "and (a.isDelayed = 0) and (s.status = ?) and (a.ISSN = ? "); 
+            pstmt.setString(1, "COMPLETED");
+            pstmt.setInt(2, issn);
+            ResultSet res = pstmt.executeQuery();
+
+            while (res.next()) {
+            	int submissionID = res.getInt("submissionID");
+                String title = res.getString("title");
+                String artAbstract = res.getString("abstract");
+                //without linkedFinalPDF
+                boolean isPublished = res.getBoolean("isPublished");
+                String mAuthorEmail = res.getString("mAuthorEmail");
+                boolean isDelayed = res.getBoolean("isDelayed");
+                Article article = new Article(submissionID, title, artAbstract, isPublished, issn, mAuthorEmail, isDelayed);
+                articles.add(article);
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        return articles;
     }
 
 
@@ -321,7 +351,8 @@ public class JournalController extends SqlController {
                 boolean isPublished = res.getBoolean("isPublished");
                 int issn = res.getInt("ISSN");
                 String mAuthorEmail = res.getString("mAuthorEmail");
-                Article article = new Article(submissionID, title, artAbstract, isPublished, issn, mAuthorEmail);
+                boolean isDelayed = res.getBoolean("isDelayed");
+                Article article = new Article(submissionID, title, artAbstract, isPublished, issn, mAuthorEmail, isDelayed);
                 articles.add(article);
             }
         } catch (SQLException ex) {
@@ -462,8 +493,9 @@ public class JournalController extends SqlController {
                 String artAbstract = res.getString("abstract");
                 boolean isPublished = res.getBoolean("isPublished");
                 String mAuthorEmail = res.getString("mAuthorEmail");
+                boolean isDelayed = res.getBoolean("isDelayed");
 
-                Article article = new Article(submissionID, title, artAbstract, isPublished, issn, mAuthorEmail);
+                Article article = new Article(submissionID, title, artAbstract, isPublished, issn, mAuthorEmail, isDelayed);
                 articles.add(article);
             }
         } catch (SQLException ex) {
@@ -771,9 +803,10 @@ public class JournalController extends SqlController {
                 String artAbstract = res.getString("abstract");
                 boolean isPublished = res.getBoolean("isPublished");
                 String mAuthorEmail = res.getString("mAuthorEmail");
+                boolean isDelayed = res.getBoolean("isDelayed");
                 int costCovered = res.getInt("costCovered");
                 if (costCovered >= 3) {
-	                Article article = new Article(submissionId, title, artAbstract, isPublished, issn, mAuthorEmail);
+	                Article article = new Article(submissionId, title, artAbstract, isPublished, issn, mAuthorEmail, isDelayed);
 	                articles.add(article);
                 }
             }
@@ -786,46 +819,8 @@ public class JournalController extends SqlController {
         return articles;
     }
 
-    /**
-     * Add article to articles to publish list
-     * @param answer
-     */
-    public static void addToToPublish(int submissionId) {
-    	 articlesForEditor.add(Integer.valueOf(submissionId));
-    }
 
-    /**
-     * Publish articles from list to publish
-     * @param submissionId
-     * @return list of articles
-     * @throws SQLException
-     */
-    public static boolean publishArticles(int submissionId) throws SQLException {
-    	boolean result = false;
-        openConnection();
-        PreparedStatement pstmt = null;
-        try {
-        	pstmt = con.prepareStatement("SELECT * FROM article WHERE submissionID = ? ");
-            pstmt.setInt(1, submissionId);
-            ResultSet res = pstmt.executeQuery();
-            if (res.next()) {
-            	String title = res.getString("title");
-                String artAbstract = res.getString("abstract");
-                boolean isPublished = res.getBoolean("isPublished");
-                int issn = res.getInt("ISSN");
-                String mAuthorEmail = res.getString("mAuthorEmail");
-                Article article = new Article(submissionId, title, artAbstract, isPublished, issn, mAuthorEmail);
-                //articlesForEditor.add(article);
-                result = true;
-            }
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        } finally {
-            if (pstmt != null) pstmt.close();
-            closeConnection();
-        }
-        return result;
-    }
+   
     /**
      * Get a suggested action for a given submission
      * @param submissionID
@@ -914,9 +909,11 @@ public class JournalController extends SqlController {
     public static void main (String[] args) throws IOException {
     	//File pdfFile = new File("./Systems Design Project.pdf");
         try {
-            System.out.println(getJournalByArticle(1));
-            System.out.println(getFinalVerdicts(1));
-            System.out.println(getSuggestion(1));
+            //System.out.println(getJournalByArticle(1));
+            //System.out.println(getFinalVerdicts(1));
+        	System.out.println(getArticlesToPublish(77777777));
+            System.out.println(publishArticles(7777777, 5, 1));
+            
 
         } catch (SQLException ex) {
             ex.printStackTrace();

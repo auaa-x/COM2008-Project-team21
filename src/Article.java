@@ -10,14 +10,16 @@ public class Article {
     private boolean isPublished;
     private int issn;
     private String mAuthorEmail;
+    private boolean isDelayed;
     
-    Article(int submissionID, String title, String artAbstract, boolean isPublished, int issn, String mAuthorEmail) {
+    Article(int submissionID, String title, String artAbstract, boolean isPublished, int issn, String mAuthorEmail, boolean isDelayed) {
         this.submissionID = submissionID;
         this.title = title;
         this.artAbstract = artAbstract;
         this.isPublished = isPublished;
         this.issn = issn;
         this.mAuthorEmail = mAuthorEmail;
+        this.isDelayed = isDelayed;
     }
     
     public int getSubmissionID() {
@@ -43,6 +45,10 @@ public class Article {
     
     public String getMAuthorEmail() {
         return mAuthorEmail;
+    }
+    
+    public boolean getIsDelayed() {
+    	return isDelayed;
     }
     
     public String toString() {

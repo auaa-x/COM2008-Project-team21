@@ -260,7 +260,8 @@ public class ArticleController extends SqlController {
                 boolean isPublished = res.getBoolean("isPublished");
                 int issn = res.getInt("ISSN");
                 String mAuthorEmail = res.getString("mAuthorEmail");
-                article = new Article(submissionId, title, artAbstract, isPublished, issn, mAuthorEmail);
+                boolean isDelayed = res.getBoolean("isDelayed");
+                article = new Article(submissionId, title, artAbstract, isPublished, issn, mAuthorEmail, isDelayed);
             }
         } catch (SQLException ex) {
             ex.printStackTrace();
@@ -294,8 +295,8 @@ public class ArticleController extends SqlController {
                 boolean isPublished = res.getBoolean("isPublished");
                 int issn = res.getInt("ISSN");
                 String mAuthorEmail = res.getString("mAuthorEmail");
-                
-                Article article = new Article(submissionID, title, artAbstract, isPublished, issn, mAuthorEmail);
+                boolean isDelayed = res.getBoolean("isDelayed");
+                Article article = new Article(submissionID, title, artAbstract, isPublished, issn, mAuthorEmail, isDelayed);
                 articles.add(article);
             }
         } catch (SQLException ex) {
@@ -403,6 +404,60 @@ public class ArticleController extends SqlController {
         return result;
     }
     
+    /**
+     *  Set article to isDelayed
+     * @param submissionId
+     * @return true if update successful, otherwise false
+     * @throws SQLException
+     */
+    public static boolean setToDelayed(int submissionId) throws SQLException {
+        boolean result = false;
+        if (checkArticle(submissionId)) {
+            openConnection();
+            PreparedStatement pstmt = null;
+            try {
+                pstmt = con.prepareStatement("UPDATE `team021`.`article` SET `isDelayed` = 1 WHERE (`submissionId` = ?)");
+                pstmt.setInt(1, submissionId);
+
+                int count = pstmt.executeUpdate();
+                if (count != 0) result = true;
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            } finally {
+                if (pstmt != null) pstmt.close();
+                closeConnection();
+            }
+        }
+        return result;
+    }
+    
+    /**
+     *  Set article to isDelayed = 0
+     * @param submissionId
+     * @return true if update successful, otherwise false
+     * @throws SQLException
+     */
+    public static boolean setToAccepted(int submissionId) throws SQLException {
+        boolean result = false;
+        if (checkArticle(submissionId)) {
+            openConnection();
+            PreparedStatement pstmt = null;
+            try {
+                pstmt = con.prepareStatement("UPDATE `team021`.`article` SET `isDelayed` = 0 WHERE (`submissionId` = ?)");
+                pstmt.setInt(1, submissionId);
+
+                int count = pstmt.executeUpdate();
+                if (count != 0) result = true;
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            } finally {
+                if (pstmt != null) pstmt.close();
+                closeConnection();
+            }
+        }
+        return result;
+    }
+    
     
     /**
      * Get all submissions with given status
@@ -440,14 +495,14 @@ public class ArticleController extends SqlController {
     
     
     public static void main (String[] args) throws IOException {
-    	File pdfFile = new File("./Systems Design Project.pdf");
+    	//File pdfFile = new File("./Systems Design Project.pdf");
         try {
 
             //System.out.println(getSubmissionByStatus(Status.SUBMITTED));
             //System.out.println(getAuthors(4));
             //System.out.println(updatePDFFile(4, pdfFile));
-            System.out.println(getArticlePDF(4));
-            System.out.println(getArticle(4));
+            //System.out.println(getArticlePDF(4));
+            System.out.println(setToAccepted(1));
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
