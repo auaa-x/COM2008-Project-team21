@@ -97,6 +97,7 @@ public class ReaderInterface extends JFrame implements ActionListener {
             for (Volume volume : JournalController.getVolumes(journal.getIssn())) {
                 DefaultMutableTreeNode volume1 = new DefaultMutableTreeNode(volume.toString());
                 journal1.add(volume1);
+                // CHANge TO GET PUBLISHED EDITIONS
                 for (Edition edition : JournalController.getEditions(volume.getIssn(), volume.getVolNum())) {
                     DefaultMutableTreeNode edition1 = new DefaultMutableTreeNode(edition.toString());
                     volume1.add(edition1);

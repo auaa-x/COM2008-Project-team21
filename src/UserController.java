@@ -494,7 +494,7 @@ public class UserController extends SqlController {
         openConnection();
         PreparedStatement pstmt = null;
         try {
-            pstmt = con.prepareStatement("DELETE FROM `team021`.`editor` WHERE (`email` = ?) and (`ISSN` = ?);");
+            pstmt = con.prepareStatement("SELECT * FROM journal WHERE (`chiefEditorEmail` =?) and (`ISSN` = ?)");
             pstmt.setString(1, email);
             pstmt.setInt(2, issn);
 
@@ -507,7 +507,34 @@ public class UserController extends SqlController {
             if (pstmt != null) pstmt.close();
             closeConnection();
         }
+        if(!checkEditor(email)) removeRole(email, 1);
         removeAccountIfUseless(email);
+        return result;
+    }
+    
+    
+    /**
+     * Check if given editor exists in editor table
+     * @param email
+     * @return result true if editor exists, false otherwise
+     * @throws SQLException
+     */
+    public static boolean checkEditor(String email) throws SQLException {
+        boolean result = false;
+        openConnection();
+        PreparedStatement pstmt = null;
+        try {
+            pstmt = con.prepareStatement("SELECT * FROM editor WHERE `email` = ?");
+            pstmt.setString(1, email);;
+
+            ResultSet res = pstmt.executeQuery();
+            if (res.next()) result = true;
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
         return result;
     }
 
@@ -620,12 +647,7 @@ public class UserController extends SqlController {
             pstmt = con.prepareStatement("DELETE FROM `team021`.`author` WHERE (`email` = ?) and (`submissionID` = ?)");
             pstmt.setString(1, email);
             pstmt.setInt(2, submissionID);
-
-            // REMOVE ROLE AS WELL HERE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            // sprawdz czy jest w tabeli autora
-            // jak nie ma to uzyj removeRole
-            // to samo dla reviewera i editora
-
+            
             int count = pstmt.executeUpdate();
             if (count != 0) result = true;
             System.out.println("Author deleted: " + email);
@@ -635,7 +657,35 @@ public class UserController extends SqlController {
             if (pstmt != null) pstmt.close();
             closeConnection();
         }
+        // check if there are any more entries for this author in author table, if not remove role
+        if(!checkAuthor(email)) removeRole(email, 2);
         removeAccountIfUseless(email);
+        return result;
+    }
+    
+    
+    /**
+     * Check if given author exists in editor table
+     * @param email
+     * @return result true if author exists, false otherwise
+     * @throws SQLException
+     */
+    public static boolean checkAuthor(String email) throws SQLException {
+        boolean result = false;
+        openConnection();
+        PreparedStatement pstmt = null;
+        try {
+            pstmt = con.prepareStatement("SELECT * FROM author WHERE `email` = ?");
+            pstmt.setString(1, email);;
+
+            ResultSet res = pstmt.executeQuery();
+            if (res.next()) result = true;
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
         return result;
     }
 
@@ -696,7 +746,35 @@ public class UserController extends SqlController {
             if (pstmt != null) pstmt.close();
             closeConnection();
         }
+        // check if there are any more entries for this reviewer in reviewer table, if not remove role
+        if(!checkReviewer(email)) removeRole(email, 3);
         removeAccountIfUseless(email);
+        return result;
+    }
+    
+    
+    /**
+     * Check if given reviewer exists in editor table
+     * @param email
+     * @return result true if reviewer exists, false otherwise
+     * @throws SQLException
+     */
+    public static boolean checkReviewer(String email) throws SQLException {
+        boolean result = false;
+        openConnection();
+        PreparedStatement pstmt = null;
+        try {
+            pstmt = con.prepareStatement("SELECT * FROM editor WHERE `email` = ?");
+            pstmt.setString(1, email);;
+
+            ResultSet res = pstmt.executeQuery();
+            if (res.next()) result = true;
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
         return result;
     }
 
@@ -1010,10 +1088,11 @@ public class UserController extends SqlController {
 
             //changePassword("james.potter@warwick.ac.uk", "test_password2", "test_password", "test_password");
             //updateTitle("james.potter@warwick.ac.uk","Ms");
-            System.out.println(getUsersTitle("hermiona.granger@hogwarts.ac.uk"));
-            System.out.println(getUsersForename("hermiona.granger@hogwarts.ac.uk"));
-            System.out.println(getUsersSurname("hermiona.granger@hogwarts.ac.uk"));
-            System.out.println(getUsersUniversity("hermiona.granger@hogwarts.ac.uk"));
+            // System.out.println(getUsersTitle("hermiona.granger@hogwarts.ac.uk"));
+            // System.out.println(getUsersForename("hermiona.granger@hogwarts.ac.uk"));
+            // System.out.println(getUsersSurname("hermiona.granger@hogwarts.ac.uk"));
+            // System.out.println(getUsersUniversity("hermiona.granger@hogwarts.ac.uk"));
+            System.out.println(checkEditor("ron.weasley@dung.ac.uk"));
 
 
         } catch (SQLException ex) {

@@ -265,26 +265,7 @@ public class JournalController extends SqlController {
      * @throws SQLException
      */
     public static int getArtCount(int issn, int volNum, int noNum) throws SQLException {
-        int artCount = 0;
-        openConnection();  ;
-        PreparedStatement pstmt = null;
-            try {
-
-                pstmt = con.prepareStatement("SELECT * FROM `team021`.`edition` WHERE (`ISSN` = ?) and (`volNum` = ?) and (`noNum` = ?)");
-                pstmt.setInt(1, issn);
-                pstmt.setInt(2, volNum);
-                pstmt.setInt(3, noNum);
-                ResultSet res = pstmt.executeQuery();
-                if (res.next()) {
-                    artCount = res.getInt("artCount");
-                }
-
-            } catch (SQLException ex) {
-                ex.printStackTrace();
-            } finally {
-                if (pstmt != null) pstmt.close();
-                closeConnection();
-            }
+        int artCount = getPublishedArticles(issn, volNum, noNum).size();
         return artCount;
     }
 
