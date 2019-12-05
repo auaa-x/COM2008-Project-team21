@@ -814,31 +814,37 @@ public class JournalController extends SqlController {
     
     /**
      * Accept an article for a journal as the editor
-     * @param submissionID
-     * @return list of final verdicts
+     * @param submissionId
      * @throws SQLException
      */
-    public static boolean acceptAnArticle(int submissionID) throws SQLException {
-        boolean result = false;
-        openConnection();
-        PreparedStatement pstmt = null;
-        try {
-            // get all others editors of the journal
-            pstmt = con.prepareStatement("SELECT * FROM `verdict` WHERE `submissionID` = ?");
-            pstmt.setInt(1, submissionID);
-            
-
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        } finally {
-            if (pstmt != null) pstmt.close();
-            closeConnection();
-        }
-        return result;
+    public static void acceptAnArticle(int submissionId) throws SQLException {
+        // set status to completed
+        ArticleController.updateStatus(submissionId, Status.COMPLETED);
+        
+        // delete authors
+        deleteAuthors(submissionId);
         
     }
+    
+    
+    /**
+     * Delete all reviewers of a given submission after completing the review stage
+     * @param submissionId
+     * @return true if deletion successful, otherwise false
+     * @throws SQLException
+     */
+    private static void deleteAuthors(int submissionId) throws SQLException {
+        // get emails of all authors
+        LinkedList<String> authors = ArticleController.getAuthors(submissionId);
+        
+        // delete authors
+        for(String author : authors) {
+            UserController.deleteAuthor(author, submissionId);
+        }
 
+    }
 
+    
     public static void main (String[] args) throws IOException {
     	//File pdfFile = new File("./Systems Design Project.pdf");
         try {
