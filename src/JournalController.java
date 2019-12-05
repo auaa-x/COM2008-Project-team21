@@ -10,28 +10,37 @@ import java.util.LinkedList;
 import java.io.*;
 
 public class JournalController extends SqlController {
-    
-    private static int currentJournal;
 
-    
+    private static int currentJournal;
+    protected static LinkedList<Integer> articlesForEditor = new LinkedList<Integer>();
+
+    /**
+     * Get list of submission ids of articles to publish
+     * @return list of submissionIds
+     */
+    public static LinkedList<Integer> getArticleList() {
+        return articlesForEditor;
+    }
+
+
     /**
      * Set currently viewed journal
      * @param ISSN
      */
-    public static void setCurrentJournal(int issn) {
+    public static void setCurrentJournalIssn(int issn) {
         currentJournal = issn;
     }
-    
-    
+
+
     /**
      * Get currently viewed journal
      * @param ISSN
      */
-    public static int getCurrentJournal(int issn) {
+    public static int getCurrentJournalIssn() {
         return currentJournal;
     }
 
-    
+
 	/**
      * Create a new journal with all parameters
      * @param email
@@ -99,8 +108,8 @@ public class JournalController extends SqlController {
         }
      return result;
     }
-    
-    
+
+
     /**
      * Create a new volume for a given journal
      * @param ISSN
@@ -121,10 +130,10 @@ public class JournalController extends SqlController {
                 pstmt1.setInt(1, issn);
                 pstmt1.setInt(2, pubYear);
                 ResultSet res1 = pstmt1.executeQuery();
-                
+
                 // don't create new volume if one already exists this year
                 if (res1.next()) return false;
-                
+
                 // find out what's the volNum of the new volume
                 pstmt2 = con.prepareStatement("SELECT COUNT(*) FROM `team021`.`volume` WHERE (`ISSN` = ?)");
                 pstmt2.setInt(1, issn);
@@ -132,7 +141,7 @@ public class JournalController extends SqlController {
                 if (res2.next()) {
                     volNum = res2.getInt(1) + 1;
                 }
-                
+
                 // update database
                 pstmt3 = con.prepareStatement("INSERT INTO `team021`.`volume` (`volNum`, `pubYear`, `ISSN`) VALUES (?, ?, ?)");
                 pstmt3.setInt(1, volNum);
@@ -155,8 +164,8 @@ public class JournalController extends SqlController {
             }
         return result;
     }
-    
-    
+
+
     /**
      * Create a new edition for a given journal volume
      * @param ISSN
@@ -180,7 +189,7 @@ public class JournalController extends SqlController {
                 if (res.next()) {
                     noNum = res.getInt(1) + 1;
                 }
-                
+
                 // update database
                 pstmt2 = con.prepareStatement("INSERT INTO `team021`.`edition` (`noNum`, `volNum`, `ISSN`) VALUES (?, ?, ?)");
                 pstmt2.setInt(1, noNum);
@@ -192,7 +201,7 @@ public class JournalController extends SqlController {
                     result = true;
                     System.out.println("Edition number: " + noNum + " volume: " + volNum + " journal: " + issn + " added");
                 }
-                
+
             } catch (SQLException ex) {
                 ex.printStackTrace();
             } finally {
@@ -202,8 +211,8 @@ public class JournalController extends SqlController {
             }
         return result;
     }
-    
-    
+
+
     /**
      * Publish the next edition of a given journal
      * @param issn
@@ -215,14 +224,15 @@ public class JournalController extends SqlController {
     public static boolean publishNextEdition(int issn, int volNum, int noNum) throws SQLException {
         boolean result = false;
         int artCount = getArtCount(issn, volNum, noNum);
+
         // check if the number of articles in edition is allowed
         if (artCount >= 3 && artCount <= 8) {
-            openConnection();  ;
+            openConnection();
             PreparedStatement pstmt = null;
                 try {
                     int pubMonth = Calendar.getInstance().get(Calendar.MONTH) + 1;
                     System.out.println(pubMonth);
-                    // update database 
+                    // update database
                     pstmt = con.prepareStatement("UPDATE `team021`.`edition` SET `pubMonth` = ?, `isPublished` = '1' WHERE (`ISSN` = ?) and (`volNum` = ?) and (`noNum` = ?)");
                     pstmt.setInt(1, pubMonth);
                     pstmt.setInt(2, issn);
@@ -234,7 +244,7 @@ public class JournalController extends SqlController {
                         result = true;
                         System.out.println("Edition number: " + noNum + ", volume: " + volNum + ", journal: " + issn + " published");
                     }
-                    
+
                 } catch (SQLException ex) {
                     ex.printStackTrace();
                 } finally {
@@ -244,7 +254,8 @@ public class JournalController extends SqlController {
         }
         return result;
     }
-    
+
+
     /**
      * Get article counter of a given edition of a journal
      * @param issn
@@ -259,7 +270,6 @@ public class JournalController extends SqlController {
         PreparedStatement pstmt = null;
             try {
 
-                // find what's the noNum of the new edition
                 pstmt = con.prepareStatement("SELECT * FROM `team021`.`edition` WHERE (`ISSN` = ?) and (`volNum` = ?) and (`noNum` = ?)");
                 pstmt.setInt(1, issn);
                 pstmt.setInt(2, volNum);
@@ -268,7 +278,7 @@ public class JournalController extends SqlController {
                 if (res.next()) {
                     artCount = res.getInt("artCount");
                 }
-                
+
             } catch (SQLException ex) {
                 ex.printStackTrace();
             } finally {
@@ -307,8 +317,8 @@ public class JournalController extends SqlController {
         }
         return journals;
     }
-    
-    
+
+
     /**
      * Get a list of all articles from database
      * @return list of articles
@@ -323,7 +333,7 @@ public class JournalController extends SqlController {
             ResultSet res = stmt.executeQuery("SELECT * FROM `article`");
 
             while (res.next()) {
-            	int submissionID = res.getInt("submissionID"); 
+            	int submissionID = res.getInt("submissionID");
                 String title = res.getString("title");
                 String artAbstract = res.getString("abstract");
                 //without linkedFinalPDF
@@ -341,8 +351,8 @@ public class JournalController extends SqlController {
         }
         return articles;
     }
-    
-    
+
+
     /**
      * Get a journal by issn
      * @param issn
@@ -356,10 +366,10 @@ public class JournalController extends SqlController {
         try {
             pstmt = con.prepareStatement("SELECT * FROM `journal` WHERE issn = ?");
             pstmt.setInt(1, issn);
-            ResultSet res = pstmt.executeQuery();      
-                       
+            ResultSet res = pstmt.executeQuery();
+
             if (res.next()) {
-                String title = res.getString("title"); 
+                String title = res.getString("title");
                 String chief = res.getString("chiefEditorEmail");
                 journal = new Journal(issn, title, chief);
             }
@@ -371,11 +381,11 @@ public class JournalController extends SqlController {
         }
         return journal;
     }
-    
+
     /**
      * Get journal by article's submissionID
      * @param submissionId
-     * @return journal 
+     * @return journal
      * @throws SQLException
      * @throws IOException
      */
@@ -385,26 +395,26 @@ public class JournalController extends SqlController {
         int issn = 0;
         Journal journal = null;
         try {
-            
+
             pstmt = con.prepareStatement("SELECT * FROM article WHERE (submissionID = ?) ");
-            pstmt.setInt(1, submissionId); 
+            pstmt.setInt(1, submissionId);
             ResultSet res = pstmt.executeQuery();
-            
+
             while (res.next()) {
                 issn = res.getInt("ISSN");
             }
-            journal = getJournal(issn);
-            
+
         } catch (SQLException ex) {
             ex.printStackTrace();
         } finally {
             if (pstmt != null) pstmt.close();
             closeConnection();
         }
+        journal = getJournal(issn);
         return journal;
     }
 
-    
+
     /**
      * Get a list of all editions by issn and volume number
      * @param issn
@@ -421,7 +431,7 @@ public class JournalController extends SqlController {
             pstmt.setInt(1, issn);
             pstmt.setInt(2, volNum);
             ResultSet res = pstmt.executeQuery();
-            
+
 
             while (res.next()) {
             	int noNum = res.getInt("noNum");
@@ -430,7 +440,7 @@ public class JournalController extends SqlController {
                 int published = res.getInt("isPublished");
                 boolean isPublished = false;
                 if (published == 1) isPublished = true;
-            	
+
                 Edition edition = new Edition(issn, volNum, noNum, pubMonth, artCount, isPublished);
                 editions.add(edition);
             }
@@ -442,8 +452,8 @@ public class JournalController extends SqlController {
         }
         return editions;
     }
-    
-    
+
+
     /**
      * Get all published articles by journal, volume and edition
      * @param issn
@@ -457,21 +467,21 @@ public class JournalController extends SqlController {
         openConnection();
         PreparedStatement pstmt = null;
         try {
-            
+
             pstmt = con.prepareStatement("SELECT * FROM article a, published_article p WHERE (a.submissionID = p.submissionID) "
                     + "and (a.ISSN = ?) and (a.isPublished = 1) and (p.volNum = ?) and (p.noNum = ?)");
             pstmt.setInt(1, issn);
             pstmt.setInt(2, volNum);
-            pstmt.setInt(3, noNum); 
+            pstmt.setInt(3, noNum);
             ResultSet res = pstmt.executeQuery();
-            
+
             while (res.next()) {
                 int submissionID = res.getInt("submissionID");
                 String title = res.getString("title");
                 String artAbstract = res.getString("abstract");
                 boolean isPublished = res.getBoolean("isPublished");
                 String mAuthorEmail = res.getString("mAuthorEmail");
-                
+
                 Article article = new Article(submissionID, title, artAbstract, isPublished, issn, mAuthorEmail);
                 articles.add(article);
             }
@@ -483,10 +493,10 @@ public class JournalController extends SqlController {
         }
         return articles;
     }
-    
-    
+
+
     /**
-     * Get a list of a given editor journals
+     * Get a list of journals issns of a given editor
      * @param email
      * @return list of journals
      * @throws SQLException
@@ -514,7 +524,7 @@ public class JournalController extends SqlController {
         return journals;
     }
 
-    
+
     /**
      * Get a list of all volumes of a given journal
      * @param issn
@@ -546,8 +556,8 @@ public class JournalController extends SqlController {
         }
         return volumes;
     }
-    
-    
+
+
     /**
      * Get a list of all editors' emails of a given journal
      * @param issn
@@ -576,8 +586,8 @@ public class JournalController extends SqlController {
         }
         return editors;
     }
-    
-    
+
+
     /**
      * Allows a chief editor of a given journal to retire if possible
      * and automatically appoints the new chief editor
@@ -589,10 +599,10 @@ public class JournalController extends SqlController {
         boolean result = false;
         String oldChiefEmail = email;
         String newChiefEmail = null;
-        
+
         // get all editors of a given journal
         LinkedList<String> editors = getEditors(issn);
-        
+
         openConnection();
         PreparedStatement pstmt = null;
         try {
@@ -626,7 +636,7 @@ public class JournalController extends SqlController {
         return result;
     }
 
-    
+
     /**
      * Allows an editor of a given journal to retire if possible
      * @param email
@@ -644,7 +654,7 @@ public class JournalController extends SqlController {
             pstmt1 = con.prepareStatement("SELECT * FROM `editor` WHERE `ISSN` = ?");
             pstmt1.setInt(1, issn);
             ResultSet res = pstmt1.executeQuery();
-            
+
             // ensure at least two editors are in the board now
             if (res.next()) {
                 if (res.next()) {
@@ -665,10 +675,10 @@ public class JournalController extends SqlController {
             closeConnection();
         }
         return result;
-        
+
     }
-    
-    
+
+
     /**
      * Checks if there exists a conflict between an editor and a submission
      * @param email - editor's email
@@ -683,39 +693,39 @@ public class JournalController extends SqlController {
         openConnection();
         PreparedStatement pstmt = null;
         try {
-            
+
             // get uni affiliation of the editor
             pstmt = con.prepareStatement("SELECT * FROM `user` WHERE `email` = ?");
             pstmt.setString(1, editorEmail);
             ResultSet res = pstmt.executeQuery();
-            
+
             String editorUni;
             if (res.next()) {
                 editorUni = res.getString("uniAffiliation");
             } else return result;
-            
-            
+
+
             // get uni affiliations of authors
             for (String e : authors) {
                 pstmt.clearParameters();
                 pstmt.setString(1, e);
                 res = pstmt.executeQuery();
-                
+
                 String authorUni;
                 if (res.next()) {
                     authorUni = res.getString("uniAffiliation");
                     authorsUnis.add(authorUni);
                 } else return result;
             }
-            
+
             // check if there is a conflict
             for (String u : authorsUnis) {
                 if (u != null && u.equals(editorUni)) return result;
             }
-            
+
             // if no return up to this point then there is no conflict
             result = false;
-            
+
         } catch (SQLException ex) {
             ex.printStackTrace();
         } finally {
@@ -726,14 +736,207 @@ public class JournalController extends SqlController {
     }
 
 
+    /**
+     * Get a list of final verdicts of a given submission
+     * @param submissionID
+     * @return list of final verdicts
+     * @throws SQLException
+     */
+    public static LinkedList<Verdict> getFinalVerdicts(int submissionID) throws SQLException {
+        LinkedList<Verdict> verdicts = new LinkedList<Verdict>();
+        openConnection();
+        PreparedStatement pstmt = null;
+        try {
+            // get all others editors of the journal
+            pstmt = con.prepareStatement("SELECT * FROM `verdict` WHERE `submissionID` = ?");
+            pstmt.setInt(1, submissionID);
+            ResultSet res = pstmt.executeQuery();
+
+            while(res.next()) {
+                Verdict verdict = Verdict.valueOf(res.getString("value"));
+                verdicts.add(verdict);
+            }
+
+
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        return verdicts;
+
+    }
+
+    /**
+     * Get a list of all articles by status and journal
+     * @param status
+     * @param issn
+     * @return list of articles
+     * @throws SQLException
+     */
+    public static LinkedList<Article> getArtByStatusAndJournal(Status status, int issn) throws SQLException {
+        LinkedList<Article> articles = new LinkedList<Article>();
+        openConnection();
+        PreparedStatement pstmt = null;
+        try {
+        	pstmt = con.prepareStatement("SELECT * FROM article a, submission s WHERE (a.ISSN =?) and (s.submissionID = a.submissionID) and (s.status = ?) ");
+            pstmt.setInt(1, issn);
+            pstmt.setString(2, status.name());
+            ResultSet res = pstmt.executeQuery();
+            while (res.next()) {
+            	int submissionId = res.getInt("submissionID");
+            	String title = res.getString("title");
+                String artAbstract = res.getString("abstract");
+                boolean isPublished = res.getBoolean("isPublished");
+                String mAuthorEmail = res.getString("mAuthorEmail");
+                int costCovered = res.getInt("costCovered");
+                if (costCovered >= 3) {
+	                Article article = new Article(submissionId, title, artAbstract, isPublished, issn, mAuthorEmail);
+	                articles.add(article);
+                }
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        return articles;
+    }
+
+    /**
+     * Add article to articles to publish list
+     * @param answer
+     */
+    public static void addToToPublish(int submissionId) {
+    	 articlesForEditor.add(Integer.valueOf(submissionId));
+    }
+
+    /**
+     * Publish articles from list to publish
+     * @param submissionId
+     * @return list of articles
+     * @throws SQLException
+     */
+    public static boolean publishArticles(int submissionId) throws SQLException {
+    	boolean result = false;
+        openConnection();
+        PreparedStatement pstmt = null;
+        try {
+        	pstmt = con.prepareStatement("SELECT * FROM article WHERE submissionID = ? ");
+            pstmt.setInt(1, submissionId);
+            ResultSet res = pstmt.executeQuery();
+            if (res.next()) {
+            	String title = res.getString("title");
+                String artAbstract = res.getString("abstract");
+                boolean isPublished = res.getBoolean("isPublished");
+                int issn = res.getInt("ISSN");
+                String mAuthorEmail = res.getString("mAuthorEmail");
+                Article article = new Article(submissionId, title, artAbstract, isPublished, issn, mAuthorEmail);
+                articlesForEditor.add(article);
+                result = true;
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        return result;
+    }
+    /**
+     * Get a suggested action for a given submission
+     * @param submissionID
+     * @return a suggestion
+     * @throws SQLException
+     */
+    public static String getSuggestion(int submissionID) throws SQLException {
+        int s_accept = 0;
+        int w_accept = 0;
+        int w_reject = 0;
+        int s_reject = 0;
+
+        LinkedList<Verdict> verdicts = getFinalVerdicts(submissionID);
+
+        // count each verdict
+        for (Verdict v : verdicts) {
+            switch(v) {
+            case STRONG_ACCEPT:
+                s_accept++;
+                break;
+            case WEAK_ACCEPT:
+                w_accept++;
+                break;
+            case WEAK_REJECT:
+                w_reject++;
+                break;
+            case STRONG_REJECT:
+                s_reject++;
+                break;
+            }
+        }
+
+        // only champions and no detractors
+        if (s_accept >= 1 && s_reject == 0) return "Accept";
+
+        // only detractors and no champions
+        if (s_reject >= 1 && s_accept == 0) return "Reject";
+
+        // both champions and detractors
+        if (s_reject >= 1 && s_accept >= 1) return "You decide";
+
+        // no champions or detractors
+        if (s_reject == 0 && s_accept == 0) {
+            if (w_accept > w_reject) return "Accept";
+            if (w_accept < w_reject) return "Reject";
+        }
+
+        // should never reach this
+        return "No suggestion";
+    }
+
+
+    /**
+     * Accept an article for a journal as the editor
+     * @param submissionId
+     * @throws SQLException
+     */
+
+    public static void acceptAnArticle(int submissionId) throws SQLException {
+        // set status to completed
+        ArticleController.updateStatus(submissionId, Status.COMPLETED);
+        
+        // delete authors
+        deleteAuthors(submissionId);
+    }
+    
+    
+    /**
+     * Delete all reviewers of a given submission after completing the review stage
+     * @param submissionId
+     * @return true if deletion successful, otherwise false
+     * @throws SQLException
+     */
+    private static void deleteAuthors(int submissionId) throws SQLException {
+        // get emails of all authors
+        LinkedList<String> authors = ArticleController.getAuthors(submissionId);
+        
+        // delete authors
+        for(String author : authors) {
+            UserController.deleteAuthor(author, submissionId);
+        }
+
+    }
+
+    
     public static void main (String[] args) throws IOException {
     	//File pdfFile = new File("./Systems Design Project.pdf");
         try {
-            //System.out.println(getVolumes(77777777));
-            //System.out.println(checkEditorConflict("harry.potter@warwick.ac.uk", 1)); // conflict
-            //System.out.println(checkEditorConflict("harry.potter@warwick.ac.uk", 2)); // no conflict (but one uni null)
             System.out.println(getJournalByArticle(1));
-            
+            System.out.println(getFinalVerdicts(1));
+            System.out.println(getSuggestion(1));
+
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
