@@ -307,6 +307,7 @@ public class ReviewController extends SqlController {
         return result;
     }
     
+    
     /**
      * Get anonID by reviewer email and submissionID
      * @param email
@@ -337,6 +338,39 @@ public class ReviewController extends SqlController {
             closeConnection();
         }
         return anonID;
+    }
+    
+    
+    /**
+     * Get reviewer email by anonID and submissionID
+     * @param anonID
+     * @param submissionId
+     * @return reviewerEmail
+     * @throws SQLException
+     */
+    public static String getReviewerEmail(String anonID, int submissionId) throws SQLException {
+        String reviewerEmail = null;
+        openConnection();
+        PreparedStatement pstmt = null;
+        try {
+
+            // get the current reviewCount of the submission
+            pstmt = con.prepareStatement("SELECT * FROM `reviewer` WHERE (`anonID` = ?) and (`submissionID` = ?)");
+            pstmt.setString(1, anonID);
+            pstmt.setInt(2, submissionId);
+            ResultSet res = pstmt.executeQuery();
+
+            if (res.next()) {
+                reviewerEmail = res.getString("email");
+            }
+
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        return reviewerEmail;
     }
 
 
@@ -793,6 +827,7 @@ public class ReviewController extends SqlController {
             PreparedStatement pstmt = null;
             try {
 
+                // set verdict as final
                 pstmt = con.prepareStatement("UPDATE `team021`.`verdict` SET `isFinal` = 1 WHERE (`submissionID` = ?) and (`anonID` = ?)");
                 pstmt.setInt(1, submissionId);
                 pstmt.setString(2, anonId);
@@ -805,13 +840,36 @@ public class ReviewController extends SqlController {
                 closeConnection();
             }
             
-            // update submission's status if all 3 final verdicts have been received
-            if (getFinalVerdictsCount(submissionId) == 3) ArticleController.updateStatus(submissionId, Status.FINAL_VERDICTS_RECEIVED);
+            // update submission's status if all 3 final verdicts have been received and delete reviewers
+            if (getFinalVerdictsCount(submissionId) == 3) {
+                ArticleController.updateStatus(submissionId, Status.FINAL_VERDICTS_RECEIVED);
+                deleteReviewers(submissionId);
+            }
         }
         return result;
     }
     
     
+    /**
+     * Delete all reviewers of a given submission after completing the review stage
+     * @param submissionId
+     * @return true if deletion successful, otherwise false
+     * @throws SQLException
+     */
+    private static void deleteReviewers(int submissionId) throws SQLException {
+        // get emails of all 3 reviewers
+        String email1 = getReviewerEmail("reviewer1", submissionId);
+        String email2 = getReviewerEmail("reviewer2", submissionId);
+        String email3 = getReviewerEmail("reviewer3", submissionId);
+        
+        // delete reviewers
+        UserController.deleteReviewer(email1, submissionId);
+        UserController.deleteReviewer(email2, submissionId);
+        UserController.deleteReviewer(email3, submissionId);
+
+    }
+
+
     /**
      * Submit all the responses and revised version of the article PDF and update the status of the submission
      * @param submissionId
@@ -1299,6 +1357,7 @@ public class ReviewController extends SqlController {
             System.out.println(getAnonID("chaddock@illinois.ac.uk", 1));
             System.out.println(getSubmissionsReviewing("chaddock@illinois.ac.uk"));
             System.out.println(remainingCostToCover("chaddock@illinois.ac.uk"));
+            System.out.println(getReviewerEmail("reviewer1", 1));
 
         } catch (SQLException e) {
             e.printStackTrace();

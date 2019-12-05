@@ -622,6 +622,9 @@ public class UserController extends SqlController {
             pstmt.setInt(2, submissionID);
 
             // REMOVE ROLE AS WELL HERE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            // sprawdz czy jest w tabeli autora
+            // jak nie ma to uzyj removeRole
+            // to samo dla reviewera i editora
 
             int count = pstmt.executeUpdate();
             if (count != 0) result = true;

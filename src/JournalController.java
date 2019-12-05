@@ -18,7 +18,7 @@ public class JournalController extends SqlController {
      * Set currently viewed journal
      * @param ISSN
      */
-    public static void setCurrentJournal(int issn) {
+    public static void setCurrentJournalIssn(int issn) {
         currentJournal = issn;
     }
     
@@ -27,7 +27,7 @@ public class JournalController extends SqlController {
      * Get currently viewed journal
      * @param ISSN
      */
-    public static int getCurrentJournal(int issn) {
+    public static int getCurrentJournalIssn() {
         return currentJournal;
     }
 
@@ -727,6 +727,12 @@ public class JournalController extends SqlController {
     }
     
     
+    /**
+     * Get a list of final verdicts of a given submission
+     * @param submissionID
+     * @return list of final verdicts
+     * @throws SQLException
+     */
     public static LinkedList<Verdict> getFinalVerdicts(int submissionID) throws SQLException {
         LinkedList<Verdict> verdicts = new LinkedList<Verdict>();
         openConnection();
@@ -752,6 +758,85 @@ public class JournalController extends SqlController {
         return verdicts;
         
     }
+    
+    
+    /**
+     * Get a suggested action for a given submission
+     * @param submissionID
+     * @return a suggestion
+     * @throws SQLException
+     */
+    public static String getSuggestion(int submissionID) throws SQLException {
+        int s_accept = 0;
+        int w_accept = 0;
+        int w_reject = 0;
+        int s_reject = 0;
+        
+        LinkedList<Verdict> verdicts = getFinalVerdicts(submissionID);
+        
+        // count each verdict
+        for (Verdict v : verdicts) {
+            switch(v) {
+            case STRONG_ACCEPT:
+                s_accept++;
+                break;
+            case WEAK_ACCEPT:
+                w_accept++;
+                break;
+            case WEAK_REJECT:
+                w_reject++;
+                break;
+            case STRONG_REJECT:
+                s_reject++;
+                break;
+            }
+        }
+        
+        // only champions and no detractors
+        if (s_accept >= 1 && s_reject == 0) return "Accept";
+        
+        // only detractors and no champions
+        if (s_reject >= 1 && s_accept == 0) return "Reject";
+        
+        // both champions and detractors
+        if (s_reject >= 1 && s_accept >= 1) return "You decide";
+        
+        // no champions or detractors
+        if (s_reject == 0 && s_accept == 0) {
+            if (w_accept > w_reject) return "Accept";
+            if (w_accept < w_reject) return "Reject";
+        }
+        
+        // should never reach this
+        return "No suggestion";
+    }
+    
+    
+    /**
+     * Accept an article for a journal as the editor
+     * @param submissionID
+     * @return list of final verdicts
+     * @throws SQLException
+     */
+    public static boolean acceptAnArticle(int submissionID) throws SQLException {
+        boolean result = false;
+        openConnection();
+        PreparedStatement pstmt = null;
+        try {
+            // get all others editors of the journal
+            pstmt = con.prepareStatement("SELECT * FROM `verdict` WHERE `submissionID` = ?");
+            pstmt.setInt(1, submissionID);
+            
+
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        return result;
+        
+    }
 
 
     public static void main (String[] args) throws IOException {
@@ -759,6 +844,7 @@ public class JournalController extends SqlController {
         try {
             System.out.println(getJournalByArticle(1));
             System.out.println(getFinalVerdicts(1));
+            System.out.println(getSuggestion(1));
             
         } catch (SQLException ex) {
             ex.printStackTrace();
