@@ -49,7 +49,6 @@ public class ArticleController extends SqlController {
                 pstmt.setString(6, email);
 
                 int count = pstmt.executeUpdate();
-                System.out.println("Rows updated " + count);
             } catch (SQLException ex) {
                 ex.printStackTrace();
             } finally {
@@ -61,6 +60,31 @@ public class ArticleController extends SqlController {
             e.printStackTrace();
         }
         return submissionId;
+    }
+    
+    
+    /**
+     * Delete an article from the database
+     * @param submissionID
+     * @throws SQLException
+     */
+    public static boolean deleteArticle(int submissionID) throws SQLException {
+        boolean result = false;
+        openConnection();
+        PreparedStatement pstmt = null;
+        try {
+            // delete the entry from article table
+            pstmt = con.prepareStatement("DELETE FROM `team021`.`article` WHERE (`submissionID` = ?)");
+            pstmt.setInt(1, submissionID);
+            int count = pstmt.executeUpdate();
+            if (count == 1) result = true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        return result;
     }
     
     
@@ -155,6 +179,31 @@ public class ArticleController extends SqlController {
          }
          return submissionId;
      }
+    
+    
+    /**
+     * Delete a submission from the database
+     * @param submissionID
+     * @throws SQLException
+     */
+    public static boolean deleteSubmission(int submissionID) throws SQLException {
+        boolean result = false;
+        openConnection();
+        PreparedStatement pstmt = null;
+        try {
+            // delete the entry from article table
+            pstmt = con.prepareStatement("DELETE FROM `team021`.`submission` WHERE (`submissionID` = ?)");
+            pstmt.setInt(1, submissionID);
+            int count = pstmt.executeUpdate();
+            if (count == 1) result = true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        return result;
+    }
 
     
     /**
@@ -446,7 +495,9 @@ public class ArticleController extends SqlController {
             //System.out.println(getSubmissionByStatus(Status.SUBMITTED));
             //System.out.println(getAuthors(4));
             //System.out.println(updatePDFFile(4, pdfFile)););
-            System.out.println(updateStatus(2, Status.REVIEWS_RECEIVED));
+            
+            System.out.println(deleteArticle(78));
+            System.out.println(deleteSubmission(78));
         } catch (SQLException ex) {
             ex.printStackTrace();
         }

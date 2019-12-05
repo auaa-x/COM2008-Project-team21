@@ -572,6 +572,7 @@ public class JournalController extends SqlController {
     /**
      * Allows a chief editor of a given journal to retire if possible
      * and automatically appoints the new chief editor
+     * @param email - email of the current chief editor
      * @param issn
      * @return true if retiring successful and new chief editor appointed, false otherwise
      * @throws SQLException
@@ -613,6 +614,35 @@ public class JournalController extends SqlController {
         // retire the old chief editor
         if (result) {
             System.out.println("Old chief editor " + oldChiefEmail + " retired");
+        }
+        return result;
+    }
+    
+    
+    /**
+     * Allows a chief editor of a given journal to pass the chief editor role to other editor
+     * @param oldChiefEmail
+     * @param newChiefEmail
+     * @param issn
+     * @return true if passing the role is successful and new chief editor appointed, false otherwise
+     * @throws SQLException
+     */
+    public static boolean chiefEditorPassRole(String oldChiefEmail, String newChiefEmail, int issn) throws SQLException {
+        boolean result = false;
+        openConnection();
+        PreparedStatement pstmt = null;
+        try {
+                pstmt = con.prepareStatement("UPDATE `team021`.`journal` SET `chiefEditorEmail` = ? WHERE (`ISSN` = ?)");
+                pstmt.setString(1, newChiefEmail);
+                pstmt.setInt(2, issn);
+                int count = pstmt.executeUpdate();
+                if (count != 0) result = true;
+
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
         }
         return result;
     }
@@ -874,7 +904,7 @@ public class JournalController extends SqlController {
         }
 
         // should never reach this
-        return "No suggestion";
+        return "No suggestion available";
     }
 
 
@@ -887,6 +917,24 @@ public class JournalController extends SqlController {
     public static void acceptAnArticle(int submissionId) throws SQLException {
         // set status to completed
         ArticleController.updateStatus(submissionId, Status.COMPLETED);
+        
+        // delete authors
+        deleteAuthors(submissionId);
+    }
+    
+    
+    /**
+     * Reject an article for a journal as the editor
+     * @param submissionId
+     * @throws SQLException
+     */
+
+    public static void rejectAnArticle(int submissionId) throws SQLException {
+        // delete article
+        ArticleController.deleteArticle(submissionId);
+        
+        // delete submission
+        ArticleController.deleteSubmission(submissionId);
         
         // delete authors
         deleteAuthors(submissionId);
@@ -917,6 +965,7 @@ public class JournalController extends SqlController {
             System.out.println(getJournalByArticle(1));
             System.out.println(getFinalVerdicts(1));
             System.out.println(getSuggestion(1));
+            System.out.println(chiefEditorPassRole("ja", "ty", 99999999));
 
         } catch (SQLException ex) {
             ex.printStackTrace();
