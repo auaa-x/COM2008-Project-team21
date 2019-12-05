@@ -16,7 +16,7 @@ import java.util.LinkedList;
  * @author Julia Derebecka
  */
 public class ArticleController extends SqlController {
-    
+
     /**
      * Create a new article with all parameters
      * @param title
@@ -38,7 +38,7 @@ public class ArticleController extends SqlController {
                 ResultSet res = stmt.executeQuery("SELECT COUNT(*) FROM `article`");
                 res.next();
                 submissionId = res.getInt(1) + 1;
-                
+
                 pstmt = con.prepareStatement(" INSERT INTO `team021`.`article` (`submissionID`, `title`, `abstract`, `linkedFinalPDF`, `ISSN`, `mAuthorEmail`)"
                         + " VALUES (?, ?, ?, ?, ?, ?)");
                 pstmt.setInt(1, submissionId);
@@ -49,7 +49,6 @@ public class ArticleController extends SqlController {
                 pstmt.setString(6, email);
 
                 int count = pstmt.executeUpdate();
-                System.out.println("Rows updated " + count);
             } catch (SQLException ex) {
                 ex.printStackTrace();
             } finally {
@@ -62,8 +61,33 @@ public class ArticleController extends SqlController {
         }
         return submissionId;
     }
-    
-    
+
+
+    /**
+     * Delete an article from the database
+     * @param submissionID
+     * @throws SQLException
+     */
+    public static boolean deleteArticle(int submissionID) throws SQLException {
+        boolean result = false;
+        openConnection();
+        PreparedStatement pstmt = null;
+        try {
+            // delete the entry from article table
+            pstmt = con.prepareStatement("DELETE FROM `team021`.`article` WHERE (`submissionID` = ?)");
+            pstmt.setInt(1, submissionID);
+            int count = pstmt.executeUpdate();
+            if (count == 1) result = true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        return result;
+    }
+
+
     /**
      * Update the PDF in article table
      * @param submissionId
@@ -97,8 +121,8 @@ public class ArticleController extends SqlController {
     	}
         return result;
     }
-    
-    
+
+
     /**
      * Check if an article with give submissionID exists in the database
      * @param submissionId
@@ -125,7 +149,7 @@ public class ArticleController extends SqlController {
         }
         return result;
     }
-    
+
 
     /**
      * Create a new submission linked to article by submissionID
@@ -156,7 +180,32 @@ public class ArticleController extends SqlController {
          return submissionId;
      }
 
-    
+
+    /**
+     * Delete a submission from the database
+     * @param submissionID
+     * @throws SQLException
+     */
+    public static boolean deleteSubmission(int submissionID) throws SQLException {
+        boolean result = false;
+        openConnection();
+        PreparedStatement pstmt = null;
+        try {
+            // delete the entry from article table
+            pstmt = con.prepareStatement("DELETE FROM `team021`.`submission` WHERE (`submissionID` = ?)");
+            pstmt.setInt(1, submissionID);
+            int count = pstmt.executeUpdate();
+            if (count == 1) result = true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        return result;
+    }
+
+
     /**
      * Get a PDF of an article by submissionID
      * @param submissionId
@@ -195,8 +244,8 @@ public class ArticleController extends SqlController {
         }
         return result;
     }
-    
-    
+
+
     /**
      * Get a PDF of a submission by submissionID
      * @param submissionId
@@ -235,8 +284,8 @@ public class ArticleController extends SqlController {
         }
         return result;
     }
-    
-    
+
+
     /**
      * Get an article by submissionID
      * @param submissionId
@@ -249,11 +298,11 @@ public class ArticleController extends SqlController {
         PreparedStatement pstmt = null;
         Article article = null;
         try {
-            
+
             pstmt = con.prepareStatement("SELECT * FROM article WHERE (submissionID = ?) ");
-            pstmt.setInt(1, submissionId); 
+            pstmt.setInt(1, submissionId);
             ResultSet res = pstmt.executeQuery();
-            
+
             if (res.next()) {
                 String title = res.getString("title");
                 String artAbstract = res.getString("abstract");
@@ -271,8 +320,8 @@ public class ArticleController extends SqlController {
         }
         return article;
     }
-    
-    
+
+
     /**
      * Get all published articles by author
      * @return list of author's articles
@@ -283,11 +332,11 @@ public class ArticleController extends SqlController {
         openConnection();
         PreparedStatement pstmt = null;
         try {
-            
+
             pstmt = con.prepareStatement("SELECT * FROM article a, author p WHERE (a.submissionID = p.submissionID) and (p.email = ?) and (isPublished = 1)");
-            pstmt.setString(1, email); 
+            pstmt.setString(1, email);
             ResultSet res = pstmt.executeQuery();
-            
+
             while (res.next()) {
                 int submissionID = res.getInt("submissionID");
                 String title = res.getString("title");
@@ -307,7 +356,7 @@ public class ArticleController extends SqlController {
         }
         return articles;
     }
-    
+
     /**
      * Get all submissions by author
      * @return list of author's submissions
@@ -318,17 +367,17 @@ public class ArticleController extends SqlController {
         openConnection();
         PreparedStatement pstmt = null;
         try {
-            
+
             pstmt = con.prepareStatement("SELECT * FROM submission s, author a WHERE (s.submissionID = a.submissionID) and (a.email = ?)");
-            pstmt.setString(1, email); 
+            pstmt.setString(1, email);
             ResultSet res = pstmt.executeQuery();
-            
+
             while (res.next()) {
                 int submissionID = res.getInt("submissionID");
                 int reviewCount = res.getInt("reviewCount");
                 Status status = Status.valueOf(res.getString("status"));
                 int costCovered = res.getInt("costCovered");
-                
+
                 Submission submission = new Submission(submissionID, reviewCount, status, costCovered);
                 submissions.add(submission);
             }
@@ -340,8 +389,8 @@ public class ArticleController extends SqlController {
         }
         return submissions;
     }
-    
-    
+
+
     /**
      * Get all authors of the submission
      * @param submissionId
@@ -353,14 +402,14 @@ public class ArticleController extends SqlController {
         openConnection();
         PreparedStatement pstmt = null;
         try {
-            
+
             pstmt = con.prepareStatement("SELECT * FROM author WHERE (submissionID = ?)");
-            pstmt.setInt(1, submissionId); 
+            pstmt.setInt(1, submissionId);
             ResultSet res = pstmt.executeQuery();
-            
+
             while (res.next()) {
                 String email = res.getString("email");
-                
+
                 authors.add(email);
             }
         } catch (SQLException ex) {
@@ -371,8 +420,8 @@ public class ArticleController extends SqlController {
         }
         return authors;
     }
-    
-    
+
+
     /**
      * Update status of the submission
      * @param submissionId
@@ -403,7 +452,7 @@ public class ArticleController extends SqlController {
         }
         return result;
     }
-    
+
     /**
      *  Set article to isDelayed
      * @param submissionId
@@ -430,7 +479,7 @@ public class ArticleController extends SqlController {
         }
         return result;
     }
-    
+
     /**
      *  Set article to isDelayed = 0
      * @param submissionId
@@ -457,8 +506,8 @@ public class ArticleController extends SqlController {
         }
         return result;
     }
-    
-    
+
+
     /**
      * Get all submissions with given status
      * @param status
@@ -472,14 +521,14 @@ public class ArticleController extends SqlController {
         try {
             String statusName = status.name();
             pstmt = con.prepareStatement("SELECT * FROM submission WHERE (status = ?)");
-            pstmt.setString(1, statusName); 
+            pstmt.setString(1, statusName);
             ResultSet res = pstmt.executeQuery();
-            
+
             while (res.next()) {
                 int submissionID = res.getInt("submissionID");
                 int reviewCount = res.getInt("reviewCount");
                 int costCovered = res.getInt("costCovered");
-                
+
                 Submission submission = new Submission(submissionID, reviewCount, status, costCovered);
                 submissions.add(submission);
             }
@@ -491,9 +540,9 @@ public class ArticleController extends SqlController {
         }
         return submissions;
     }
-    
-    
-    
+
+
+
     public static void main (String[] args) throws IOException {
     	//File pdfFile = new File("./Systems Design Project.pdf");
         try {

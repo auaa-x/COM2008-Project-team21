@@ -131,6 +131,7 @@ public class ReviewerInterface extends JFrame implements ActionListener {
             int submissionId = sub.getSubmissionID();
             System.out.println(submissionId);
             String journalTitle = JournalController.getJournalByArticle(submissionId).getTitle();
+            System.out.println(journalTitle);
             String articleTitle = ArticleController.getArticle(submissionId).getTitle();
             String openPDF = "Open PDF";
             String select = "Select to Review";
@@ -172,8 +173,8 @@ public class ReviewerInterface extends JFrame implements ActionListener {
                     try {
                         ReviewController.selectToReview(username, id);
                         availableArticleTable.setValueAt("Selected",row,3);
-                        JOptionPane.showMessageDialog(null,"You have selected to review "+
-                                availableArticleTable.getValueAt(row,1) + " successfully!");
+                        JOptionPane.showMessageDialog(null,"You have selected to review " +
+                                availableArticleTable.getValueAt(row, 1));
                         SwingUtilities.getWindowAncestor(availableArticleTable).dispose();
                         new ReviewerInterface(username);
                     } catch (SQLException | IOException e) {
@@ -183,7 +184,7 @@ public class ReviewerInterface extends JFrame implements ActionListener {
                 }
             }
         });
-        remainingLabel = new JLabel("Remaining articles: " + remaining);
+        remainingLabel = new JLabel("Remaining articles to review: " + remaining);
         add(remainingLabel, BorderLayout.SOUTH);
 
         JScrollPane scrollPane = new JScrollPane(availableArticleTable);
@@ -329,6 +330,8 @@ public class ReviewerInterface extends JFrame implements ActionListener {
             System.out.println("responses clicked");
         } else if (e.getSource() == articleSelection) {
             cardLayout.show(reviewerPanel, "Selected Articles");
+        } else if (e.getSource() == availableArticle) {
+            cardLayout.show(reviewerPanel, "Articles Available");
         } else if (e.getSource() == changePw) {
             new ChangePw(username,3);
             this.dispose();

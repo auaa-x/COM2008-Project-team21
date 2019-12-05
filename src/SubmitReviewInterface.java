@@ -162,7 +162,7 @@ public class SubmitReviewInterface extends JFrame implements ActionListener, Ite
                     String typos = errorField.getText();
                     if (ReviewController.submitReview(submissionId, anonID, sum, typos, vd)){
                         SwingUtilities.getWindowAncestor(submit).dispose();
-                        JOptionPane.showMessageDialog(null,"You have reviewed to " + submissionId +
+                        JOptionPane.showMessageDialog(null,"You have reviewed " + ArticleController.getArticle(submissionId).getTitle() +
                                 " successfully!");
                         new ReviewerInterface(username);
                         System.out.println("Review to " + submissionId + " has been submitted");
