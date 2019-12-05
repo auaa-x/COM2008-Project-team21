@@ -251,7 +251,7 @@ public class ReviewController extends SqlController {
             try {
                 pstmt = con.prepareStatement("SELECT * FROM `reviewer` WHERE (email = ?) and (submissionID = ?)");
                 pstmt.setString(1, reviewerEmail);
-                pstmt.setInt(1, s.getSubmissionID());
+                pstmt.setInt(2, s.getSubmissionID());
                 ResultSet res = pstmt.executeQuery();
                 
                 // get the anonID corresponding to the submission

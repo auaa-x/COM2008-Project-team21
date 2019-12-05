@@ -226,7 +226,7 @@ public class AuthorInterface extends JFrame implements ActionListener{
         Review review = ReviewController.getReview(submissionID, anonID);
         LinkedList<Question> questions = new LinkedList<>(ReviewController.getQuestions(submissionID, anonID));
         System.out.println("getting initial verdict of " + anonID);
-        String initialVd = ReviewController.getVerdict(submissionID,anonID).toString();
+        String initialVd = ReviewController.getVerdict(submissionID, anonID).toString();
 
         JPanel noticePanel = new JPanel();
         JLabel banner = new JLabel("Review "+ no);
