@@ -945,12 +945,14 @@ public class JournalController extends SqlController {
      * @throws SQLException
      */
 
-    public static void acceptAnArticle(int submissionId) throws SQLException {
+    public static boolean acceptAnArticle(int submissionId) throws SQLException {
+        boolean result = false;
         // set status to completed
-        ArticleController.updateStatus(submissionId, Status.COMPLETED);
+        if (ArticleController.updateStatus(submissionId, Status.COMPLETED)) result = true;
 
         // delete authors
         deleteAuthors(submissionId);
+        return result;
     }
 
 
@@ -960,15 +962,15 @@ public class JournalController extends SqlController {
      * @throws SQLException
      */
 
-    public static void rejectAnArticle(int submissionId) throws SQLException {
-        // delete article
-        ArticleController.deleteArticle(submissionId);
-
-        // delete submission
-        ArticleController.deleteSubmission(submissionId);
+    public static boolean rejectAnArticle(int submissionId) throws SQLException {
+        boolean result = false;
+        // delete article and submission
+        if (ArticleController.deleteArticle(submissionId) &&
+                ArticleController.deleteSubmission(submissionId)) result = true;
 
         // delete authors
-        deleteAuthors(submissionId);
+        deleteAuthors(submissionId); 
+        return result;
     }
 
 
