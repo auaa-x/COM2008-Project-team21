@@ -32,7 +32,7 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 	private JScrollPane treeScrollPane;
 	private JPanel treePanel;
 
-	private JPanel infoPanel, verdictPanel;
+	private JPanel infoPanel, optionPanel;
 	private JLabel infoTitle;
 	private JButton open;
 	private String username;
@@ -62,7 +62,7 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 		journalsISSN = JournalController.getEditorJournals(username);
 		chiefJournalsISSN = new LinkedList<Integer>();
 		for (int issn : journalsISSN) {
-			if (UserController.isChiefEditor(username, issn)){
+			if (UserController.isChiefEditor(username, issn)) {
 				chiefJournalsISSN.add(issn);
 			}
 		}
@@ -75,15 +75,15 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 		//set up panels
 		infoPanel = new JPanel();
 		treePanel = new JPanel();
-		verdictPanel = new JPanel();
+		optionPanel = new JPanel();
 
 		//create the menu
 		menuBar = new JMenuBar();
 		group = new ButtonGroup();
 		staff = new JMenu("Staff Management");
 		journal = new JMenu("Journal Management");
-		toEditor = new JMenuItem( "To Editor Options");
-		toEditor.setPreferredSize(new Dimension(20,10));
+		toEditor = new JMenuItem("To Editor Options");
+		toEditor.setPreferredSize(new Dimension(20, 10));
 		logOut = new JMenuItem("Log out");
 		toEditor.addActionListener(this);
 		logOut.addActionListener(this);
@@ -105,7 +105,6 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 		passChiefEditor.addActionListener(this);
 		retire.addActionListener(this);
 		publish.addActionListener(this);
-		publish.setEnabled(false);
 		delay.addActionListener(this);
 		delay.setEnabled(false);
 
@@ -134,12 +133,12 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 			journal1.add(rejected);
 			journal.getIssn();
 			accptedList = JournalController.getArticlesToPublish(journal.getIssn());
-			for (Article a : accptedList){
+			for (Article a : accptedList) {
 				DefaultMutableTreeNode a1 = new DefaultMutableTreeNode(a);
 				accepted.add(a1);
 			}
 
-			for (Article a : rejectedList){
+			for (Article a : rejectedList) {
 				DefaultMutableTreeNode a1 = new DefaultMutableTreeNode(a);
 				rejected.add(a1);
 			}
@@ -159,9 +158,9 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 		add(selectedLabel, BorderLayout.SOUTH);
 		tree.getSelectionModel().addTreeSelectionListener(e -> {
 			DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
-			if (selectedNode.isLeaf() && accptedList != null){
+			if (selectedNode.isLeaf() && accptedList != null) {
 				selectedLabel.setText(selectedNode.getUserObject().toString());
-				selectedArt = (Article)selectedNode.getUserObject();
+				selectedArt = (Article) selectedNode.getUserObject();
 				selectedID = selectedArt.getSubmissionID();
 				System.out.println(selectedID);
 				try {
@@ -181,6 +180,7 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 		this.setVisible(true);
 
 	}
+
 	public JPanel panel(int submissionId) throws SQLException {
 		//set up the article information panel
 		infoPanel.setPreferredSize(new Dimension(730, 300));
@@ -256,9 +256,9 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 		infoPanel.add(buttonPanel);
 
 
-		//set up the verdict panel
-		verdictPanel.setPreferredSize(new Dimension(730, 100));
-		verdictPanel.setLayout(new BorderLayout());
+		//set up the optionPanel panel
+		optionPanel.setPreferredSize(new Dimension(730, 100));
+		optionPanel.setLayout(new BorderLayout());
 
 
 		JButton accept = new JButton("Accept");
@@ -299,26 +299,17 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 		//layout for buttonPane - accept and reject
 		buttonPanel1 = new JPanel();
 		buttonPanel1.setLayout(new BoxLayout(buttonPanel1, BoxLayout.X_AXIS));
-		buttonPanel1.setBorder(BorderFactory.createEmptyBorder(0, 150, 0, 0));
+		buttonPanel1.setBorder(BorderFactory.createEmptyBorder(0, 250, 0, 0));
 		buttonPanel1.add(accept);
 		buttonPanel1.add(delay);
 
 
-		JPanel rightPane = new JPanel();
-		rightPane.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 100));
-		rightPane.setPreferredSize(new Dimension(600, 100));
-		rightPane.setLayout(new BoxLayout(rightPane, BoxLayout.Y_AXIS));
-		rightPane.add(buttonPanel1);
-
-
-		verdictPanel.add(vdGroup, BorderLayout.WEST);
-		verdictPanel.add(rightPane, BorderLayout.CENTER);
 
 		JScrollPane northPane = new JScrollPane(infoPanel);
 		northPane.setPreferredSize(new Dimension(730, 300));
 		northPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
-		JScrollPane southPane = new JScrollPane(verdictPanel);
+		JScrollPane southPane = new JScrollPane(buttonPanel1);
 		southPane.setPreferredSize(new Dimension(730, 100));
 		southPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
@@ -330,6 +321,7 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 
 		return panel;
 	}
+
 	//get selected radio box text
 	public String getSelectedButtonText(ButtonGroup buttonGroup) {
 		for (Enumeration<AbstractButton> buttons = buttonGroup.getElements(); buttons.hasMoreElements(); ) {
@@ -413,16 +405,16 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 					JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, options[0]);
 			if (x == 0) {
 				try {
-				Journal selectedJournal = (Journal) journalSelection.getItemAt(journalSelection.getSelectedIndex());
-				LinkedList<String> editors = JournalController.getEditors(selectedJournal.getIssn());
-				System.out.println(editors);
-				JComboBox<Object> editorsSelection = new JComboBox<>(editors.toArray());
-				String title1 = "Please select an editor";
+					Journal selectedJournal = (Journal) journalSelection.getItemAt(journalSelection.getSelectedIndex());
+					LinkedList<String> editors = JournalController.getEditors(selectedJournal.getIssn());
+					System.out.println(editors);
+					JComboBox<Object> editorsSelection = new JComboBox<>(editors.toArray());
+					String title1 = "Please select an editor";
 					int y = JOptionPane.showOptionDialog(null, editorsSelection, title1,
 							JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, options[0]);
 					if (y == 0) {
 						String selectedEditor = (String) editorsSelection.getItemAt(editorsSelection.getSelectedIndex());
-						if (JournalController.chiefEditorPassRole(username, selectedEditor, selectedJournal.getIssn())){
+						if (JournalController.chiefEditorPassRole(username, selectedEditor, selectedJournal.getIssn())) {
 							JOptionPane.showMessageDialog(null, "New chief editor appointed to " +
 									selectedEditor + "successfully!");
 						} else {
@@ -466,17 +458,32 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 					ex.printStackTrace();
 				}
 			}
-
-
-			else if (e.getSource() == publish) {
-
+		} else if (e.getSource() == publish) {
+			String[] options = {"Yes", "Back"};
+			JComboBox<Object> journalSelection = new JComboBox<>(journals.toArray());
+			String windowTitle = "Please select a journal";
+			int x = JOptionPane.showOptionDialog(null, journalSelection, windowTitle,
+					JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, options[0]);
+			if (x == 0) {
+				Journal selectedJournal = (Journal) journalSelection.getItemAt(journalSelection.getSelectedIndex());
+				try {
+					if (JournalController.publishNextEdition(selectedJournal.getIssn())) {
+						JOptionPane.showMessageDialog(null, "You have published next edition of " +
+								selectedJournal.getTitle() + " successfully!");
+					} else {
+						JOptionPane.showMessageDialog(null, "Please try again!");
+					}
+				} catch (SQLException ex) {
+					ex.printStackTrace();
+				}
 			}
 		}
+
 	}
 
 
 
-			public static void main(String[] args) {
+	public static void main(String[] args) {
 		SwingUtilities.invokeLater(() -> {
 			try {
 				new ChiefEditorInterface("harry.potter@warwick.ac.uk");
