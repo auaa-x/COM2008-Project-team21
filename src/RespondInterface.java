@@ -137,7 +137,7 @@ public class RespondInterface extends JFrame implements ActionListener {
                 try {
                     if (ReviewController.createResponse(submissionId, anonID)){
                         SwingUtilities.getWindowAncestor(submit).dispose();
-                        JOptionPane.showMessageDialog(null,"You have respond to " + anonID +
+                        JOptionPane.showMessageDialog(null,"You have responded to " + anonID +
                                 " successfully!");
                         new AuthorInterface(username);
                     } else {
@@ -147,7 +147,7 @@ public class RespondInterface extends JFrame implements ActionListener {
                     ex.printStackTrace();
                 }
 
-                System.out.println("Respond to " + no + "has been submitted");
+                System.out.println("Respond to " + no + " has been submitted");
             }
         });
         submit.setFont(new Font("Lucida Grande", Font.PLAIN, 20));

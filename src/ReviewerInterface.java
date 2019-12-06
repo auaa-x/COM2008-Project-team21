@@ -293,7 +293,7 @@ public class ReviewerInterface extends JFrame implements ActionListener {
                 if (col == 2) {
                     try {
                         System.out.println(id);
-                        ArticleController.getSubmissionPDF(id);
+                        ArticleController.getArticlePDF(id);
                         File article = new File("article.pdf");
                         if (!Desktop.isDesktopSupported()) {
                             JOptionPane.showMessageDialog(null, "Desktop does not support this function");
