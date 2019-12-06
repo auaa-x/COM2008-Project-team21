@@ -327,7 +327,7 @@ public class JournalController extends SqlController {
         PreparedStatement pstmt = null;
         try {
             pstmt = con.prepareStatement("SELECT * FROM article a, submission s WHERE (a.submissionID = s.submissionID) "
-            		+ "and (a.isDelayed = 0) and (s.status = ?) and (a.ISSN = ?) ");
+            		+ "and (a.isDelayed = 0) and (a.isPublished = 0) and (s.status = ?) and (a.ISSN = ?) ");
             pstmt.setString(1, "COMPLETED");
             pstmt.setInt(2, issn);
             ResultSet res = pstmt.executeQuery();
@@ -1049,7 +1049,7 @@ public class JournalController extends SqlController {
             //System.out.println(getFinalVerdicts(1));
         	//System.out.println(getArticlesToPublish(77777777));
             //publishNextEdition(77777777);
-            System.out.println(getDelayedArticles(77777777));
+            System.out.println(getDelayedArticles(66666666));
 
 
         } catch (SQLException ex) {
