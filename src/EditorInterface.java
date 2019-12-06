@@ -11,12 +11,15 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Dictionary;
 import java.util.Enumeration;
 import java.util.LinkedList;
 
 
 public class EditorInterface extends JFrame implements ActionListener {
+
+    private JPanel artPanel;
+    private CardLayout cardLayout = new CardLayout();
+
     private JMenuBar menuBar;
     private JRadioButtonMenuItem journalItem, journalItem1;
     private JMenu selectJournal;
@@ -30,7 +33,6 @@ public class EditorInterface extends JFrame implements ActionListener {
     private JScrollPane treeScrollPane;
     private JPanel treePanel;
 
-    private JPanel infoPanel, verdictPanel;
     private JButton open;
     private String username;
     private LinkedList<Integer> journalsISSN;
@@ -40,9 +42,8 @@ public class EditorInterface extends JFrame implements ActionListener {
     private int selectedID;
     private Article selectedArt;
 
-    private JPanel titleGroup, absGroup, maGroup;
-    private JPanel vdGroup, saGroup, buttonPanel, buttonPanel1;
     private JPanel panel = null;
+    private int counter;
 
 
     EditorInterface(String username) throws SQLException {
@@ -50,11 +51,9 @@ public class EditorInterface extends JFrame implements ActionListener {
         this.setSize(1000, 600);
         this.setLocationRelativeTo(null);
         this.setResizable(false);
-
+        counter = 0;
         //set up panels
-        infoPanel = new JPanel();
         treePanel = new JPanel();
-        verdictPanel = new JPanel();
         panel = new JPanel();
 
 
@@ -95,7 +94,7 @@ public class EditorInterface extends JFrame implements ActionListener {
         changePw.addActionListener(this);
         toChiefEditor.addActionListener(this);
         updatePf.addActionListener(this);
-        //if ( !UserController.isChiefEditor(username, issn )){ toChiefEditor.setEnabled(false);} else {toChiefEditor.setEnabled(true);}
+        if ( !UserController.isChiefEditor(username,issn)) {toChiefEditor.setEnabled(false);} else {toChiefEditor.setEnabled(true);}
         retire.addActionListener(this);
         settings.add(changePw);
         settings.add(updatePf);
@@ -142,8 +141,10 @@ public class EditorInterface extends JFrame implements ActionListener {
 
         //display selection bottom bar
         selectedLabel = new JLabel();
-
         add(selectedLabel, BorderLayout.SOUTH);
+
+        artPanel = new JPanel();
+        artPanel.setLayout(cardLayout);
         tree.getSelectionModel().addTreeSelectionListener(e -> {
             DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
             if (selectedNode.isLeaf() && considerList != null){
@@ -152,11 +153,9 @@ public class EditorInterface extends JFrame implements ActionListener {
                 selectedID = selectedArt.getSubmissionID();
                 System.out.println(selectedID);
                 try {
-                    this.removeAll();
-                    this.add(treePanel, BorderLayout.WEST);
-                    this.add(panel(selectedID),BorderLayout.WEST);
-                    this.invalidate();
-                    this.repaint();
+                    artPanel.add(panel(selectedID), String.valueOf(counter));
+                    cardLayout.show(artPanel, String.valueOf(counter));
+                    counter++;
                 } catch (SQLException ex) {
                     ex.printStackTrace();
                 }
@@ -167,7 +166,7 @@ public class EditorInterface extends JFrame implements ActionListener {
 
         //add panels functions
         this.add(treePanel, BorderLayout.WEST);
-
+        this.add(artPanel, BorderLayout.EAST);
 
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setVisible(true);
@@ -176,11 +175,12 @@ public class EditorInterface extends JFrame implements ActionListener {
     public JPanel panel(int submissionId) throws SQLException {
         JPanel panel = new JPanel();
         //set up the article information panel
+        JPanel infoPanel = new JPanel();
         infoPanel.setPreferredSize(new Dimension(730, 300));
 
         //List of Qs
         //questions panel settings
-        titleGroup = new JPanel(new BorderLayout());
+        JPanel titleGroup = new JPanel(new BorderLayout());
         //qsGroup.setPreferredSize(new Dimension(1000,230));
         titleGroup.setBorder(BorderFactory.createEmptyBorder(10, 50, 0, 0));
         JLabel lblTitle = new JLabel("Title of Article");
@@ -190,7 +190,7 @@ public class EditorInterface extends JFrame implements ActionListener {
         titleGroup.add(lblTitle, BorderLayout.PAGE_START);
         titleGroup.add(title, BorderLayout.WEST);
 
-        absGroup = new JPanel(new BorderLayout(10,10));
+        JPanel absGroup = new JPanel(new BorderLayout(10, 10));
         absGroup.setBorder(BorderFactory.createEmptyBorder(0, 50, 10, 0));
         JLabel lblAbstract = new JLabel("Abstract of Article");
         lblAbstract.setFont(new Font("Lucida Grande", Font.PLAIN, 20));
@@ -207,7 +207,7 @@ public class EditorInterface extends JFrame implements ActionListener {
         absGroup.add(lblAbstract, BorderLayout.PAGE_START);
         absGroup.add(absPane, BorderLayout.WEST);
 
-        maGroup = new JPanel(new BorderLayout());
+        JPanel maGroup = new JPanel(new BorderLayout());
         //qsGroup.setPreferredSize(new Dimension(1000,230));
         maGroup.setBorder(BorderFactory.createEmptyBorder(0, 50, 10, 0));
         JLabel lblMa = new JLabel("Main Author");
@@ -217,7 +217,7 @@ public class EditorInterface extends JFrame implements ActionListener {
         maGroup.add(lblMa, BorderLayout.PAGE_START);
         maGroup.add(mainAuthor, BorderLayout.WEST);
 
-        buttonPanel = new JPanel(new BorderLayout());
+        JPanel buttonPanel = new JPanel(new BorderLayout());
         buttonPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 20, 100));
         open = new JButton("Open");
         open.addActionListener((new ActionListener() {
@@ -252,13 +252,14 @@ public class EditorInterface extends JFrame implements ActionListener {
 
 
         //set up the verdict panel
+        JPanel verdictPanel = new JPanel();
         verdictPanel.setPreferredSize(new Dimension(730, 100));
         verdictPanel.setLayout(new BorderLayout());
 
         LinkedList<Verdict> finalVerdicts = JournalController.getFinalVerdicts(submissionId);
         //List of final verdicts
         //final verdicts panel settings
-        vdGroup = new JPanel();
+        JPanel vdGroup = new JPanel();
         vdGroup.setLayout(new BoxLayout(vdGroup, BoxLayout.Y_AXIS));
         vdGroup.setPreferredSize(new Dimension(190,100));
         vdGroup.setBorder(BorderFactory.createEmptyBorder(40, 50, 0, 0));
@@ -270,7 +271,7 @@ public class EditorInterface extends JFrame implements ActionListener {
 
 
 
-        saGroup = new JPanel();
+        JPanel saGroup = new JPanel();
         saGroup.setLayout(new BoxLayout(saGroup, BoxLayout.Y_AXIS));
         saGroup.setPreferredSize(new Dimension(600,100));
         saGroup.setBorder(BorderFactory.createEmptyBorder(40, 0, 0, 0));
@@ -330,7 +331,7 @@ public class EditorInterface extends JFrame implements ActionListener {
         });
 
         //layout for buttonPane - accept and reject
-        buttonPanel1 = new JPanel();
+        JPanel buttonPanel1 = new JPanel();
         buttonPanel1.setLayout(new BoxLayout(buttonPanel1, BoxLayout.X_AXIS));
         buttonPanel1.setBorder(BorderFactory.createEmptyBorder(0, 150, 0, 0));
         buttonPanel1.add(accept);
