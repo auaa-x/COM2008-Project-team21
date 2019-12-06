@@ -1,7 +1,6 @@
 /**
  * Class for Chief Editor Registration Interface
  * @author Ting Guo
- * @author Huiqiang Liu
  */
 
 import javax.swing.*;
@@ -10,8 +9,8 @@ import java.awt.event.*;
 import java.sql.SQLException;
 
 
-@SuppressWarnings("serial")
 public class CfEditorRegInterface extends JFrame implements ActionListener, ItemListener {
+    private static final long serialVersionUID = 1L;
     private JTextField emailField;
     private JPasswordField passwordField;
     private JPasswordField cfPasswordField;
@@ -48,8 +47,7 @@ public class CfEditorRegInterface extends JFrame implements ActionListener, Item
 
 
         //Personal details
-        JLabel psFormTitle = new JLabel("Personal details",
-                SwingConstants.CENTER);
+        JLabel psFormTitle = new JLabel("Personal details", SwingConstants.CENTER);
         psFormTitle.setFont(new Font("Arial", Font.PLAIN, 25));
         //email
         JLabel email = new JLabel("Email Address");
@@ -80,13 +78,11 @@ public class CfEditorRegInterface extends JFrame implements ActionListener, Item
         comboTitleTypes.addItemListener(this);
         comboTitleTypes.setFont(new Font("Arial", Font.PLAIN, 16));
 
-
         //forename
         JLabel forename = new JLabel("Forename");
         forename.setFont(new Font("Arial", Font.PLAIN, 20));
         fnField = new JTextField(15);
         fnField.setFont(new Font("Arial", Font.PLAIN, 15));
-
 
         //surname
         JLabel surname = new JLabel("Surname");
@@ -94,17 +90,14 @@ public class CfEditorRegInterface extends JFrame implements ActionListener, Item
         snField = new JTextField(15);
         snField.setFont(new Font("Arial", Font.PLAIN, 15));
 
-
         //university
         JLabel university = new JLabel("University");
         university.setFont(new Font("Arial", Font.PLAIN, 20));
         uniField = new JTextField(15);
         uniField.setFont(new Font("Arial", Font.PLAIN, 15));
 
-
         //journal form title
-        JLabel jnFormTitle = new JLabel("Journal details",
-                SwingConstants.CENTER);
+        JLabel jnFormTitle = new JLabel("Journal details", SwingConstants.CENTER);
         jnFormTitle.setFont(new Font("Arial", Font.PLAIN, 25));
         //journal title
         JLabel journalTitle = new JLabel("Title");
@@ -112,19 +105,16 @@ public class CfEditorRegInterface extends JFrame implements ActionListener, Item
         jnTitleField = new JTextField(15);
         jnTitleField.setFont(new Font("Arial", Font.PLAIN, 15));
 
-
         //journal issn
         JLabel issn = new JLabel("ISSN");
         issn.setFont(new Font("Arial", Font.PLAIN, 20));
         issnField = new JTextField(15);
         issnField.setFont(new Font("Arial", Font.PLAIN, 15));
 
-
         //register button
         register = new JButton("Register");
         register.addActionListener(this);
         register.setFont(new Font("Tahoma", Font.PLAIN, 20));
-
 
         //back button
         back = new JButton("Back");
@@ -202,8 +192,6 @@ public class CfEditorRegInterface extends JFrame implements ActionListener, Item
 
 
     public void itemStateChanged(ItemEvent e) {
-
-        //System.out.println(e.getItem());
         String item = (String)e.getItem();
         switch (item) {
             case "Prof":
@@ -236,8 +224,6 @@ public class CfEditorRegInterface extends JFrame implements ActionListener, Item
         String university = uniField.getText();
         String journalTitle = jnTitleField.getText();
         String issn = String.valueOf(issnField.getText());
-
-
         if(e.getSource() == back){
             new LoginInterface();
             this.dispose();
@@ -285,7 +271,4 @@ public class CfEditorRegInterface extends JFrame implements ActionListener, Item
     }
 
 
-    public static void main(String[] args) {
-        new CfEditorRegInterface();
-    }
 }

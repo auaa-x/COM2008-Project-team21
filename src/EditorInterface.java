@@ -42,8 +42,7 @@ public class EditorInterface extends JFrame implements ActionListener {
     private int selectedID;
     private Article selectedArt;
 
-    private JPanel panel = null;
-    private int counter;
+    private JPanel panel;
 
 
     EditorInterface(String username) throws SQLException {
@@ -51,7 +50,7 @@ public class EditorInterface extends JFrame implements ActionListener {
         this.setSize(1000, 600);
         this.setLocationRelativeTo(null);
         this.setResizable(false);
-        counter = 0;
+
         //set up panels
         treePanel = new JPanel();
         panel = new JPanel();
@@ -66,7 +65,6 @@ public class EditorInterface extends JFrame implements ActionListener {
         menuBar = new JMenuBar();
 
         //journal selection
-        //menu.addSeparator();
         selectJournal = new JMenu("Select Journal" );
         group = new ButtonGroup();
         for (int j=0; j<journalsISSN.size(); ++j){
@@ -145,17 +143,16 @@ public class EditorInterface extends JFrame implements ActionListener {
 
         artPanel = new JPanel();
         artPanel.setLayout(cardLayout);
+        //display panel depends on selected node
         tree.getSelectionModel().addTreeSelectionListener(e -> {
             DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
             if (selectedNode.isLeaf() && considerList != null){
                 selectedLabel.setText(selectedNode.getUserObject().toString());
                 selectedArt = (Article)selectedNode.getUserObject();
                 selectedID = selectedArt.getSubmissionID();
-                System.out.println(selectedID);
                 try {
-                    artPanel.add(panel(selectedID), String.valueOf(counter));
-                    cardLayout.show(artPanel, String.valueOf(counter));
-                    counter++;
+                    artPanel.add(panel(selectedID), selectedNode.getUserObject().toString());
+                    cardLayout.show(artPanel, selectedNode.getUserObject().toString());
                 } catch (SQLException ex) {
                     ex.printStackTrace();
                 }
@@ -396,7 +393,7 @@ public class EditorInterface extends JFrame implements ActionListener {
             }
             this.dispose();
         }
-        else if(e.getSource()==updatePf){
+        else if(e.getSource()== updatePf){
             new UpdateProfileInterface(username, 1,false);
             this.dispose();
         }

@@ -3,7 +3,6 @@
  * @author Ting Guo
  */
 
-
 import java.awt.*;
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -17,21 +16,19 @@ import java.util.LinkedList;
 
 
 public class ChiefEditorInterface extends JFrame implements ActionListener {
+	private JPanel artPanel;
+	private CardLayout cardLayout = new CardLayout();
 
 	//JMenu
 	private JMenuBar menuBar;
-	private JMenu staff, selectJn, journal;
-	private ButtonGroup group;
-	private JRadioButtonMenuItem jnItem;
-	private JMenuItem register, appoint, passChiefEditor, retire, publish, delay, toEditor, logOut;
+	private JMenu staff, journal;
+	private JMenuItem register, appoint, passChiefEditor, retire, publish, toEditor, logOut;
 	private Desktop desktop = Desktop.getDesktop();
 
 	private JTree tree;
 	private JLabel selectedLabel;
-	private JScrollPane treeScrollPane;
 	private JPanel treePanel;
 
-	private JPanel infoPanel, optionPanel;
 	private JButton open;
 	private String username;
 	private LinkedList<Integer> journalsISSN;
@@ -42,10 +39,6 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 
 	private int selectedID;
 	private Article selectedArt;
-
-	private JPanel titleGroup, absGroup, maGroup;
-	private JPanel buttonPanel, buttonPanel1;
-	private JPanel panel;
 
 
 	ChiefEditorInterface(String username) throws SQLException {
@@ -71,13 +64,10 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 		}
 
 		//set up panels
-		infoPanel = new JPanel();
 		treePanel = new JPanel();
-		optionPanel = new JPanel();
 
 		//create the menu
 		menuBar = new JMenuBar();
-		group = new ButtonGroup();
 		staff = new JMenu("Staff Management");
 		journal = new JMenu("Journal Management");
 		toEditor = new JMenuItem("To Editor Options");
@@ -143,47 +133,45 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 
 		tree.setShowsRootHandles(true);
 		tree.setRootVisible(false);
-		treeScrollPane = new JScrollPane(tree);
+		JScrollPane treeScrollPane = new JScrollPane(tree);
 		treeScrollPane.setPreferredSize(new Dimension(250, 527));
 		treePanel.add(treeScrollPane);
 
 		//display selection bottom bar
 		selectedLabel = new JLabel();
 		add(selectedLabel, BorderLayout.SOUTH);
+
+		artPanel = new JPanel();
+		artPanel.setLayout(cardLayout);
+		//display panel depends on selected node
 		tree.getSelectionModel().addTreeSelectionListener(e -> {
 			DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
 			if (selectedNode.isLeaf() && accptedList != null) {
 				selectedLabel.setText(selectedNode.getUserObject().toString());
 				selectedArt = (Article) selectedNode.getUserObject();
 				selectedID = selectedArt.getSubmissionID();
-				System.out.println(selectedID);
-				try {
-					this.add(panel(selectedID), BorderLayout.EAST);
-				} catch (SQLException ex) {
-					ex.printStackTrace();
-				}
+				artPanel.add(panel(selectedID), selectedNode.getUserObject().toString());
+				cardLayout.show(artPanel, selectedNode.getUserObject().toString());
 			}
 		});
-
-
 		//add panels functions
 		this.add(treePanel, BorderLayout.WEST);
-
+		this.add(artPanel, BorderLayout.EAST);
 
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		this.setVisible(true);
 
 	}
 
-	public JPanel panel(int submissionId) throws SQLException {
+	public JPanel panel(int submissionId) {
 		//set up the article information panel
-		infoPanel.setPreferredSize(new Dimension(730, 300));
+		JPanel infoPanel = new JPanel();
+		infoPanel.setPreferredSize(new Dimension(730, 400));
 
 		//List of Qs
 		//questions panel settings
-		titleGroup = new JPanel(new BorderLayout());
-		//qsGroup.setPreferredSize(new Dimension(1000,230));
-		titleGroup.setBorder(BorderFactory.createEmptyBorder(10, 50, 0, 0));
+		JPanel titleGroup = new JPanel(new BorderLayout());
+		titleGroup.setBorder(BorderFactory.createEmptyBorder(30, 50, 10, 0));
 		JLabel lblTitle = new JLabel("Title of Article");
 		lblTitle.setFont(new Font("Lucida Grande", Font.PLAIN, 20));
 		JLabel title = new JLabel(selectedArt.getTitle());
@@ -191,7 +179,7 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 		titleGroup.add(lblTitle, BorderLayout.PAGE_START);
 		titleGroup.add(title, BorderLayout.WEST);
 
-		absGroup = new JPanel(new BorderLayout(10, 10));
+		JPanel absGroup = new JPanel(new BorderLayout(10, 10));
 		absGroup.setBorder(BorderFactory.createEmptyBorder(0, 50, 10, 0));
 		JLabel lblAbstract = new JLabel("Abstract of Article");
 		lblAbstract.setFont(new Font("Lucida Grande", Font.PLAIN, 20));
@@ -202,14 +190,12 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 		artAbstract.setWrapStyleWord(true);
 		artAbstract.setFont(new Font("Arial", Font.PLAIN, 15));
 		JScrollPane absPane = new JScrollPane(artAbstract);
-		absPane.setPreferredSize(new Dimension(630, 100));
+		absPane.setPreferredSize(new Dimension(630, 250));
 		absPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-		absPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 		absGroup.add(lblAbstract, BorderLayout.PAGE_START);
 		absGroup.add(absPane, BorderLayout.WEST);
 
-		maGroup = new JPanel(new BorderLayout());
-		//qsGroup.setPreferredSize(new Dimension(1000,230));
+		JPanel maGroup = new JPanel(new BorderLayout());
 		maGroup.setBorder(BorderFactory.createEmptyBorder(0, 50, 10, 0));
 		JLabel lblMa = new JLabel("Main Author");
 		lblMa.setFont(new Font("Lucida Grande", Font.PLAIN, 20));
@@ -218,25 +204,11 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 		maGroup.add(lblMa, BorderLayout.PAGE_START);
 		maGroup.add(mainAuthor, BorderLayout.WEST);
 
-		buttonPanel = new JPanel(new BorderLayout());
+		JPanel buttonPanel = new JPanel(new BorderLayout());
 		buttonPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 20, 100));
 		open = new JButton("Open");
-		open.addActionListener((new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				try {
-					ArticleController.getSubmissionPDF(selectedID);
-					File article = new File("article.pdf");
-					if (!Desktop.isDesktopSupported()) {
-						JOptionPane.showMessageDialog(null, "Desktop does not support this function");
-					} else if (article.exists()) {
-
-						desktop.open(article);
-					}
-				} catch (IOException | SQLException ex) {
-					ex.printStackTrace();
-				}
-			}
+		open.addActionListener((e -> {
+			openSubPdf(submissionId);
 		}));
 		open.setFont(new Font("Lucida Grande", Font.PLAIN, 15));
 		buttonPanel.add(open, BorderLayout.EAST);
@@ -250,6 +222,7 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 
 
 		//set up the optionPanel panel
+		JPanel optionPanel = new JPanel();
 		optionPanel.setPreferredSize(new Dimension(730, 100));
 		optionPanel.setLayout(new BorderLayout());
 
@@ -290,23 +263,21 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 		});
 
 		//layout for buttonPane - accept and reject
-		buttonPanel1 = new JPanel();
+		JPanel buttonPanel1 = new JPanel();
 		buttonPanel1.setLayout(new BoxLayout(buttonPanel1, BoxLayout.X_AXIS));
 		buttonPanel1.setBorder(BorderFactory.createEmptyBorder(0, 250, 0, 0));
 		buttonPanel1.add(accept);
 		buttonPanel1.add(delay);
 
-
-
 		JScrollPane northPane = new JScrollPane(infoPanel);
-		northPane.setPreferredSize(new Dimension(730, 300));
+		northPane.setPreferredSize(new Dimension(730, 400));
 		northPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
 		JScrollPane southPane = new JScrollPane(buttonPanel1);
 		southPane.setPreferredSize(new Dimension(730, 100));
 		southPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
-		panel = new JPanel();
+		JPanel panel = new JPanel();
 		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 		panel.setPreferredSize(new Dimension(730, 600));
 		panel.add(northPane);
@@ -315,16 +286,18 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 		return panel;
 	}
 
-	//get selected radio box text
-	public String getSelectedButtonText(ButtonGroup buttonGroup) {
-		for (Enumeration<AbstractButton> buttons = buttonGroup.getElements(); buttons.hasMoreElements(); ) {
-			AbstractButton button = buttons.nextElement();
-
-			if (button.isSelected()) {
-				return button.getText();
+	public void openSubPdf(int submissionId) {
+		try {
+			ArticleController.getSubmissionPDF(submissionId);
+			File article = new File("article.pdf");
+			if (!Desktop.isDesktopSupported()) {
+				JOptionPane.showMessageDialog(null, "Desktop does not support this function");
+			} else if (article.exists()) {
+				desktop.open(article);
 			}
+		} catch (IOException | SQLException ex) {
+			ex.printStackTrace();
 		}
-		return null;
 	}
 
 
@@ -431,7 +404,6 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 			if (x == 0) {
 				try {
 					Journal selectedJournal = (Journal) journalSelection.getItemAt(journalSelection.getSelectedIndex());
-					//System.out.println(title);
 					String title = selectedJournal.getTitle();
 					int issn = selectedJournal.getIssn();
 					System.out.println(issn);
@@ -443,7 +415,6 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 						if (JournalController.chiefEditorRetire(username, issn)) {
 							JOptionPane.showMessageDialog(null, "You have retire from journal " + title + " successfully");
 							this.dispose();
-							//System.out.println(username + "retired from" + issn);
 							new EditorInterface(username);
 						}
 					}

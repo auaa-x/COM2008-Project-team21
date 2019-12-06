@@ -55,8 +55,6 @@ public class AuthorInterface extends JFrame implements ActionListener{
     public AuthorInterface(String username) throws SQLException {
         this.setTitle("Submission");
         this.setSize(1000, 600);
-        reviewsPanel = new JPanel();
-        reviewsPanel.setSize(1000,600);
         this.setLocationRelativeTo(null);
         this.setResizable(false);
 
@@ -67,42 +65,36 @@ public class AuthorInterface extends JFrame implements ActionListener{
         //menu bar
         menubar = new JMenuBar();
         selectSub = new JMenu("Select Submission");
-
-        ActionListener listener = new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                AbstractButton aButton = (AbstractButton) actionEvent.getSource();
-                String s = aButton.getText();
-                Integer id = Integer.parseInt(aButton.getText());
-                Status status = getStatusByID(id);
-                if (status.equals(Status.SUBMITTED)){
+        //action listener for radio button in selecting submission menu
+        ActionListener listener = actionEvent -> {
+            AbstractButton aButton = (AbstractButton) actionEvent.getSource();
+            String s = aButton.getText();
+            Integer id = Integer.parseInt(aButton.getText());
+            Status status = getStatusByID(id);
+            try {
+                if (status.equals(Status.SUBMITTED)) {
                     System.out.println("submitted condition detected");
-                    authorPanel.add(submittedPanel(id),s);
+                    authorPanel.add(submittedPanel(id), s);
                     cardLayout.show(authorPanel, s);
-                } else if (status.equals(Status.REVIEWS_RECEIVED)){
-                    try {
-                        authorPanel.add(reviewsReceivedPanel(id),s);
-                    } catch (SQLException e) {
-                        e.printStackTrace();
-                    }
+                } else if (status.equals(Status.REVIEWS_RECEIVED)) {
+                        authorPanel.add(reviewsReceivedPanel(id), s);
                     cardLayout.show(authorPanel, s);
                 } else if (status.equals(Status.RESPONSES_RECEIVED)) {
-                    authorPanel.add(responsesReceivedPanel(id),s);
+                    authorPanel.add(responsesReceivedPanel(id), s);
                     cardLayout.show(authorPanel, s);
                 } else if (status.equals(Status.COMPLETED)) {
-                    authorPanel.add(completedPanel(id),s);
+                    authorPanel.add(completedPanel(id), s);
                     cardLayout.show(authorPanel, s);
-                }  else if ( status.equals(Status.FINAL_VERDICTS_RECEIVED)) {
-                    try {
-                        authorPanel.add(finalPanel(id),s);
-                    } catch (SQLException e) {
-                        e.printStackTrace();
-                    }
+                } else if (status.equals(Status.FINAL_VERDICTS_RECEIVED)) {
+                    authorPanel.add(finalPanel(id), s);
                     cardLayout.show(authorPanel, s);
                 }
-
+            }catch (SQLException e) {
+                e.printStackTrace();
             }
-        };
 
+        };
+        //add radio button menu item
         for (int s=0; s < submissions.size(); s++){
             Submission sub = submissions.get(s);
             subItem = new JRadioButtonMenuItem(String.valueOf(sub.getSubmissionID()));
@@ -113,8 +105,6 @@ public class AuthorInterface extends JFrame implements ActionListener{
                 subItem.setSelected(true);
             }
         }
-
-
         menubar.add(selectSub);
 
         settings = new JMenu("Settings");
@@ -133,31 +123,31 @@ public class AuthorInterface extends JFrame implements ActionListener{
         this.setJMenuBar(menubar);
 
         //get selected id of submissions list
-        Integer selectedSubId = Integer.parseInt(getSelectedButtonText(group));
+        String selected = getSelectedButtonText(group);
+        Integer selectedSubId = Integer.parseInt(selected);
         Status status = getStatusByID(selectedSubId);
         System.out.println(status);
 
+        //setup author panel
         authorPanel = new JPanel();
         authorPanel.setLayout(cardLayout);
-
+        //switch panel by status
         if (status.equals(Status.SUBMITTED)){
-            System.out.println("submitted condition detected");
-            authorPanel.add(submittedPanel(selectedSubId),getSelectedButtonText(group));
-            cardLayout.show(authorPanel, getSelectedButtonText(group));
+            authorPanel.add(submittedPanel(selectedSubId), selected);
+            cardLayout.show(authorPanel, selected);
         } else if (status.equals(Status.REVIEWS_RECEIVED)){
-            authorPanel.add(reviewsReceivedPanel(selectedSubId),getSelectedButtonText(group));
-            cardLayout.show(authorPanel, getSelectedButtonText(group));
+            authorPanel.add(reviewsReceivedPanel(selectedSubId), selected);
+            cardLayout.show(authorPanel, selected);
         } else if (status.equals(Status.RESPONSES_RECEIVED)) {
-            authorPanel.add(responsesReceivedPanel(selectedSubId),getSelectedButtonText(group));
-            cardLayout.show(authorPanel, getSelectedButtonText(group));
+            authorPanel.add(responsesReceivedPanel(selectedSubId), selected);
+            cardLayout.show(authorPanel, selected);
         } else if (status.equals(Status.COMPLETED)) {
-            authorPanel.add(completedPanel(selectedSubId),getSelectedButtonText(group));
-            cardLayout.show(authorPanel, getSelectedButtonText(group));
+            authorPanel.add(completedPanel(selectedSubId), selected);
+            cardLayout.show(authorPanel, selected);
         } else if ( status.equals(Status.FINAL_VERDICTS_RECEIVED)) {
-            authorPanel.add(finalPanel(selectedSubId),getSelectedButtonText(group));
-            cardLayout.show(authorPanel, getSelectedButtonText(group));
+            authorPanel.add(finalPanel(selectedSubId), selected);
+            cardLayout.show(authorPanel, selected);
         }
-
         this.add(authorPanel);
     //extra settings
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -178,18 +168,7 @@ public class AuthorInterface extends JFrame implements ActionListener{
         open.addActionListener((new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                try {
-                    ArticleController.getSubmissionPDF(id);
-                    File article = new File("article.pdf");
-                    if (!Desktop.isDesktopSupported()) {
-                        JOptionPane.showMessageDialog(null, "Desktop does not support this function");
-                    } else if (article.exists()) {
-
-                        desktop.open(article);
-                    }
-                } catch (IOException | SQLException ex) {
-                    ex.printStackTrace();
-                }
+                openSubPdf(id);
             }
         }));
         open.setFont(new Font("Lucida Grande", Font.PLAIN, 20));
@@ -200,9 +179,7 @@ public class AuthorInterface extends JFrame implements ActionListener{
     }
 
     public JScrollPane reviewsReceivedPanel(Integer id) throws SQLException {
-        System.out.println("reviewsReceivedPanel");
         reviewsPanel = new JPanel();
-
 
         //notice panel for add answers
         JPanel noticePanel = new JPanel();
@@ -210,7 +187,6 @@ public class AuthorInterface extends JFrame implements ActionListener{
         banner.setFont(new Font("Lucida Grande", Font.PLAIN, 24));
         banner.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
         noticePanel.add(banner);
-
 
         //pdf panel
         JPanel pdfPanel = new JPanel();
@@ -222,7 +198,6 @@ public class AuthorInterface extends JFrame implements ActionListener{
         addedPDF.setEditable (false); //set textArea non-editable
 
         JScrollPane pdfPane = new JScrollPane(addedPDF);
-        //pdfPane.setPreferredSize(new Dimension(20,20));
         pdfPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
         pdfPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         //add pdf button
@@ -235,12 +210,12 @@ public class AuthorInterface extends JFrame implements ActionListener{
         pdfPanel.add(pdfPane);
         pdfPanel.add(btnAddPdf);
 
-
         //button panel
         JPanel submitButtonPane = new JPanel();
         JButton submit = new JButton("Submit");
-        submit.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+        //only main author can submit responds
+        if (!ArticleController.getArticle(id).getMAuthorEmail().equals(username)) {submit.setEnabled(false);}
+            submit.addActionListener(e -> {
                 try {
                     if (ReviewController.submitResponsesAndPdf(id, pdf)){
                         JOptionPane.showMessageDialog(null, "you have respond successfully!");
@@ -252,8 +227,7 @@ public class AuthorInterface extends JFrame implements ActionListener{
                 } catch (SQLException ex) {
                     ex.printStackTrace();
                 }
-            }
-        });
+            });
         submit.setFont(new Font("Lucida Grande", Font.PLAIN, 20));
         //layout for submitButtonPane
         submitButtonPane.setLayout(new BoxLayout(submitButtonPane, BoxLayout.X_AXIS));
@@ -270,7 +244,6 @@ public class AuthorInterface extends JFrame implements ActionListener{
         reviewsPanel.add(submitButtonPane);
 
 
-
         JScrollPane scrollPane = new JScrollPane(reviewsPanel);
         scrollPane.setPreferredSize(new Dimension(1000,600));
         scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
@@ -279,9 +252,9 @@ public class AuthorInterface extends JFrame implements ActionListener{
     }
 
     //review panel for review + no.
-    public JPanel review(int submissionID, int no) throws SQLException {
-        System.out.println("review " + no);
+    private JPanel review(int submissionID, int no) throws SQLException {
         reviewPanel = new JPanel();
+
         String anonID = null;
         switch (no) {
             case 1:
@@ -294,36 +267,40 @@ public class AuthorInterface extends JFrame implements ActionListener{
                 anonID = "reviewer3";
                 break;
         }
+        //get values from db
         boolean isResponded = ReviewController.isSubmittedResponse(submissionID, anonID);
         Review review = ReviewController.getReview(submissionID, anonID);
         LinkedList<Question> questions = new LinkedList<>(ReviewController.getQuestions(submissionID, anonID));
-        System.out.println("getting initial verdict of " + anonID);
         String initialVd = ReviewController.getVerdict(submissionID, anonID).toString();
 
+        //notice panel
         JPanel noticePanel = new JPanel();
         JLabel banner = new JLabel("Review "+ no);
         banner.setFont(new Font("Lucida Grande", Font.PLAIN, 30));
         banner.setBorder(BorderFactory.createEmptyBorder(30, 0, 30, 0));
 
-        //Summary group
+        //summary group
         JPanel summaryGroup = new JPanel(new BorderLayout(10, 10));
         summaryGroup.setPreferredSize(new Dimension(1000,300));
         summaryGroup.setBorder(BorderFactory.createEmptyBorder(10, 100, 20, 100));
+        //label
         JLabel summary = new JLabel("Summary");
         summary.setFont(new Font("Lucida Grande", Font.PLAIN, 20));
+        //text area
         JTextArea sumField = new JTextArea(2,50);
         sumField.setFont(new Font("Arial", Font.PLAIN, 15));
         sumField.setText(review.getSummary());
         sumField.setEditable(false);
         sumField.setLineWrap(true);
         sumField.setWrapStyleWord(true);
+        //scroll pane
         JScrollPane sumFieldPane = new JScrollPane(sumField);
         sumFieldPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         sumFieldPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         summaryGroup.add(summary, BorderLayout.PAGE_START);
         summaryGroup.add(sumFieldPane, BorderLayout.CENTER);
 
-        //Errors
+        //errors
         JPanel errorsGroup = new JPanel(new BorderLayout(10, 10));
         errorsGroup.setPreferredSize(new Dimension(1000,300));
         errorsGroup.setBorder(BorderFactory.createEmptyBorder(10, 100, 20, 100));
@@ -377,15 +354,16 @@ public class AuthorInterface extends JFrame implements ActionListener{
         JPanel buttonPanel = new JPanel(new BorderLayout());
         buttonPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 20, 100));
         JButton response = new JButton("Create a Response");
+        //only main author can submit responds
+        if (!ArticleController.getArticle(submissionID).getMAuthorEmail().equals(username)) {
+            response.setEnabled(false); }
+        //if already responded then disable
         if (isResponded){
-            response.setEnabled(false);
-        }
-        response.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                System.out.println("Respond to " + no);
-                SwingUtilities.getWindowAncestor(response).dispose();
-                new RespondInterface(username, submissionID, no, questions);
-            }
+            response.setEnabled(false); }
+        response.addActionListener(e -> {
+            System.out.println("Respond to " + no);
+            SwingUtilities.getWindowAncestor(response).dispose();
+            new RespondInterface(username, submissionID, no, questions);
         });
         response.setFont(new Font("Lucida Grande", Font.PLAIN, 20));
         buttonPanel.add(response, BorderLayout.EAST);
@@ -405,8 +383,9 @@ public class AuthorInterface extends JFrame implements ActionListener{
     }
 
 
-    public JPanel responsesReceivedPanel(Integer id){
+    private JPanel responsesReceivedPanel(Integer id){
         JPanel responseReceivedPanel = new JPanel();
+
         JLabel title = new JLabel("Waiting for final verdict.");
         title.setBorder(BorderFactory.createEmptyBorder(190, 200, 50, 200));
         title.setFont(new Font("Lucida Grande", Font.PLAIN, 30));
@@ -417,41 +396,14 @@ public class AuthorInterface extends JFrame implements ActionListener{
         buttonPanel1.setBorder(BorderFactory.createEmptyBorder(0, 100, 20, 100));
         //button to open submission pdf
         open = new JButton("View Submission PDF");
-        open.addActionListener((new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                try {
-                    ArticleController.getSubmissionPDF(id);
-                    File article = new File("article.pdf");
-                    if (!Desktop.isDesktopSupported()) {
-                        JOptionPane.showMessageDialog(null, "Desktop does not support this function");
-                    } else if (article.exists()) {
-
-                        desktop.open(article);
-                    }
-                } catch (IOException | SQLException ex) {
-                    ex.printStackTrace();
-                }
-            }
+        open.addActionListener((e -> {
+            openSubPdf(id);
         }));
         open.setFont(new Font("Lucida Grande", Font.PLAIN, 20));
         //button to open final pdf
         open1 = new JButton("View Final PDF");
-        open1.addActionListener((new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                try {
-                    ArticleController.getArticlePDF(id);
-                    File article = new File("article.pdf");
-                    if (!Desktop.isDesktopSupported()) {
-                        JOptionPane.showMessageDialog(null, "Desktop does not support this function");
-                    } else if (article.exists()) {
-                        desktop.open(article);
-                    }
-                } catch (IOException | SQLException ex) {
-                    ex.printStackTrace();
-                }
-            }
+        open1.addActionListener((e -> {
+            openFinalPdf(id);
         }));
         open1.setFont(new Font("Lucida Grande", Font.PLAIN, 20));
         buttonPanel1.setLayout(new BoxLayout(buttonPanel1,BoxLayout.X_AXIS));
@@ -466,10 +418,10 @@ public class AuthorInterface extends JFrame implements ActionListener{
 
     public JPanel completedPanel(Integer id){
         JPanel completedPanel = new JPanel();
+
         JLabel title = new JLabel("Your article has completed the review process.");
         title.setBorder(BorderFactory.createEmptyBorder(190, 200, 30, 200));
         title.setFont(new Font("Lucida Grande", Font.PLAIN, 30));
-        //System.out.println(subTitle1.getFont());
         title.setHorizontalAlignment(JLabel.CENTER);
 
         //Initial verdict
@@ -489,41 +441,14 @@ public class AuthorInterface extends JFrame implements ActionListener{
         buttonPanel1.setBorder(BorderFactory.createEmptyBorder(0, 100, 20, 100));
         //button to open submission pdf
         open = new JButton("View Submission PDF");
-        open.addActionListener((new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                try {
-                    ArticleController.getSubmissionPDF(id);
-                    File article = new File("article.pdf");
-                    if (!Desktop.isDesktopSupported()) {
-                        JOptionPane.showMessageDialog(null, "Desktop does not support this function");
-                    } else if (article.exists()) {
-
-                        desktop.open(article);
-                    }
-                } catch (IOException | SQLException ex) {
-                    ex.printStackTrace();
-                }
-            }
+        open.addActionListener((e -> {
+            openSubPdf(id);
         }));
         open.setFont(new Font("Lucida Grande", Font.PLAIN, 20));
         //button to open final pdf
         open1 = new JButton("View Final PDF");
-        open1.addActionListener((new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                try {
-                    ArticleController.getArticlePDF(id);
-                    File article = new File("article.pdf");
-                    if (!Desktop.isDesktopSupported()) {
-                        JOptionPane.showMessageDialog(null, "Desktop does not support this function");
-                    } else if (article.exists()) {
-                        desktop.open(article);
-                    }
-                } catch (IOException | SQLException ex) {
-                    ex.printStackTrace();
-                }
-            }
+        open1.addActionListener((e -> {
+            openFinalPdf(id);
         }));
         open1.setFont(new Font("Lucida Grande", Font.PLAIN, 20));
         buttonPanel1.setLayout(new BoxLayout(buttonPanel1,BoxLayout.X_AXIS));
@@ -535,27 +460,23 @@ public class AuthorInterface extends JFrame implements ActionListener{
         completedPanel.add(buttonPanel1);
 
         return completedPanel;
-        //System.out.println("Completed Panel");
     }
 
-    public JPanel finalPanel(Integer id) throws SQLException {
+    private JPanel finalPanel(Integer id) throws SQLException {
         JPanel finalPanel = new JPanel();
+
         JLabel title = new JLabel("Your article has got final verdicts: ");
         title.setBorder(BorderFactory.createEmptyBorder(190, 200, 30, 200));
         title.setFont(new Font("Lucida Grande", Font.PLAIN, 30));
-        //System.out.println(subTitle1.getFont());
         title.setHorizontalAlignment(JLabel.CENTER);
 
         //Initial verdict
-
         JPanel vdGroup = new JPanel();
-        //vdGroup.setPreferredSize(new Dimension(1000,300));
         vdGroup.setBorder(BorderFactory.createEmptyBorder(10, 0, 20, 0));
         LinkedList<Verdict> finalVerdicts = JournalController.getFinalVerdicts(id);
         vdGroup.setLayout(new BoxLayout(vdGroup, BoxLayout.X_AXIS));
         for (Verdict vd : finalVerdicts) {
             JLabel vd1 = new JLabel(vd.toString()+ "    ");
-            System.out.println(vd);
             vdGroup.add(vd1);
             vd1.setFont(new Font("Lucida Grande", Font.PLAIN, 20));
         }
@@ -564,42 +485,13 @@ public class AuthorInterface extends JFrame implements ActionListener{
         buttonPanel1.setBorder(BorderFactory.createEmptyBorder(0, 100, 20, 100));
         //button to open submission pdf
         open = new JButton("View Submission PDF");
-        open.addActionListener((new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                try {
-                    ArticleController.getSubmissionPDF(id);
-                    File article = new File("article.pdf");
-                    if (!Desktop.isDesktopSupported()) {
-                        JOptionPane.showMessageDialog(null, "Desktop does not support this function");
-                    } else if (article.exists()) {
-
-                        desktop.open(article);
-                    }
-                } catch (IOException | SQLException ex) {
-                    ex.printStackTrace();
-                }
-            }
-        }));
+        open.addActionListener((e ->
+                openSubPdf(id)));
         open.setFont(new Font("Lucida Grande", Font.PLAIN, 20));
         //button to open final pdf
         open1 = new JButton("View Final PDF");
-        open1.addActionListener((new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                try {
-                    ArticleController.getArticlePDF(id);
-                    File article = new File("article.pdf");
-                    if (!Desktop.isDesktopSupported()) {
-                        JOptionPane.showMessageDialog(null, "Desktop does not support this function");
-                    } else if (article.exists()) {
-                        desktop.open(article);
-                    }
-                } catch (IOException | SQLException ex) {
-                    ex.printStackTrace();
-                }
-            }
-        }));
+        open1.addActionListener((e ->
+                openFinalPdf(id)));
         open1.setFont(new Font("Lucida Grande", Font.PLAIN, 20));
         buttonPanel1.setLayout(new BoxLayout(buttonPanel1,BoxLayout.X_AXIS));
         buttonPanel1.add(open);
@@ -610,7 +502,33 @@ public class AuthorInterface extends JFrame implements ActionListener{
         finalPanel.add(buttonPanel1);
 
         return finalPanel;
-        //System.out.println("Completed Panel");
+    }
+    public void openSubPdf(int submissionId) {
+        try {
+            ArticleController.getSubmissionPDF(submissionId);
+            File article = new File("article.pdf");
+            if (!Desktop.isDesktopSupported()) {
+                JOptionPane.showMessageDialog(null, "Desktop does not support this function");
+            } else if (article.exists()) {
+                desktop.open(article);
+            }
+        } catch (IOException | SQLException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    public void openFinalPdf(int submissionId) {
+        try {
+            ArticleController.getArticlePDF(submissionId);
+            File article = new File("article.pdf");
+            if (!Desktop.isDesktopSupported()) {
+                JOptionPane.showMessageDialog(null, "Desktop does not support this function");
+            } else if (article.exists()) {
+                desktop.open(article);
+            }
+        } catch (IOException | SQLException ex) {
+            ex.printStackTrace();
+        }
     }
 
 
@@ -662,11 +580,5 @@ public class AuthorInterface extends JFrame implements ActionListener{
             addedPDF.setText(fileChooser.getSelectedFile().getPath());
             pdf = path.toFile();
         }
-    }
-
-
-
-    public static void main(String[] args) throws SQLException {
-        new AuthorInterface("ardanowski@polska.pl");
     }
 }

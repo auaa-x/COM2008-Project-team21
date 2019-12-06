@@ -7,7 +7,6 @@
 
 import java.awt.*;
 import javax.swing.*;
-import javax.swing.event.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -18,19 +17,23 @@ import java.util.LinkedList;
 
 
 public class ReaderInterface extends JFrame implements ActionListener {
+
+    private JPanel infoPanel = new JPanel();
+    private CardLayout cardLayout = new CardLayout();
+
+    private JMenuBar menuBar;
+    private JMenuItem login;
+
     private JTree tree;
     private JLabel selectedLabel;
     private JScrollPane treeScrolPane;
     private LinkedList<Journal> journals = new LinkedList<Journal>();
-    private LinkedList<Volume> volumes = new LinkedList<Volume>();
-    private JMenuBar menuBar;
-    private JMenu view;
-    private JMenuItem login;
-    private File article = new File("./article.pdf");
     private Desktop desktop = Desktop.getDesktop();
-    private JPanel infoPanel = new JPanel();
-    private JLabel infoTitle;
     private JButton open;
+
+
+    private int selectedID;
+    private Article selectedArt;
 
 
     public ReaderInterface() throws IOException, SQLException {
@@ -48,72 +51,37 @@ public class ReaderInterface extends JFrame implements ActionListener {
 
 
         //set up the article information panel
-        infoPanel.setPreferredSize(new Dimension(725, 525));
+        infoPanel.setPreferredSize(new Dimension(725, 600));
 
 
-        //title of the information panel
-        infoTitle = new JLabel("Article Information Display Here");
-        infoTitle.setFont(new Font("Tahoma", Font.PLAIN, 20));
         //open button
         open = new JButton("Open");
         open.addActionListener(this);
         open.setFont(new Font("Tahoma", Font.PLAIN, 15));
-        /*
-        infoPanel.setLayout(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.fill = GridBagConstraints.BOTH;
-        JButton btnOpen = new JButton("Open");
-        gbc.gridx = 0;
-        gbc.gridy = 2;
-        gbc.gridwidth = 2;
-        gbc.gridheight = 1;
-        gbc.weightx = 0.5;
-        gbc.weighty = 0.2;
-        gbc.anchor = GridBagConstraints.SOUTH;
-        artInfo.add(btnOpen, gbc);
-
-        JLabel jInfo = new JLabel("Information:");
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.gridwidth = 2;
-        gbc.gridheight = 2;
-        gbc.weightx = 0.2;
-        gbc.weighty = 0.8;
-        gbc.fill = GridBagConstraints.NONE;
-        gbc.anchor = GridBagConstraints.NORTHWEST;
-        artInfo.add(jInfo, gbc);*/
-
 
         //create the tree panel
         JPanel treePanel = new JPanel();
         //create the root node
         DefaultMutableTreeNode root = new DefaultMutableTreeNode("Journal Publish System");
         journals = JournalController.getAllJournals();
-        //getVolumes(int issn);
+
 
         for (Journal journal : journals) {
-            DefaultMutableTreeNode journal1 = new DefaultMutableTreeNode(journal.toString());
+            DefaultMutableTreeNode journal1 = new DefaultMutableTreeNode(journal);
             root.add(journal1);
             for (Volume volume : JournalController.getVolumes(journal.getIssn())) {
-                DefaultMutableTreeNode volume1 = new DefaultMutableTreeNode(volume.toString());
+                DefaultMutableTreeNode volume1 = new DefaultMutableTreeNode(volume);
                 journal1.add(volume1);
-                // CHANge TO GET PUBLISHED EDITIONS
                 for (Edition edition : JournalController.getEditions(volume.getIssn(), volume.getVolNum())) {
-                    DefaultMutableTreeNode edition1 = new DefaultMutableTreeNode(edition.toString());
+                    DefaultMutableTreeNode edition1 = new DefaultMutableTreeNode(edition);
                     volume1.add(edition1);
                     for (Article article : JournalController.getPublishedArticles(journal.getIssn(), edition.getVolNum(), edition.getNoNum())) {
-                        DefaultMutableTreeNode article1 = new DefaultMutableTreeNode(article.toString());
+                        DefaultMutableTreeNode article1 = new DefaultMutableTreeNode(article);
                         edition1.add(article1);
                     }
                 }
             }
         }
-        DefaultMutableTreeNode test = new DefaultMutableTreeNode("test");
-        DefaultMutableTreeNode testFile = new DefaultMutableTreeNode("test file");
-        test.add(testFile);
-        testFile.add(new DefaultMutableTreeNode("Article"));
-        root.add(test);
-
         //create the tree by passing in the root node
         tree = new JTree(root);
 
@@ -123,28 +91,28 @@ public class ReaderInterface extends JFrame implements ActionListener {
         treeScrolPane.setPreferredSize(new Dimension(250, 527));
         treePanel.add(treeScrolPane);
 
+        //display selection bottom bar
         selectedLabel = new JLabel();
         add(selectedLabel, BorderLayout.SOUTH);
+
+        infoPanel = new JPanel();
+        infoPanel.setLayout(cardLayout);
         tree.getSelectionModel().addTreeSelectionListener(e -> {
             DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
             selectedLabel.setText(selectedNode.getUserObject().toString());
-            if (selectedNode.getUserObject().toString().equals("Article")){
-                //first check if Desktop is supported by Platform or not
-                if(!Desktop.isDesktopSupported()){
-                    JOptionPane.showMessageDialog(null, "Desktop does not support this function");
-                    return;
-                } else if (article.exists()){
-                    try {
-                        desktop.open(article);
-                    } catch (IOException ex) {
-                        ex.printStackTrace();
-                    }
+            if (selectedNode.isLeaf()){
+                selectedLabel.setText(selectedNode.getUserObject().toString());
+                selectedArt = (Article)selectedNode.getUserObject();
+                selectedID = selectedArt.getSubmissionID();
+                System.out.println(selectedID);
+                try {
+                    infoPanel.add(panel(selectedID), selectedNode.getUserObject().toString());
+                    cardLayout.show(infoPanel, selectedNode.getUserObject().toString());
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
                 }
             }
         });
-
-
-        infoPanel.add(infoTitle);
 
 
 
@@ -154,39 +122,93 @@ public class ReaderInterface extends JFrame implements ActionListener {
         this.setJMenuBar(menuBar);
 
 
-
-     /*   tree.addMouseListener(new MouseAdapter() {
-            public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() == 2) {
-                    DefaultMutableTreeNode node = (DefaultMutableTreeNode)
-                            tree.getLastSelectedPathComponent();
-                    if (node == null) return;
-                    Object nodeInfo = node.getUserObject();
-                    // Cast nodeInfo to your object and do whatever you want
-                }
-            }
-        });*/
-
-         /*
-    @Override
-            public void valueChanged(TreeSelectionEvent e) {
-            DefaultMutableTreeNode node = (DefaultMutableTreeNode)tree.getLastSelectedPathComponent();
-
-            if (node == null)
-                return;
-
-            Object object = node.getUserObject();
-            if (node.isLeaf()) {
-                Article title = (Article) object;
-                System.out.println("you choosed:"+ title.toString());
-            }
-     */
-
-
-
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setVisible(true);
     }
+
+    public JScrollPane panel(int submissionId) throws SQLException {
+        //set up the article information panel
+        JPanel infoPanel = new JPanel();
+        infoPanel.setPreferredSize(new Dimension(730, 527));
+
+        //List of Qs
+        //questions panel settings
+        JPanel titleGroup = new JPanel(new BorderLayout());
+        //qsGroup.setPreferredSize(new Dimension(1000,230));
+        titleGroup.setBorder(BorderFactory.createEmptyBorder(10, 50, 0, 0));
+        JLabel lblTitle = new JLabel("Title of Article");
+        lblTitle.setFont(new Font("Lucida Grande", Font.PLAIN, 20));
+        JLabel title = new JLabel(selectedArt.getTitle());
+        title.setFont(new Font("Arial", Font.PLAIN, 15));
+        titleGroup.add(lblTitle, BorderLayout.PAGE_START);
+        titleGroup.add(title, BorderLayout.WEST);
+
+        JPanel absGroup = new JPanel(new BorderLayout(10, 10));
+        absGroup.setBorder(BorderFactory.createEmptyBorder(0, 50, 10, 0));
+        JLabel lblAbstract = new JLabel("Abstract of Article");
+        lblAbstract.setFont(new Font("Lucida Grande", Font.PLAIN, 20));
+        JTextArea artAbstract = new JTextArea();
+        artAbstract.setText(selectedArt.getAbstract());
+        artAbstract.setEditable(false);
+        artAbstract.setLineWrap(true);
+        artAbstract.setWrapStyleWord(true);
+        artAbstract.setFont(new Font("Arial", Font.PLAIN, 15));
+        JScrollPane absPane = new JScrollPane(artAbstract);
+        absPane.setPreferredSize(new Dimension(630,280));
+        absPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        absGroup.add(lblAbstract, BorderLayout.PAGE_START);
+        absGroup.add(absPane, BorderLayout.WEST);
+
+        JPanel maGroup = new JPanel(new BorderLayout());
+        //qsGroup.setPreferredSize(new Dimension(1000,230));
+        maGroup.setBorder(BorderFactory.createEmptyBorder(0, 50, 10, 0));
+        JLabel lblMa = new JLabel("Main Author");
+        lblMa.setFont(new Font("Lucida Grande", Font.PLAIN, 20));
+        JLabel mainAuthor = new JLabel(selectedArt.getMAuthorEmail());
+        mainAuthor.setFont(new Font("Arial", Font.PLAIN, 15));
+        maGroup.add(lblMa, BorderLayout.PAGE_START);
+        maGroup.add(mainAuthor, BorderLayout.WEST);
+
+        JPanel buttonPanel = new JPanel(new BorderLayout());
+        buttonPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 20, 100));
+        open = new JButton("Open");
+        open.addActionListener((new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    System.out.println("open " + selectedID);
+                    ArticleController.getSubmissionPDF(selectedID);
+                    File article = new File("article.pdf");
+                    if (!Desktop.isDesktopSupported()) {
+                        JOptionPane.showMessageDialog(null, "Desktop does not support this function");
+                    } else if (article.exists()) {
+
+                        desktop.open(article);
+                    }
+                } catch (IOException | SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }));
+        open.setFont(new Font("Lucida Grande", Font.PLAIN, 15));
+        buttonPanel.add(open, BorderLayout.EAST);
+
+        //open button
+        infoPanel.setLayout(new BoxLayout(infoPanel,BoxLayout.Y_AXIS));
+        infoPanel.add(titleGroup);
+        infoPanel.add(absGroup);
+        infoPanel.add(maGroup);
+        infoPanel.add(buttonPanel);
+
+
+
+        JScrollPane scrollPane = new JScrollPane(infoPanel);
+        scrollPane.setPreferredSize(new Dimension(730,527));
+        scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+
+        return scrollPane;
+    }
+
 
 
     @Override

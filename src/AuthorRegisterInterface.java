@@ -1,7 +1,6 @@
 /**
  * Class for Author Registration Interface
  * @author Ting Guo
- * @author Huiqiang Liu
  */
 
 import javax.swing.*;
@@ -26,7 +25,6 @@ public class AuthorRegisterInterface extends JFrame implements ActionListener, I
     private JTextField snField;
     private JTextField uniField;
     private JComboBox<Journal> comboJnTypes;
-    private ButtonGroup group;
     private LinkedList<Journal> journals;
     private Journal journalSelected;
     private JTextField articleTitleField;
@@ -35,10 +33,9 @@ public class AuthorRegisterInterface extends JFrame implements ActionListener, I
     private JTextArea addedPDF;
     private JTextField coEmailField;
     private JTextArea addedCoAuthorArea;
-    private String userTitle = "Mrs";
+    private String userTitle;
     private Path path = null;
     private File pdf;
-    private JProgressBar progressBar;
 
     private JButton resetCoAuthor;
     private JButton btnAddPdf;
@@ -73,12 +70,8 @@ public class AuthorRegisterInterface extends JFrame implements ActionListener, I
 
 
 
-
-
-
         //Personal details
-        JLabel psFormTitle = new JLabel("Personal details",
-                SwingConstants.CENTER);
+        JLabel psFormTitle = new JLabel("Personal details", SwingConstants.CENTER);
         psFormTitle.setFont(new Font("Arial", Font.PLAIN, 25));
         //email
         JLabel email = new JLabel("Email address");
@@ -98,7 +91,6 @@ public class AuthorRegisterInterface extends JFrame implements ActionListener, I
         cfPasswordField = new JPasswordField(15);
         cfPasswordField.setFont(new Font("Arial", Font.PLAIN, 15));
 
-
         //user title
         JLabel title = new JLabel("Title");
         title.setFont(new Font("Arial", Font.PLAIN, 20));
@@ -108,20 +100,17 @@ public class AuthorRegisterInterface extends JFrame implements ActionListener, I
         comboTitleTypes.addItemListener(this);
         comboTitleTypes.setFont(new Font("Arial", Font.PLAIN, 16));
 
-
         //forename
         JLabel forename = new JLabel("Forename");
         forename.setFont(new Font("Arial", Font.PLAIN, 20));
         fnField = new JTextField(15);
         fnField.setFont(new Font("Arial", Font.PLAIN, 15));
 
-
         //surname
         JLabel surname = new JLabel("Surname");
         surname.setFont(new Font("Arial", Font.PLAIN, 20));
         snField = new JTextField(15);
         snField.setFont(new Font("Arial", Font.PLAIN, 15));
-
 
         //university
         JLabel university = new JLabel("University");
@@ -132,11 +121,8 @@ public class AuthorRegisterInterface extends JFrame implements ActionListener, I
 
 
 
-
-
         //article form title
-        JLabel atFormTitle = new JLabel("Article details",
-                SwingConstants.CENTER);
+        JLabel atFormTitle = new JLabel("Article details", SwingConstants.CENTER);
         atFormTitle.setFont(new Font("Arial", Font.PLAIN, 25));
 
         //journal categories combobox
@@ -151,13 +137,11 @@ public class AuthorRegisterInterface extends JFrame implements ActionListener, I
         comboJnTypes.addItemListener(this);
         comboJnTypes.setFont(new Font("Arial", Font.PLAIN, 16));
 
-
         //article title
         JLabel articleTitle = new JLabel("Title");
         articleTitle.setFont(new Font("Arial", Font.PLAIN, 20));
         articleTitleField = new JTextField(20);
         articleTitleField.setFont(new Font("Arial", Font.PLAIN, 15));
-
 
         //article abstract
         JLabel atAbstract = new JLabel("Abstract");
@@ -182,14 +166,8 @@ public class AuthorRegisterInterface extends JFrame implements ActionListener, I
         btnAddPdf.setFont(new Font("Arial", Font.PLAIN, 15));
 
 
-
-
-
-
-
         //co-author title
-        JLabel coAuthorFormTitle = new JLabel("Co-author details",
-                SwingConstants.CENTER);
+        JLabel coAuthorFormTitle = new JLabel("Co-author details", SwingConstants.CENTER);
         coAuthorFormTitle.setFont(new Font("Arial", Font.PLAIN, 25));
 
         //co-authors'emails
@@ -220,15 +198,11 @@ public class AuthorRegisterInterface extends JFrame implements ActionListener, I
         JScrollPane scrollPane = new JScrollPane(addedCoAuthorArea);
         scrollPane.setVerticalScrollBarPolicy (ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 
-
-
         //shared password
         JLabel sharedPassword = new JLabel("Shared password");
         sharedPassword.setFont(new Font("Arial", Font.PLAIN, 20));
         sharedPasswordField = new JPasswordField(15);
         sharedPasswordField.setFont(new Font("Arial", Font.PLAIN, 15));
-
-
 
 
 
@@ -369,7 +343,6 @@ public class AuthorRegisterInterface extends JFrame implements ActionListener, I
             }
         } else if (e.getSource() == comboJnTypes) {
             journalSelected = (Journal) comboJnTypes.getSelectedItem();
-          //  System.out.println(journalSelected.getTitle());
         }
     }
 
@@ -452,12 +425,6 @@ public class AuthorRegisterInterface extends JFrame implements ActionListener, I
                 JOptionPane.showMessageDialog(null, "Please fill in all fields!");
             }
         }
-
-
     }
 
-
-    public static void main(String[] args) throws SQLException, FontFormatException {
-        new AuthorRegisterInterface();
-    }
 }
