@@ -39,7 +39,8 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 	private LinkedList<Integer> journalsISSN;
 	private LinkedList<Integer> chiefJournalsISSN;
 	private LinkedList<Journal> journals;
-	private LinkedList<Article> considerList;
+	private LinkedList<Article> accptedList;
+	private LinkedList<Article> rejectedList;
 
 	private int selectedID;
 	private Article selectedArt;
@@ -71,7 +72,6 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 			journals.add(journal);
 		}
 
-
 		//set up panels
 		infoPanel = new JPanel();
 		treePanel = new JPanel();
@@ -87,21 +87,6 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 		logOut = new JMenuItem("Log out");
 		toEditor.addActionListener(this);
 		logOut.addActionListener(this);
-
-/*		//select journal
-		selectJn = new JMenu("Select Journal");
-		for (int s=0; s < journals.size(); s++){
-			Journal jn = journals.get(s);
-			jnItem = new JRadioButtonMenuItem(journals.);
-			subItem.addActionListener(this);
-			group.add(subItem);
-			selectSub.add(subItem);
-			if (s==0){
-				subItem.setSelected(true);
-			}
-		}
-		menubar.add(selectSub);*/
-
 
 		menuBar.add(staff);
 		menuBar.add(journal);
@@ -138,18 +123,25 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 		//create the root node
 		DefaultMutableTreeNode root = new DefaultMutableTreeNode("Journal Publish System");
 		//create tree
-		considerList = new LinkedList<>();
+		accptedList = new LinkedList<>();
+		rejectedList = new LinkedList<>();
 		for (Journal journal : journals) {
 			DefaultMutableTreeNode journal1 = new DefaultMutableTreeNode(journal);
 			root.add(journal1);
-			DefaultMutableTreeNode underCs = new DefaultMutableTreeNode("Under Consideration");
-			journal1.add(underCs);
+			DefaultMutableTreeNode accepted = new DefaultMutableTreeNode("Accepted");
+			DefaultMutableTreeNode rejected = new DefaultMutableTreeNode("Rejected");
+			journal1.add(accepted);
+			journal1.add(rejected);
 			journal.getIssn();
-			considerList = JournalController.getArtByStatusAndJournal(Status.COMPLETED,
-					journal.getIssn());
-			for (Article a : considerList){
+			accptedList = JournalController.getArticlesToPublish(journal.getIssn());
+			for (Article a : accptedList){
 				DefaultMutableTreeNode a1 = new DefaultMutableTreeNode(a);
-				underCs.add(a1);
+				accepted.add(a1);
+			}
+
+			for (Article a : rejectedList){
+				DefaultMutableTreeNode a1 = new DefaultMutableTreeNode(a);
+				rejected.add(a1);
 			}
 		}
 
@@ -167,7 +159,7 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 		add(selectedLabel, BorderLayout.SOUTH);
 		tree.getSelectionModel().addTreeSelectionListener(e -> {
 			DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
-			if (selectedNode.isLeaf() && considerList != null){
+			if (selectedNode.isLeaf() && accptedList != null){
 				selectedLabel.setText(selectedNode.getUserObject().toString());
 				selectedArt = (Article)selectedNode.getUserObject();
 				selectedID = selectedArt.getSubmissionID();
@@ -187,6 +179,7 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		this.setVisible(true);
+
 	}
 	public JPanel panel(int submissionId) throws SQLException {
 		//set up the article information panel
@@ -315,7 +308,6 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 		rightPane.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 100));
 		rightPane.setPreferredSize(new Dimension(600, 100));
 		rightPane.setLayout(new BoxLayout(rightPane, BoxLayout.Y_AXIS));
-		rightPane.add(saGroup);
 		rightPane.add(buttonPanel1);
 
 
