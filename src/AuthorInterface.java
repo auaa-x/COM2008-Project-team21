@@ -91,6 +91,13 @@ public class AuthorInterface extends JFrame implements ActionListener{
                 } else if (status.equals(Status.COMPLETED)) {
                     authorPanel.add(completedPanel(id),s);
                     cardLayout.show(authorPanel, s);
+                }  else if ( status.equals(Status.FINAL_VERDICTS_RECEIVED)) {
+                    try {
+                        authorPanel.add(finalPanel(id),s);
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
+                    cardLayout.show(authorPanel, s);
                 }
 
             }
@@ -145,6 +152,9 @@ public class AuthorInterface extends JFrame implements ActionListener{
             cardLayout.show(authorPanel, getSelectedButtonText(group));
         } else if (status.equals(Status.COMPLETED)) {
             authorPanel.add(completedPanel(selectedSubId),getSelectedButtonText(group));
+            cardLayout.show(authorPanel, getSelectedButtonText(group));
+        } else if ( status.equals(Status.FINAL_VERDICTS_RECEIVED)) {
+            authorPanel.add(finalPanel(selectedSubId),getSelectedButtonText(group));
             cardLayout.show(authorPanel, getSelectedButtonText(group));
         }
 
@@ -525,6 +535,81 @@ public class AuthorInterface extends JFrame implements ActionListener{
         completedPanel.add(buttonPanel1);
 
         return completedPanel;
+        //System.out.println("Completed Panel");
+    }
+
+    public JPanel finalPanel(Integer id) throws SQLException {
+        JPanel finalPanel = new JPanel();
+        JLabel title = new JLabel("Your article has got final verdicts: ");
+        title.setBorder(BorderFactory.createEmptyBorder(190, 200, 30, 200));
+        title.setFont(new Font("Lucida Grande", Font.PLAIN, 30));
+        //System.out.println(subTitle1.getFont());
+        title.setHorizontalAlignment(JLabel.CENTER);
+
+        //Initial verdict
+
+        JPanel vdGroup = new JPanel();
+        //vdGroup.setPreferredSize(new Dimension(1000,300));
+        vdGroup.setBorder(BorderFactory.createEmptyBorder(10, 0, 20, 0));
+        LinkedList<Verdict> finalVerdicts = JournalController.getFinalVerdicts(id);
+        vdGroup.setLayout(new BoxLayout(vdGroup, BoxLayout.X_AXIS));
+        for (Verdict vd : finalVerdicts) {
+            JLabel vd1 = new JLabel(vd.toString()+ "    ");
+            System.out.println(vd);
+            vdGroup.add(vd1);
+            vd1.setFont(new Font("Lucida Grande", Font.PLAIN, 20));
+        }
+
+        buttonPanel1 = new JPanel();
+        buttonPanel1.setBorder(BorderFactory.createEmptyBorder(0, 100, 20, 100));
+        //button to open submission pdf
+        open = new JButton("View Submission PDF");
+        open.addActionListener((new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    ArticleController.getSubmissionPDF(id);
+                    File article = new File("article.pdf");
+                    if (!Desktop.isDesktopSupported()) {
+                        JOptionPane.showMessageDialog(null, "Desktop does not support this function");
+                    } else if (article.exists()) {
+
+                        desktop.open(article);
+                    }
+                } catch (IOException | SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }));
+        open.setFont(new Font("Lucida Grande", Font.PLAIN, 20));
+        //button to open final pdf
+        open1 = new JButton("View Final PDF");
+        open1.addActionListener((new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    ArticleController.getArticlePDF(id);
+                    File article = new File("article.pdf");
+                    if (!Desktop.isDesktopSupported()) {
+                        JOptionPane.showMessageDialog(null, "Desktop does not support this function");
+                    } else if (article.exists()) {
+                        desktop.open(article);
+                    }
+                } catch (IOException | SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }));
+        open1.setFont(new Font("Lucida Grande", Font.PLAIN, 20));
+        buttonPanel1.setLayout(new BoxLayout(buttonPanel1,BoxLayout.X_AXIS));
+        buttonPanel1.add(open);
+        buttonPanel1.add(open1);
+
+        finalPanel.add(title);
+        finalPanel.add(vdGroup);
+        finalPanel.add(buttonPanel1);
+
+        return finalPanel;
         //System.out.println("Completed Panel");
     }
 
