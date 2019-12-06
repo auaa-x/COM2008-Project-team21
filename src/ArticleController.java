@@ -39,7 +39,7 @@ public class ArticleController extends SqlController {
                 res.next();
                 submissionId = res.getInt(1) + 1;
 
-                pstmt = con.prepareStatement(" INSERT INTO `team021`.`article` (`title`, `abstract`, `linkedFinalPDF`, `ISSN`, `mAuthorEmail`)"
+                pstmt = con.prepareStatement(" INSERT INTO `team021`.`article` (`submissionId`, `title`, `abstract`, `linkedFinalPDF`, `ISSN`, `mAuthorEmail`)"
                         + " VALUES (?, ?, ?, ?, ?, ?)");
                 pstmt.setInt(1, submissionId);
                 pstmt.setString(2, title);
