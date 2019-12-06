@@ -24,7 +24,6 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 	private ButtonGroup group;
 	private JRadioButtonMenuItem jnItem;
 	private JMenuItem register, appoint, passChiefEditor, retire, publish, delay, toEditor, logOut;
-	private File article = new File("./article.pdf");
 	private Desktop desktop = Desktop.getDesktop();
 
 	private JTree tree;
@@ -33,7 +32,6 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 	private JPanel treePanel;
 
 	private JPanel infoPanel, optionPanel;
-	private JLabel infoTitle;
 	private JButton open;
 	private String username;
 	private LinkedList<Integer> journalsISSN;
@@ -46,7 +44,7 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 	private Article selectedArt;
 
 	private JPanel titleGroup, absGroup, maGroup;
-	private JPanel vdGroup, saGroup, buttonPanel, buttonPanel1;
+	private JPanel buttonPanel, buttonPanel1;
 	private JPanel panel;
 
 
@@ -99,21 +97,17 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 		passChiefEditor = new JMenuItem("Pass the role");
 		retire = new JMenuItem("Retire as chief editor");
 		publish = new JMenuItem("Publish");
-		delay = new JMenuItem("Delay article");
 		register.addActionListener(this);
 		appoint.addActionListener(this);
 		passChiefEditor.addActionListener(this);
 		retire.addActionListener(this);
 		publish.addActionListener(this);
-		delay.addActionListener(this);
-		delay.setEnabled(false);
 
 		staff.add(register);
 		staff.add(appoint);
 		staff.add(passChiefEditor);
 		staff.add(retire);
 		journal.add(publish);
-		journal.add(delay);
 
 		this.setJMenuBar(menuBar);
 
@@ -337,7 +331,7 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		//register, appoint, passChiefEditor, retire, publish, delay;
+		//register, appoint, passChiefEditor, retire, publish;
 		//log out
 		if (e.getSource() == logOut) {
 			this.dispose();
@@ -458,6 +452,7 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 					ex.printStackTrace();
 				}
 			}
+
 		} else if (e.getSource() == publish) {
 			String[] options = {"Yes", "Back"};
 			JComboBox<Object> journalSelection = new JComboBox<>(journals.toArray());
