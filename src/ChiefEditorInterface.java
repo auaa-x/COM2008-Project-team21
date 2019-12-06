@@ -149,10 +149,12 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 			DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
 			if (selectedNode.isLeaf() && accptedList != null) {
 				selectedLabel.setText(selectedNode.getUserObject().toString());
-				selectedArt = (Article) selectedNode.getUserObject();
-				selectedID = selectedArt.getSubmissionID();
-				artPanel.add(panel(selectedID), selectedNode.getUserObject().toString());
-				cardLayout.show(artPanel, selectedNode.getUserObject().toString());
+				if  (selectedNode.getUserObject() instanceof Article) {
+					selectedArt = (Article) selectedNode.getUserObject();
+					selectedID = selectedArt.getSubmissionID();
+					artPanel.add(panel(selectedID), selectedNode.getUserObject().toString());
+					cardLayout.show(artPanel, selectedNode.getUserObject().toString());
+				}
 			}
 		});
 		//add panels functions
@@ -233,7 +235,7 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 		accept.addActionListener(e -> {
 			try {
 				if (ArticleController.setToAccepted(submissionId)) {
-					JOptionPane.showMessageDialog(null, "You have accept " + submissionId +
+					JOptionPane.showMessageDialog(null, "You have accepted " + submissionId +
 							"successfully!");
 					new ChiefEditorInterface(username);
 					this.dispose();
@@ -249,7 +251,7 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 		delay.addActionListener(e -> {
 				try {
 					if (ArticleController.setToDelayed(submissionId)) {
-						JOptionPane.showMessageDialog(null, "You have accept " + submissionId +
+						JOptionPane.showMessageDialog(null, "You have delayed " + submissionId +
 								"successfully!");
 						new ChiefEditorInterface(username);
 						this.dispose();
@@ -432,8 +434,10 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 				Journal selectedJournal = (Journal) journalSelection.getItemAt(journalSelection.getSelectedIndex());
 				try {
 					if (JournalController.publishNextEdition(selectedJournal.getIssn())) {
+						this.dispose();
 						JOptionPane.showMessageDialog(null, "You have published next edition of " +
 								selectedJournal.getTitle() + " successfully!");
+						new ChiefEditorInterface(username);
 					} else {
 						JOptionPane.showMessageDialog(null, "Please try again!");
 					}
