@@ -307,6 +307,7 @@ public class ReviewController extends SqlController {
         for(Submission s : authorSubmissions) {
             if (!found && s.getReviewCount() <= 2) {
                 updateCostCovered(s.getSubmissionID());
+                System.out.println("Cost covered updated for submission" + s.getSubmissionID());
                 found = true;
             }
         }
@@ -548,9 +549,9 @@ public class ReviewController extends SqlController {
         for(Submission s : submissions) {
             // subtract the submissions that had been already started
             int started = getCostCovered(s.getSubmissionID());
-            // System.out.println("Started reviews for sumbissionID " + s.getSubmissionID() + ": " + started);
+            System.out.println("Started reviews for sumbissionID " + s.getSubmissionID() + ": " + started);
             remaining -= started;
-            // System.out.println("Remaining " + remaining);
+            System.out.println("Remaining " + remaining);
         }
         return remaining;
     }
@@ -1354,6 +1355,8 @@ public class ReviewController extends SqlController {
             //System.out.println("Reviewing submission: " + getReviewingSubmissions("chaddock@illinois.ac.uk"));
             //System.out.println(getSubmissionsSelected("chaddock@illinois.ac.uk","reviewer1"));
             System.out.println(remainingCostToCover("blaszczak@polska.pl"));
+            System.out.println();
+            System.out.println(getCostCovered(10));
             
 
         } catch (SQLException e) {

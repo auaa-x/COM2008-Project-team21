@@ -35,18 +35,18 @@ public class ArticleController extends SqlController {
         try {
             FileInputStream inputStream = new FileInputStream(pdfFile);
             try {
-                ResultSet res = stmt.executeQuery("SELECT COUNT(*) FROM `article`");
-                res.next();
-                submissionId = res.getInt(1) + 1;
+                //ResultSet res = stmt.executeQuery("SELECT COUNT(*) FROM `article`");
+                //res.next();
+                //submissionId = res.getInt(1) + 1;
 
-                pstmt = con.prepareStatement(" INSERT INTO `team021`.`article` (`submissionID`, `title`, `abstract`, `linkedFinalPDF`, `ISSN`, `mAuthorEmail`)"
+                pstmt = con.prepareStatement(" INSERT INTO `team021`.`article` (`title`, `abstract`, `linkedFinalPDF`, `ISSN`, `mAuthorEmail`)"
                         + " VALUES (?, ?, ?, ?, ?, ?)");
-                pstmt.setInt(1, submissionId);
-                pstmt.setString(2, title);
-                pstmt.setString(3, description);
-                pstmt.setBlob(4,inputStream);
-                pstmt.setInt(5, ISSN);
-                pstmt.setString(6, email);
+                //pstmt.setInt(1, submissionId);
+                pstmt.setString(1, title);
+                pstmt.setString(2, description);
+                pstmt.setBlob(3,inputStream);
+                pstmt.setInt(4, ISSN);
+                pstmt.setString(5, email);
 
                 int count = pstmt.executeUpdate();
             } catch (SQLException ex) {
