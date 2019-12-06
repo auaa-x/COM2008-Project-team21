@@ -19,7 +19,9 @@ import java.util.LinkedList;
 public class AuthorInterface extends JFrame implements ActionListener{
 
 	private static final long serialVersionUID = 1L;
-	private JPanel reviewsPanel;
+    private JPanel authorPanel;
+    private CardLayout cardLayout = new CardLayout();
+    private JPanel reviewsPanel;
     private JPanel reviewPanel;
     private JMenuBar menubar;
 
@@ -61,21 +63,51 @@ public class AuthorInterface extends JFrame implements ActionListener{
         this.username = username;
         group = new ButtonGroup();
         submissions = new LinkedList<>(ArticleController.getSubmissions(username));
-        System.out.println(submissions);
 
         //menu bar
         menubar = new JMenuBar();
         selectSub = new JMenu("Select Submission");
+
+        ActionListener listener = new ActionListener() {
+            public void actionPerformed(ActionEvent actionEvent) {
+                AbstractButton aButton = (AbstractButton) actionEvent.getSource();
+                String s = aButton.getText();
+                Integer id = Integer.parseInt(aButton.getText());
+                Status status = getStatusByID(id);
+                if (status.equals(Status.SUBMITTED)){
+                    System.out.println("submitted condition detected");
+                    authorPanel.add(submittedPanel(id),s);
+                    cardLayout.show(authorPanel, s);
+                } else if (status.equals(Status.REVIEWS_RECEIVED)){
+                    try {
+                        authorPanel.add(reviewsReceivedPanel(id),s);
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
+                    cardLayout.show(authorPanel, s);
+                } else if (status.equals(Status.RESPONSES_RECEIVED)) {
+                    authorPanel.add(responsesReceivedPanel(id),s);
+                    cardLayout.show(authorPanel, s);
+                } else if (status.equals(Status.COMPLETED)) {
+                    authorPanel.add(completedPanel(id),s);
+                    cardLayout.show(authorPanel, s);
+                }
+
+            }
+        };
+
         for (int s=0; s < submissions.size(); s++){
             Submission sub = submissions.get(s);
             subItem = new JRadioButtonMenuItem(String.valueOf(sub.getSubmissionID()));
-            subItem.addActionListener(this);
+            subItem.addActionListener(listener);
             group.add(subItem);
             selectSub.add(subItem);
             if (s==0){
                 subItem.setSelected(true);
             }
         }
+
+
         menubar.add(selectSub);
 
         settings = new JMenu("Settings");
@@ -98,27 +130,35 @@ public class AuthorInterface extends JFrame implements ActionListener{
         Status status = getStatusByID(selectedSubId);
         System.out.println(status);
 
+        authorPanel = new JPanel();
+        authorPanel.setLayout(cardLayout);
+
         if (status.equals(Status.SUBMITTED)){
             System.out.println("submitted condition detected");
-            submittedPanel(selectedSubId);
+            authorPanel.add(submittedPanel(selectedSubId),getSelectedButtonText(group));
+            cardLayout.show(authorPanel, getSelectedButtonText(group));
         } else if (status.equals(Status.REVIEWS_RECEIVED)){
-            reviewsReceivedPanel(selectedSubId);
+            authorPanel.add(reviewsReceivedPanel(selectedSubId),getSelectedButtonText(group));
+            cardLayout.show(authorPanel, getSelectedButtonText(group));
         } else if (status.equals(Status.RESPONSES_RECEIVED)) {
-            responsesReceivedPanel(selectedSubId);
+            authorPanel.add(responsesReceivedPanel(selectedSubId),getSelectedButtonText(group));
+            cardLayout.show(authorPanel, getSelectedButtonText(group));
         } else if (status.equals(Status.COMPLETED)) {
-            completedPanel(selectedSubId);
+            authorPanel.add(completedPanel(selectedSubId),getSelectedButtonText(group));
+            cardLayout.show(authorPanel, getSelectedButtonText(group));
         }
 
+        this.add(authorPanel);
     //extra settings
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setVisible(true);
 
     }
 
-    public void submittedPanel(Integer id){
+    public JPanel submittedPanel(Integer id){
         JPanel subPanel = new JPanel();
         JLabel subTitle = new JLabel("Submission " + id + " is waiting for reviews.");
-        subTitle.setBorder(BorderFactory.createEmptyBorder(180, 200, 50, 200));
+        subTitle.setBorder(BorderFactory.createEmptyBorder(190, 200, 50, 200));
         subTitle.setFont(new Font("Lucida Grande", Font.PLAIN, 30));
         subTitle.setHorizontalAlignment(JLabel.CENTER);
 
@@ -146,10 +186,10 @@ public class AuthorInterface extends JFrame implements ActionListener{
         buttonPanel.add(open, BorderLayout.CENTER);
         subPanel.add(subTitle);
         subPanel.add(buttonPanel);
-        this.add(subPanel);
+        return subPanel;
     }
 
-    public void reviewsReceivedPanel(Integer id) throws SQLException {
+    public JScrollPane reviewsReceivedPanel(Integer id) throws SQLException {
         System.out.println("reviewsReceivedPanel");
         reviewsPanel = new JPanel();
 
@@ -224,7 +264,8 @@ public class AuthorInterface extends JFrame implements ActionListener{
         JScrollPane scrollPane = new JScrollPane(reviewsPanel);
         scrollPane.setPreferredSize(new Dimension(1000,600));
         scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        this.add(scrollPane);
+
+        return scrollPane;
     }
 
     //review panel for review + no.
@@ -354,10 +395,10 @@ public class AuthorInterface extends JFrame implements ActionListener{
     }
 
 
-    public void responsesReceivedPanel(Integer id){
+    public JPanel responsesReceivedPanel(Integer id){
         JPanel responseReceivedPanel = new JPanel();
         JLabel title = new JLabel("Waiting for final verdict.");
-        title.setBorder(BorderFactory.createEmptyBorder(220, 200, 50, 200));
+        title.setBorder(BorderFactory.createEmptyBorder(190, 200, 50, 200));
         title.setFont(new Font("Lucida Grande", Font.PLAIN, 30));
         title.setHorizontalAlignment(JLabel.CENTER);
 
@@ -409,14 +450,14 @@ public class AuthorInterface extends JFrame implements ActionListener{
 
         responseReceivedPanel.add(title);
         responseReceivedPanel.add(buttonPanel1);
-        this.add(responseReceivedPanel);
+        return responseReceivedPanel;
     }
 
 
-    public void completedPanel(Integer id){
+    public JPanel completedPanel(Integer id){
         JPanel completedPanel = new JPanel();
         JLabel title = new JLabel("Your article has completed the review process.");
-        title.setBorder(BorderFactory.createEmptyBorder(180, 200, 30, 200));
+        title.setBorder(BorderFactory.createEmptyBorder(190, 200, 30, 200));
         title.setFont(new Font("Lucida Grande", Font.PLAIN, 30));
         //System.out.println(subTitle1.getFont());
         title.setHorizontalAlignment(JLabel.CENTER);
@@ -482,7 +523,8 @@ public class AuthorInterface extends JFrame implements ActionListener{
         completedPanel.add(title);
         completedPanel.add(vdGroup);
         completedPanel.add(buttonPanel1);
-        this.add(completedPanel);
+
+        return completedPanel;
         //System.out.println("Completed Panel");
     }
 
@@ -511,9 +553,7 @@ public class AuthorInterface extends JFrame implements ActionListener{
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (e.getSource() == submissions) {
-            System.out.println("Menu B clicked");
-        } else if (e.getSource() == changePw) {
+        if (e.getSource() == changePw) {
             new ChangePw(username, 2);
             this.dispose();
         } else if (e.getSource() == updatePf) {
@@ -539,7 +579,9 @@ public class AuthorInterface extends JFrame implements ActionListener{
         }
     }
 
+
+
     public static void main(String[] args) throws SQLException {
-        new AuthorInterface("hamel@california.ac.uk");
+        new AuthorInterface("ardanowski@polska.pl");
     }
 }
