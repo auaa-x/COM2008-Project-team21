@@ -8,16 +8,12 @@ public class Edition {
     private int volNum;
     private int noNum;
     private int pubMonth;
-    private int artCount;
-    private boolean isPublished;
     
     
-    Edition(int issn, int volNum, int noNum, int pubMonth, int artCount, boolean isPublished) {
+    Edition(int issn, int volNum, int noNum, int pubMonth) {
         this.noNum = noNum;
         this.pubMonth = pubMonth;
         this.volNum = volNum;
-        this.artCount = artCount;
-        this.isPublished = isPublished;
     }
     
     public int getNoNum() {
@@ -35,14 +31,7 @@ public class Edition {
     public int getVolNum() {
         return volNum;
     }
-    
-    public int getArtCount() {
-        return artCount;
-    }
-    
-    public boolean isPublished() {
-        return isPublished;
-    }
+ 
     
     public String toString() {
     	return "no. " + getNoNum();

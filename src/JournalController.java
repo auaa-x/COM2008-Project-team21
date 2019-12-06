@@ -500,12 +500,8 @@ public class JournalController extends SqlController {
             while (res.next()) {
             	int noNum = res.getInt("noNum");
                 int pubMonth = res.getInt("pubMonth");
-                int artCount = res.getInt("artCount");
-                int published = res.getInt("isPublished");
-                boolean isPublished = false;
-                if (published == 1) isPublished = true;
 
-                Edition edition = new Edition(issn, volNum, noNum, pubMonth, artCount, isPublished);
+                Edition edition = new Edition(issn, volNum, noNum, pubMonth);
                 editions.add(edition);
             }
         } catch (SQLException ex) {
