@@ -73,7 +73,7 @@ public class CfEditorRegInterface extends JFrame implements ActionListener, Item
         JLabel title = new JLabel("Title");
         title.setFont(new Font("Arial", Font.PLAIN, 20));
         //title combobox
-        String[] titleTypes = {"Prof", "Dr", "Mr", "Ms"};
+        String[] titleTypes = {"Title","Prof", "Dr", "Mr", "Ms"};
         comboTitleTypes = new JComboBox<>(titleTypes);
         comboTitleTypes.addItemListener(this);
         comboTitleTypes.setFont(new Font("Arial", Font.PLAIN, 16));

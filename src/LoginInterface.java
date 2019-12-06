@@ -146,8 +146,6 @@ public class LoginInterface extends JFrame implements ActionListener, ItemListen
             case "Reviewer":
                 userType = 3;
                 break;
-            //default:
-              //  throw new IllegalStateException("Unexpected value: " + item);
         }
     }
 
