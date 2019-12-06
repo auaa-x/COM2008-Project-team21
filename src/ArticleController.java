@@ -542,7 +542,6 @@ public class ArticleController extends SqlController {
     }
 
 
-
     public static void main (String[] args) throws IOException {
     	//File pdfFile = new File("./Systems Design Project.pdf");
         try {

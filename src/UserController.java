@@ -746,15 +746,14 @@ public class UserController extends SqlController {
             if (pstmt != null) pstmt.close();
             closeConnection();
         }
-        // check if the cost of the publication had been covered, if not remove role
-        if(ReviewController.getCostCovered(submissionId) == 3) removeRole(email, 3);
+        if (!checkReviewer(email)) removeRole(email, 3);
         removeAccountIfUseless(email);
         return result;
     }
     
     
     /**
-     * Check if given reviewer exists in editor table
+     * Check if given reviewer exists in reviewer table
      * @param email
      * @return result true if reviewer exists, false otherwise
      * @throws SQLException

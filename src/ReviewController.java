@@ -117,7 +117,7 @@ public class ReviewController extends SqlController {
         LinkedList<Submission> submissions = new LinkedList<Submission>();
 
         // return empty list if user is not a reviewer
-        if (!UserController.checkUsertype(reviewerEmail, 3) || ReviewController.remainingCostToCover(reviewerEmail) == 0) return submissions;
+        if (!UserController.checkUsertype(reviewerEmail, 3) || remainingCostToCover(reviewerEmail) == 0) return submissions;
 
         // get all submissions with SUBMITTED status
         submissions = ArticleController.getSubmissionByStatus(Status.SUBMITTED);
@@ -543,12 +543,14 @@ public class ReviewController extends SqlController {
 
         // count all reviews that he is allowed to make
         int remaining = 3 * submissions.size();
+        // System.out.println("All reviews that he was allowed to make " + remaining);
 
         for(Submission s : submissions) {
             // subtract the submissions that had been already started
             int started = getCostCovered(s.getSubmissionID());
             // System.out.println("Started reviews for sumbissionID " + s.getSubmissionID() + ": " + started);
             remaining -= started;
+            // System.out.println("Remaining " + remaining);
         }
         return remaining;
     }
@@ -851,30 +853,19 @@ public class ReviewController extends SqlController {
             // update submission's status if all 3 final verdicts have been received and delete reviewers
             if (getFinalVerdictsCount(submissionId) == 3) {
                 ArticleController.updateStatus(submissionId, Status.FINAL_VERDICTS_RECEIVED);
-                deleteReviewers(submissionId);
             }
+
+            // get reviewers' emails
+            String email1 = getReviewerEmail("reviewer1", submissionId);
+            String email2 = getReviewerEmail("reviewer2", submissionId);
+            String email3 = getReviewerEmail("reviewer3", submissionId);
+            
+            // delete entry in reviewer table if the cost has been covered
+            if (remainingCostToCover(email1) == 0 && getFinalVerdictsCount(submissionId) == 3) UserController.deleteReviewer(email1, submissionId);
+            if (remainingCostToCover(email2) == 0 && getFinalVerdictsCount(submissionId) == 3) UserController.deleteReviewer(email2, submissionId);
+            if (remainingCostToCover(email3) == 0 && getFinalVerdictsCount(submissionId) == 3) UserController.deleteReviewer(email3, submissionId);
         }
         return result;
-    }
-    
-    
-    /**
-     * Delete all reviewers of a given submission after completing the review stage
-     * @param submissionId
-     * @return true if deletion successful, otherwise false
-     * @throws SQLException
-     */
-    private static void deleteReviewers(int submissionId) throws SQLException {
-        // get emails of all 3 reviewers
-        String email1 = getReviewerEmail("reviewer1", submissionId);
-        String email2 = getReviewerEmail("reviewer2", submissionId);
-        String email3 = getReviewerEmail("reviewer3", submissionId);
-        
-        // delete reviewers
-        UserController.deleteReviewer(email1, submissionId);
-        UserController.deleteReviewer(email2, submissionId);
-        UserController.deleteReviewer(email3, submissionId);
-
     }
 
 
@@ -1362,8 +1353,7 @@ public class ReviewController extends SqlController {
             */
             //System.out.println("Reviewing submission: " + getReviewingSubmissions("chaddock@illinois.ac.uk"));
             //System.out.println(getSubmissionsSelected("chaddock@illinois.ac.uk","reviewer1"));
-            System.out.println(getSubmissionsToReview("blaszczak@polska.pl"));
-            System.out.println(getSubmissionsReviewing("blaszczak@polska.pl"));
+            System.out.println(remainingCostToCover("blaszczak@polska.pl"));
             
 
         } catch (SQLException e) {
