@@ -432,7 +432,7 @@ public class EditorInterface extends JFrame implements ActionListener {
                 //new EditorInterface("hermiona.granger@hogwarts.ac.uk");
                 new EditorInterface("harry.potter@warwick.ac.uk");
             } catch (SQLException e) {
-                JOptionPane.showMessageDialog(null, "Could not connect to the  server, please try again.");
+                JOptionPane.showMessageDialog(null, "Could not connect to the server, please try again.");
                 e.printStackTrace();
             }
         });
