@@ -9,6 +9,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.SQLException;
@@ -26,8 +27,8 @@ public class AuthorInterface extends JFrame implements ActionListener{
     private JMenu selectSub;
     private JRadioButtonMenuItem subItem;
     private ButtonGroup group;
-    private JMenu create, settings;
-    private JMenuItem createSub,changePw,updatePf,logOut;
+    private JMenu  settings;
+    private JMenuItem changePw,updatePf,logOut;
     private String username;
     private LinkedList<Submission> submissions;
     private Status subStatus;
@@ -37,7 +38,16 @@ public class AuthorInterface extends JFrame implements ActionListener{
     private JButton btnAddPdf;
     private Path path = null;
     private File pdf;
-    private Object AuthorInterface;
+
+    //components in submitted panel
+    private JPanel buttonPanel;
+    private JButton open;
+    private Desktop desktop = Desktop.getDesktop();
+
+    //components in completed panel
+    private JPanel buttonPanel1;
+    private JButton open1;
+
 
 
     public AuthorInterface(String username) throws SQLException {
@@ -55,8 +65,6 @@ public class AuthorInterface extends JFrame implements ActionListener{
 
         //menu bar
         menubar = new JMenuBar();
-
-        //articles = new JMenuItem("Articles");
         selectSub = new JMenu("Select Submission");
         for (int s=0; s < submissions.size(); s++){
             Submission sub = submissions.get(s);
@@ -69,14 +77,6 @@ public class AuthorInterface extends JFrame implements ActionListener{
             }
         }
         menubar.add(selectSub);
-
-        /*
-        create = new JMenu("Create");
-        createSub = new JMenuItem("Submission");
-        create.add(createSub);
-        create.setEnabled(false);
-        menubar.add(create);
-        */
 
         settings = new JMenu("Settings");
         changePw = new JMenuItem("Change Password");
@@ -93,6 +93,7 @@ public class AuthorInterface extends JFrame implements ActionListener{
 
         this.setJMenuBar(menubar);
 
+        //get selected id of submissions list
         Integer selectedSubId = Integer.parseInt(getSelectedButtonText(group));
         Status status = getStatusByID(selectedSubId);
         System.out.println(status);
@@ -119,12 +120,33 @@ public class AuthorInterface extends JFrame implements ActionListener{
         JLabel subTitle = new JLabel("Submission " + id + " is waiting for reviews.");
         subTitle.setBorder(BorderFactory.createEmptyBorder(180, 200, 50, 200));
         subTitle.setFont(new Font("Lucida Grande", Font.PLAIN, 30));
-        //System.out.println(subTitle1.getFont());
         subTitle.setHorizontalAlignment(JLabel.CENTER);
+
+        buttonPanel = new JPanel(new BorderLayout());
+        buttonPanel.setBorder(BorderFactory.createEmptyBorder(0, 100, 20, 100));
+        open = new JButton("View Submission PDF");
+        open.addActionListener((new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    ArticleController.getSubmissionPDF(id);
+                    File article = new File("article.pdf");
+                    if (!Desktop.isDesktopSupported()) {
+                        JOptionPane.showMessageDialog(null, "Desktop does not support this function");
+                    } else if (article.exists()) {
+
+                        desktop.open(article);
+                    }
+                } catch (IOException | SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }));
+        open.setFont(new Font("Lucida Grande", Font.PLAIN, 20));
+        buttonPanel.add(open, BorderLayout.CENTER);
         subPanel.add(subTitle);
+        subPanel.add(buttonPanel);
         this.add(subPanel);
-
-
     }
 
     public void reviewsReceivedPanel(Integer id) throws SQLException {
@@ -142,7 +164,6 @@ public class AuthorInterface extends JFrame implements ActionListener{
 
         //pdf panel
         JPanel pdfPanel = new JPanel();
-        //pdfPanel.setPreferredSize(new Dimension(20,20));
         //add PDF button and display
         addedPDF = new JTextArea(1,8);
         addedPDF.setText("Revised PDF");
@@ -204,10 +225,9 @@ public class AuthorInterface extends JFrame implements ActionListener{
         scrollPane.setPreferredSize(new Dimension(1000,600));
         scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         this.add(scrollPane);
-
-
     }
 
+    //review panel for review + no.
     public JPanel review(int submissionID, int no) throws SQLException {
         System.out.println("review " + no);
         reviewPanel = new JPanel();
@@ -339,18 +359,64 @@ public class AuthorInterface extends JFrame implements ActionListener{
         JLabel title = new JLabel("Waiting for final verdict.");
         title.setBorder(BorderFactory.createEmptyBorder(220, 200, 50, 200));
         title.setFont(new Font("Lucida Grande", Font.PLAIN, 30));
-        //System.out.println(subTitle1.getFont());
         title.setHorizontalAlignment(JLabel.CENTER);
+
+
+        buttonPanel1 = new JPanel();
+        buttonPanel1.setBorder(BorderFactory.createEmptyBorder(0, 100, 20, 100));
+        //button to open submission pdf
+        open = new JButton("View Submission PDF");
+        open.addActionListener((new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    ArticleController.getSubmissionPDF(id);
+                    File article = new File("article.pdf");
+                    if (!Desktop.isDesktopSupported()) {
+                        JOptionPane.showMessageDialog(null, "Desktop does not support this function");
+                    } else if (article.exists()) {
+
+                        desktop.open(article);
+                    }
+                } catch (IOException | SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }));
+        open.setFont(new Font("Lucida Grande", Font.PLAIN, 20));
+        //button to open final pdf
+        open1 = new JButton("View Final PDF");
+        open1.addActionListener((new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    ArticleController.getArticlePDF(id);
+                    File article = new File("article.pdf");
+                    if (!Desktop.isDesktopSupported()) {
+                        JOptionPane.showMessageDialog(null, "Desktop does not support this function");
+                    } else if (article.exists()) {
+                        desktop.open(article);
+                    }
+                } catch (IOException | SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }));
+        open1.setFont(new Font("Lucida Grande", Font.PLAIN, 20));
+        buttonPanel1.setLayout(new BoxLayout(buttonPanel1,BoxLayout.X_AXIS));
+        buttonPanel1.add(open);
+        buttonPanel1.add(open1);
+
         responseReceivedPanel.add(title);
+        responseReceivedPanel.add(buttonPanel1);
         this.add(responseReceivedPanel);
-        //System.out.println("Responses Received Panel");
     }
 
 
     public void completedPanel(Integer id){
         JPanel completedPanel = new JPanel();
         JLabel title = new JLabel("Your article has completed the review process.");
-        title.setBorder(BorderFactory.createEmptyBorder(180, 200, 50, 200));
+        title.setBorder(BorderFactory.createEmptyBorder(180, 200, 30, 200));
         title.setFont(new Font("Lucida Grande", Font.PLAIN, 30));
         //System.out.println(subTitle1.getFont());
         title.setHorizontalAlignment(JLabel.CENTER);
@@ -358,7 +424,7 @@ public class AuthorInterface extends JFrame implements ActionListener{
         //Initial verdict
         JPanel vdGroup = new JPanel(new BorderLayout(10, 10));
         //vdGroup.setPreferredSize(new Dimension(1000,300));
-        vdGroup.setBorder(BorderFactory.createEmptyBorder(10, 100, 20, 100));
+        vdGroup.setBorder(BorderFactory.createEmptyBorder(10, 300, 20, 300));
         JLabel verdict = new JLabel("  Final Verdict");
         verdict.setFont(new Font("Lucida Grande", Font.PLAIN, 20));
         JTextArea vdField = new JTextArea(1,12);
@@ -368,8 +434,54 @@ public class AuthorInterface extends JFrame implements ActionListener{
         vdGroup.add(verdict, BorderLayout.PAGE_START);
         vdGroup.add(vdField, BorderLayout.WEST);
 
+        buttonPanel1 = new JPanel();
+        buttonPanel1.setBorder(BorderFactory.createEmptyBorder(0, 100, 20, 100));
+        //button to open submission pdf
+        open = new JButton("View Submission PDF");
+        open.addActionListener((new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    ArticleController.getSubmissionPDF(id);
+                    File article = new File("article.pdf");
+                    if (!Desktop.isDesktopSupported()) {
+                        JOptionPane.showMessageDialog(null, "Desktop does not support this function");
+                    } else if (article.exists()) {
+
+                        desktop.open(article);
+                    }
+                } catch (IOException | SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }));
+        open.setFont(new Font("Lucida Grande", Font.PLAIN, 20));
+        //button to open final pdf
+        open1 = new JButton("View Final PDF");
+        open1.addActionListener((new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    ArticleController.getArticlePDF(id);
+                    File article = new File("article.pdf");
+                    if (!Desktop.isDesktopSupported()) {
+                        JOptionPane.showMessageDialog(null, "Desktop does not support this function");
+                    } else if (article.exists()) {
+                        desktop.open(article);
+                    }
+                } catch (IOException | SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }));
+        open1.setFont(new Font("Lucida Grande", Font.PLAIN, 20));
+        buttonPanel1.setLayout(new BoxLayout(buttonPanel1,BoxLayout.X_AXIS));
+        buttonPanel1.add(open);
+        buttonPanel1.add(open1);
+
         completedPanel.add(title);
         completedPanel.add(vdGroup);
+        completedPanel.add(buttonPanel1);
         this.add(completedPanel);
         //System.out.println("Completed Panel");
     }
@@ -428,6 +540,6 @@ public class AuthorInterface extends JFrame implements ActionListener{
     }
 
     public static void main(String[] args) throws SQLException {
-        new AuthorInterface("larsen@copenhagen.ac.uk");
+        new AuthorInterface("hamel@california.ac.uk");
     }
 }
