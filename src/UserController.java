@@ -746,8 +746,8 @@ public class UserController extends SqlController {
             if (pstmt != null) pstmt.close();
             closeConnection();
         }
-        // check if there are any more entries for this reviewer in reviewer table, if not remove role
-        if(!checkReviewer(email)) removeRole(email, 3);
+        // check if the cost of the publication had been covered, if not remove role
+        if(ReviewController.getCostCovered(submissionId) == 3) removeRole(email, 3);
         removeAccountIfUseless(email);
         return result;
     }

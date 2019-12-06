@@ -109,7 +109,7 @@ public class FinalVerdictInterface extends JFrame implements ItemListener{
                 try {
                     if (ReviewController.submitFinalVerdict(submissionId, vd, anonId)){
                         SwingUtilities.getWindowAncestor(submit).dispose();
-                        JOptionPane.showMessageDialog(null,"You have submitted final verdict to " +
+                        JOptionPane.showMessageDialog(null,"You have submitted final verdict to submission " +
                                 submissionId + " successfully!");
                         new ReviewerInterface(username);
                         System.out.println("Final verdict to " + submissionId + " has been submitted");
