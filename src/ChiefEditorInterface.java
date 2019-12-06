@@ -230,37 +230,35 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 
 		JButton accept = new JButton("Accept");
 		accept.setFont(new Font("Lucida Grande", Font.PLAIN, 18));
-		accept.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				try {
-					if (ArticleController.setToAccepted(submissionId)) {
-						JOptionPane.showMessageDialog(null, "You have accept " + submissionId +
-								"successfully!");
-					} else {
-						JOptionPane.showMessageDialog(null, "Sorry, please try again!");
-					}
-				} catch (SQLException ex) {
-					ex.printStackTrace();
+		accept.addActionListener(e -> {
+			try {
+				if (ArticleController.setToAccepted(submissionId)) {
+					JOptionPane.showMessageDialog(null, "You have accept " + submissionId +
+							"successfully!");
+					new ChiefEditorInterface(username);
+					this.dispose();
+				} else {
+					JOptionPane.showMessageDialog(null, "Sorry, please try again!");
 				}
+			} catch (SQLException ex) {
+				ex.printStackTrace();
 			}
 		});
 		JButton delay = new JButton("Delay");
 		delay.setFont(new Font("Lucida Grande", Font.PLAIN, 18));
-		delay.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
+		delay.addActionListener(e -> {
 				try {
 					if (ArticleController.setToDelayed(submissionId)) {
 						JOptionPane.showMessageDialog(null, "You have accept " + submissionId +
 								"successfully!");
+						new ChiefEditorInterface(username);
+						this.dispose();
 					} else {
 						JOptionPane.showMessageDialog(null, "Sorry, please try again!");
 					}
 				} catch (SQLException ex) {
 					ex.printStackTrace();
 				}
-			}
 		});
 
 		//layout for buttonPane - accept and reject
