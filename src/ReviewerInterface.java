@@ -338,6 +338,11 @@ public class ReviewerInterface extends JFrame implements ActionListener {
         } else if (e.getSource() == updatePf) {
             new UpdateProfileInterface(username, 3, false);
             this.dispose();
+        } else if (e.getSource() == logOut) {
+            this.dispose();
+            UserController.logout();
+            JOptionPane.showMessageDialog(null, "You have logged out successfully!");
+            new LoginInterface();
         }
     }
 
