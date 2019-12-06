@@ -117,6 +117,7 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 			journal1.add(delayed);
 			journal.getIssn();
 			accptedList = JournalController.getArticlesToPublish(journal.getIssn());
+			delayedList = JournalController.getDelayedArticles(journal.getIssn());
 			for (Article a : accptedList) {
 				DefaultMutableTreeNode a1 = new DefaultMutableTreeNode(a);
 				accepted.add(a1);
