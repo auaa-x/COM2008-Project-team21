@@ -138,14 +138,21 @@ public class ReviewController extends SqlController {
 
         // remove the ones that had been already taken by this reviewer
         LinkedList<Submission> taken = getSubmissionsReviewing(reviewerEmail);
-        Iterator<Submission> subItertor = submissions.iterator();
+        Iterator<Submission> subIterator = submissions.iterator();
         Iterator<Submission> takenIterator = taken.iterator();
-        while(subItertor.hasNext()) {
-            Submission s = subItertor.next();
+
+        while(subIterator.hasNext()) {
+            Submission s = subIterator.next();
+            //System.out.println("Checking submission " + s.getSubmissionID());
             while(takenIterator.hasNext()) {
                 int id = takenIterator.next().getSubmissionID();
-                if (s.getSubmissionID() == id) subItertor.remove();
+                //System.out.println("Against submission " + id);
+                if (s.getSubmissionID() == id) {
+                    //System.out.println("Removing submission " + id);
+                    subIterator.remove();
+                }
             }
+            takenIterator = taken.iterator();
         }
         return submissions;
     }
@@ -1355,7 +1362,9 @@ public class ReviewController extends SqlController {
             */
             //System.out.println("Reviewing submission: " + getReviewingSubmissions("chaddock@illinois.ac.uk"));
             //System.out.println(getSubmissionsSelected("chaddock@illinois.ac.uk","reviewer1"));
-            System.out.println(getReviewSubmittedCount(2));
+            System.out.println(getSubmissionsToReview("blaszczak@polska.pl"));
+            System.out.println(getSubmissionsReviewing("blaszczak@polska.pl"));
+            
 
         } catch (SQLException e) {
             e.printStackTrace();

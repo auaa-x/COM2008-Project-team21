@@ -103,7 +103,7 @@ public class AuthorRegisterInterface extends JFrame implements ActionListener, I
         JLabel title = new JLabel("Title");
         title.setFont(new Font("Arial", Font.PLAIN, 20));
         //title combobox
-        String[] titleTypes = {"Prof", "Dr", "Mr","Mrs", "Ms", "Miss"};
+        String[] titleTypes = {"Prof", "Dr", "Mr", "Mrs"};
         comboTitleTypes = new JComboBox<>(titleTypes);
         comboTitleTypes.addItemListener(this);
         comboTitleTypes.setFont(new Font("Arial", Font.PLAIN, 16));
