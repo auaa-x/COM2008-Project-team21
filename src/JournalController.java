@@ -350,6 +350,43 @@ public class JournalController extends SqlController {
         }
         return articles;
     }
+    
+    /**
+     * Get a list of delayed articles
+     * @param issn
+     * @return list of articles
+     * @throws SQLException
+     */
+    public static LinkedList<Article> getDelayedArticles(int issn) throws SQLException {
+        LinkedList<Article> articles = new LinkedList<Article>();
+        openConnection();
+        PreparedStatement pstmt = null;
+        try {
+            pstmt = con.prepareStatement("SELECT * FROM article a, submission s WHERE (a.submissionID = s.submissionID) "
+            		+ "and (a.isDelayed = 1) and (s.status = ?) and (a.ISSN = ?) ");
+            pstmt.setString(1, "COMPLETED");
+            pstmt.setInt(2, issn);
+            ResultSet res = pstmt.executeQuery();
+
+            while (res.next()) {
+            	int submissionID = res.getInt("submissionID");
+                String title = res.getString("title");
+                String artAbstract = res.getString("abstract");
+                //without linkedFinalPDF
+                boolean isPublished = res.getBoolean("isPublished");
+                String mAuthorEmail = res.getString("mAuthorEmail");
+                boolean isDelayed = res.getBoolean("isDelayed");
+                Article article = new Article(submissionID, title, artAbstract, isPublished, issn, mAuthorEmail, isDelayed);
+                articles.add(article);
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (pstmt != null) pstmt.close();
+            closeConnection();
+        }
+        return articles;
+    }
 
 
     /**
@@ -500,12 +537,8 @@ public class JournalController extends SqlController {
             while (res.next()) {
             	int noNum = res.getInt("noNum");
                 int pubMonth = res.getInt("pubMonth");
-                int artCount = res.getInt("artCount");
-                int published = res.getInt("isPublished");
-                boolean isPublished = false;
-                if (published == 1) isPublished = true;
 
-                Edition edition = new Edition(issn, volNum, noNum, pubMonth, artCount, isPublished);
+                Edition edition = new Edition(issn, volNum, noNum, pubMonth);
                 editions.add(edition);
             }
         } catch (SQLException ex) {
@@ -1014,7 +1047,8 @@ public class JournalController extends SqlController {
             //System.out.println(getJournalByArticle(1));
             //System.out.println(getFinalVerdicts(1));
         	//System.out.println(getArticlesToPublish(77777777));
-            publishNextEdition(77777777);
+            //publishNextEdition(77777777);
+            System.out.println(getDelayedArticles(77777777));
 
 
         } catch (SQLException ex) {

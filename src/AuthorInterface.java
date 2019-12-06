@@ -70,11 +70,13 @@ public class AuthorInterface extends JFrame implements ActionListener{
         }
         menubar.add(selectSub);
 
+        /*
         create = new JMenu("Create");
         createSub = new JMenuItem("Submission");
         create.add(createSub);
         create.setEnabled(false);
         menubar.add(create);
+        */
 
         settings = new JMenu("Settings");
         changePw = new JMenuItem("Change Password");
@@ -407,6 +409,7 @@ public class AuthorInterface extends JFrame implements ActionListener{
             this.dispose();
         } else if (e.getSource() == logOut) {
             this.dispose();
+            UserController.logout();
             JOptionPane.showMessageDialog(null, "You have logged out successfully!");
             new LoginInterface();
         } else if (e.getSource() == btnAddPdf) {

@@ -357,6 +357,7 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 		//log out
 		if (e.getSource() == logOut) {
 			this.dispose();
+			UserController.logout();
 			JOptionPane.showMessageDialog(null, "You have logged out successfully!");
 			new LoginInterface();
 		}
