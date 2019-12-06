@@ -23,17 +23,14 @@ public class EditorInterface extends JFrame implements ActionListener {
     private ButtonGroup group;
     private JMenu settings;
     private JMenuItem retire, changePw,updatePf, toChiefEditor, logOut;
-    private File article = new File("./article.pdf");
     private Desktop desktop = Desktop.getDesktop();
 
     private JTree tree;
     private JLabel selectedLabel;
-    private Journal selectedJournal;
     private JScrollPane treeScrollPane;
     private JPanel treePanel;
 
     private JPanel infoPanel, verdictPanel;
-    private JLabel infoTitle;
     private JButton open;
     private String username;
     private LinkedList<Integer> journalsISSN;
@@ -45,7 +42,7 @@ public class EditorInterface extends JFrame implements ActionListener {
 
     private JPanel titleGroup, absGroup, maGroup;
     private JPanel vdGroup, saGroup, buttonPanel, buttonPanel1;
-    private JPanel panel;
+    private JPanel panel = null;
 
 
     EditorInterface(String username) throws SQLException {
@@ -58,6 +55,7 @@ public class EditorInterface extends JFrame implements ActionListener {
         infoPanel = new JPanel();
         treePanel = new JPanel();
         verdictPanel = new JPanel();
+        panel = new JPanel();
 
 
         this.username = username;
@@ -117,8 +115,8 @@ public class EditorInterface extends JFrame implements ActionListener {
         JPanel treePanel = new JPanel();
         //create the root node
         DefaultMutableTreeNode root = new DefaultMutableTreeNode("Journal Publish System");
+        //create tree
         considerList = new LinkedList<>();
-
         for (Journal journal : journals) {
             DefaultMutableTreeNode journal1 = new DefaultMutableTreeNode(journal);
             root.add(journal1);
@@ -133,7 +131,6 @@ public class EditorInterface extends JFrame implements ActionListener {
             }
         }
 
-
         //create the tree by passing in the root node
         tree = new JTree(root);
 
@@ -141,8 +138,11 @@ public class EditorInterface extends JFrame implements ActionListener {
         tree.setRootVisible(false);
         treeScrollPane = new JScrollPane(tree);
         treeScrollPane.setPreferredSize(new Dimension(250, 527));
+        treePanel.add(treeScrollPane);
 
+        //display selection bottom bar
         selectedLabel = new JLabel();
+
         add(selectedLabel, BorderLayout.SOUTH);
         tree.getSelectionModel().addTreeSelectionListener(e -> {
             DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
@@ -152,14 +152,18 @@ public class EditorInterface extends JFrame implements ActionListener {
                 selectedID = selectedArt.getSubmissionID();
                 System.out.println(selectedID);
                 try {
-                    this.add(panel(selectedID), BorderLayout.EAST);
+                    this.removeAll();
+                    this.add(treePanel, BorderLayout.WEST);
+                    this.add(panel(selectedID),BorderLayout.WEST);
+                    this.invalidate();
+                    this.repaint();
                 } catch (SQLException ex) {
                     ex.printStackTrace();
                 }
             }
 
         });
-        treePanel.add(treeScrollPane);
+
 
         //add panels functions
         this.add(treePanel, BorderLayout.WEST);
@@ -170,6 +174,7 @@ public class EditorInterface extends JFrame implements ActionListener {
     }
 
     public JPanel panel(int submissionId) throws SQLException {
+        JPanel panel = new JPanel();
         //set up the article information panel
         infoPanel.setPreferredSize(new Dimension(730, 300));
 
@@ -351,7 +356,6 @@ public class EditorInterface extends JFrame implements ActionListener {
         southPane.setPreferredSize(new Dimension(730,100));
         southPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
-        panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setPreferredSize(new Dimension(730,600));
         panel.add(northPane);

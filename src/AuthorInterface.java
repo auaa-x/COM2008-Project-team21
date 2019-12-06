@@ -91,7 +91,6 @@ public class AuthorInterface extends JFrame implements ActionListener{
 
         this.setJMenuBar(menubar);
 
-
         Integer selectedSubId = Integer.parseInt(getSelectedButtonText(group));
         Status status = getStatusByID(selectedSubId);
         System.out.println(status);
