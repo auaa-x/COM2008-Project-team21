@@ -38,7 +38,7 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 	private LinkedList<Integer> chiefJournalsISSN;
 	private LinkedList<Journal> journals;
 	private LinkedList<Article> accptedList;
-	private LinkedList<Article> rejectedList;
+	private LinkedList<Article> delayedList;
 
 	private int selectedID;
 	private Article selectedArt;
@@ -117,14 +117,14 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 		DefaultMutableTreeNode root = new DefaultMutableTreeNode("Journal Publish System");
 		//create tree
 		accptedList = new LinkedList<>();
-		rejectedList = new LinkedList<>();
+		delayedList = new LinkedList<>();
 		for (Journal journal : journals) {
 			DefaultMutableTreeNode journal1 = new DefaultMutableTreeNode(journal);
 			root.add(journal1);
 			DefaultMutableTreeNode accepted = new DefaultMutableTreeNode("Accepted");
-			DefaultMutableTreeNode rejected = new DefaultMutableTreeNode("Rejected");
+			DefaultMutableTreeNode delayed = new DefaultMutableTreeNode("Delayed");
 			journal1.add(accepted);
-			journal1.add(rejected);
+			journal1.add(delayed);
 			journal.getIssn();
 			accptedList = JournalController.getArticlesToPublish(journal.getIssn());
 			for (Article a : accptedList) {
@@ -132,9 +132,9 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 				accepted.add(a1);
 			}
 
-			for (Article a : rejectedList) {
+			for (Article a : delayedList) {
 				DefaultMutableTreeNode a1 = new DefaultMutableTreeNode(a);
-				rejected.add(a1);
+				delayed.add(a1);
 			}
 		}
 
@@ -225,7 +225,6 @@ public class ChiefEditorInterface extends JFrame implements ActionListener {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				try {
-					System.out.println("open " + selectedID);
 					ArticleController.getSubmissionPDF(selectedID);
 					File article = new File("article.pdf");
 					if (!Desktop.isDesktopSupported()) {
