@@ -246,10 +246,11 @@ public class JournalController extends SqlController {
      * @param issn
      * @throws SQLException
      */
-    public static void publishNextEdition(int issn) throws SQLException {
+    public static boolean publishNextEdition(int issn) throws SQLException {
     	Volume volume = getCurrentVolume(issn);
     	int volNum = volume.getVolNum();
-    	createEdition(issn, volNum);
+    	boolean result = createEdition(issn, volNum);
+    	return result;
     	
     }
 
