@@ -95,10 +95,11 @@ public class AuthorRegisterInterface extends JFrame implements ActionListener, I
         JLabel title = new JLabel("Title");
         title.setFont(new Font("Arial", Font.PLAIN, 20));
         //title combobox
-        String[] titleTypes = {"Prof", "Dr", "Mr", "Mrs"};
+        String[] titleTypes = {"Title", "Prof", "Dr", "Mr", "Mrs"};
         comboTitleTypes = new JComboBox<>(titleTypes);
         comboTitleTypes.addItemListener(this);
         comboTitleTypes.setFont(new Font("Arial", Font.PLAIN, 16));
+
 
         //forename
         JLabel forename = new JLabel("Forename");
@@ -133,6 +134,8 @@ public class AuthorRegisterInterface extends JFrame implements ActionListener, I
         for (Journal journal : journals) {
             comboJnTypes.addItem(journal);
         }
+        journalSelected = comboJnTypes.getItemAt(0);
+        //journalSelected = (Journal)comboJnTypes.getItemAt(comboJnTypes.getSelectedIndex(0));
         //comboJnTypes.setSelectedIndex(0);
         comboJnTypes.addItemListener(this);
         comboJnTypes.setFont(new Font("Arial", Font.PLAIN, 16));
@@ -338,8 +341,6 @@ public class AuthorRegisterInterface extends JFrame implements ActionListener, I
                 case "Miss":
                     userTitle = "Miss";
                     break;
-                default:
-                    throw new IllegalStateException("Unexpected value: " + item);
             }
         } else if (e.getSource() == comboJnTypes) {
             journalSelected = (Journal) comboJnTypes.getSelectedItem();
