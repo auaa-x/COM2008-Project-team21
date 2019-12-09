@@ -407,17 +407,25 @@ public class AuthorRegisterInterface extends JFrame implements ActionListener, I
                             JOptionPane.showMessageDialog(null,
                                     "Password is too weak! \nMust include lower and upper case, 8 characters at least.\nSpace is not allowed.");
                         } else {
-                            //all conditions verified
-                            try {
-                                if (UserController.mainAuthorRegistration(email, userTitle, forename,
-                                        surname, university, password, sharedPassword, articleTitle, atAbstract,
-                                        pdf, issn)) {
-                                    JOptionPane.showMessageDialog(null, "You have registered successfully!");
-                                    dispose();
-                                    new AuthorInterface(email);
+                            if (addedPDF.getText().equals("Added PDF")) {
+                                JOptionPane.showMessageDialog(null, "Please add a PDF!");
+                            } else {
+                                //all conditions verified
+                                try {
+                                    if (UserController.mainAuthorRegistration(email, userTitle, forename,
+                                            surname, university, password, sharedPassword, articleTitle, atAbstract,
+                                            pdf, issn)) {
+                                        JOptionPane.showMessageDialog(null, "You have registered successfully!");
+                                        dispose();
+                                        new AuthorInterface(email);
+                                    }
+                                    else {
+                                        JOptionPane.showMessageDialog(null, "Sorry, please try again!");
+
+                                    }
+                                } catch (SQLException | FileNotFoundException ex) {
+                                    ex.printStackTrace();
                                 }
-                            } catch (SQLException | FileNotFoundException ex) {
-                                ex.printStackTrace();
                             }
                         }
                     }
