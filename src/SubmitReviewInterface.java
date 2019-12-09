@@ -138,6 +138,7 @@ public class SubmitReviewInterface extends JFrame implements ActionListener, Ite
         reset.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 ReviewController.clearQuestionList();
+                qsField.setText("");
                 qsArea.setText("");
             }
         });
