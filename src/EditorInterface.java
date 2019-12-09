@@ -409,6 +409,7 @@ public class EditorInterface extends JFrame implements ActionListener {
                     if (JournalController.editorRetire(username, Integer.parseInt(issn1))){
                         this.dispose();
                         JOptionPane.showMessageDialog(null, "You have retired successfully!");
+                        new LoginInterface();
                     }
                     else {
                         JOptionPane.showMessageDialog(null, "You can not retire from the journal!");
