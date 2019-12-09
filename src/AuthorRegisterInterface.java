@@ -372,8 +372,12 @@ public class AuthorRegisterInterface extends JFrame implements ActionListener, I
             String emails = coEmailField.getText();
             if (!emails.trim().isEmpty()) {
                 UserController.addCoAuthor(emails);
-                addedCoAuthorArea.append(emails + "\n");
-                coEmailField.setText("");
+                if (!UserController.isValidEmail(emails)) {
+                    JOptionPane.showMessageDialog(null, "Please input a valid email.");
+                } else {
+                        addedCoAuthorArea.append(emails + "\n");
+                        coEmailField.setText("");
+                    }
             }
         } else if (e.getSource() == resetCoAuthor) {
             UserController.coAuthorsList.clear();
