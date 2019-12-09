@@ -406,16 +406,18 @@ public class EditorInterface extends JFrame implements ActionListener {
                     null, options, options[0]);
             if (x == 0){
                 try {
-                    JournalController.editorRetire(username, Integer.parseInt(issn1));
+                    if (JournalController.editorRetire(username, Integer.parseInt(issn1))){
+                        this.dispose();
+                        JOptionPane.showMessageDialog(null, "You have retired successfully!");
+                    }
+                    else {
+                        JOptionPane.showMessageDialog(null, "You can not retire from the journal!");
+                    }
                 } catch (SQLException ex) {
                     JOptionPane.showMessageDialog(null,"Cannot connect to the server, please try later.");
                     ex.printStackTrace();
                 }
-                try {
-                    new EditorInterface(username);
-                } catch (SQLException ex) {
-                    ex.printStackTrace();
-                }
+
             }
         }
         else if (e.getSource() == changePw) {
