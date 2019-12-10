@@ -292,8 +292,10 @@ public class EditorInterface extends JFrame implements ActionListener {
                                 "with this submission!");
                     } else {
                         if (JournalController.acceptAnArticle(submissionId)) {
-                            JOptionPane.showMessageDialog(null, "You have accept " + submissionId +
+                            SwingUtilities.getWindowAncestor(accept).dispose();
+                            JOptionPane.showMessageDialog(null, "You have accepted " + submissionId +
                                     "successfully!");
+
                         } else {
                             JOptionPane.showMessageDialog(null, "Sorry, please try again!");
                         }
@@ -315,7 +317,8 @@ public class EditorInterface extends JFrame implements ActionListener {
                     } else {
                         JournalController.rejectAnArticle(submissionId);
                         if (JournalController.rejectAnArticle(submissionId)) {
-                            JOptionPane.showMessageDialog(null, "You have accept " + submissionId +
+                            SwingUtilities.getWindowAncestor(reject).dispose();
+                            JOptionPane.showMessageDialog(null, "You have rejected " + submissionId +
                                     "successfully!");
                         } else {
                             JOptionPane.showMessageDialog(null, "Sorry, please try again!");
